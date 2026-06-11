@@ -292,7 +292,7 @@ export default function MapZoneInput({
                     marker: false,
                     polyline: false
                   }}
-                  edit={{ edit: true, remove: true }}
+                  edit={{ edit: {}, remove: {} }}
                 />
               </FeatureGroup>
             ) : (

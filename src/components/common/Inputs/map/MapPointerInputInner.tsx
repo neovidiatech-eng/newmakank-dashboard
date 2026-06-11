@@ -255,7 +255,7 @@ export default function MapPointerInput({
                     marker: true,
                     polyline: false
                   }}
-                  edit={{ edit: true, remove: true }}
+                  edit={{ edit: {}, remove: {} }}
                 />
               </FeatureGroup>
             ) : (
