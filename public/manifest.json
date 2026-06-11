@@ -1,0 +1,22 @@
+{
+  "name": "مكانك",
+  "short_name": "مكانك",
+  "start_url": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "background_color": "#ffffff",
+  "theme_color": "#8A1538",
+  "description": "منصة تعليمية شاملة",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["productivity", "education"],
+  "prefer_related_applications": false
+}

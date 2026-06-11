@@ -1,0 +1,2 @@
+import{j as e,br as a}from"./index-CkOAiIbX.js";function r(){return e.jsxDEV("div",{className:"flex h-screen w-full items-center justify-center px-4",children:e.jsxDEV(a,{},void 0,!1,{fileName:"/media/compumisr/hardOld1/neovidia/FrontEnd/dashboard-react/src/pages/auth/update-password/page.tsx",lineNumber:6,columnNumber:7},this)},void 0,!1,{fileName:"/media/compumisr/hardOld1/neovidia/FrontEnd/dashboard-react/src/pages/auth/update-password/page.tsx",lineNumber:5,columnNumber:5},this)}export{r as default};
+//# sourceMappingURL=page-3F-3wEV5.js.map

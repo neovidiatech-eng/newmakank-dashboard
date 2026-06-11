@@ -1,0 +1,37 @@
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.3);
+}
+
+.delivery-schedule-map-scope .leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.delivery-schedule-map-scope .leaflet-control-zoom a {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 8px !important;
+  margin-bottom: 4px;
+}
+
+.delivery-schedule-map-scope .leaflet-control-zoom-in {
+  border-radius: 8px 8px 0 0 !important;
+}
+
+.delivery-schedule-map-scope .leaflet-control-zoom-out {
+  border-radius: 0 0 8px 8px !important;
+}

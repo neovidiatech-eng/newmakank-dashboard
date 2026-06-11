@@ -1,0 +1,2 @@
+import{j as e,bh as a}from"./index-CkOAiIbX.js";const r=()=>e.jsxDEV("div",{className:"items-center justify-center mt-72",children:e.jsxDEV(a,{},void 0,!1,{fileName:"/media/compumisr/hardOld1/neovidia/FrontEnd/dashboard-react/src/pages/auth/change-password/page.tsx",lineNumber:6,columnNumber:7},void 0)},void 0,!1,{fileName:"/media/compumisr/hardOld1/neovidia/FrontEnd/dashboard-react/src/pages/auth/change-password/page.tsx",lineNumber:5,columnNumber:5},void 0);export{r as default};
+//# sourceMappingURL=page-Bput8rP-.js.map

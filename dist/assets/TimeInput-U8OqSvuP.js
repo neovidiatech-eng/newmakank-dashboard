@@ -1,0 +1,2 @@
+import{r as d,j as p,I as l}from"./index-CkOAiIbX.js";const c=d.forwardRef(({value:a,onChange:e,name:n,placeholder:s,className:r,utcOffset:f=2,...o},m)=>{const u=i=>{const t=i.target.value;e?.(t||"")};return p.jsxDEV(l,{ref:m,type:"time",name:n,placeholder:s,className:r,value:a??"",onChange:u,...o},void 0,!1,{fileName:"/media/compumisr/hardOld1/neovidia/FrontEnd/dashboard-react/src/components/common/Inputs/text/TimeInput.tsx",lineNumber:28,columnNumber:13},void 0)});c.displayName="TimeInput";export{c as default};
+//# sourceMappingURL=TimeInput-U8OqSvuP.js.map

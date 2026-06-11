@@ -1,0 +1,2 @@
+import{u as n,s as i,n as r,c as a}from"./types-B9OiI5Y6.js";function l(){return n([i().nullable().optional(),r().nullable().optional(),a()])}function t(e){return n([i({required_error:e("Validations.required"),invalid_type_error:e("Validations.invalidType")}).nonempty(e("Validations.required")),r().min(0,e("Validations.required"))])}export{t as S,l as s};
+//# sourceMappingURL=Select.schema-DVUkf3S6.js.map

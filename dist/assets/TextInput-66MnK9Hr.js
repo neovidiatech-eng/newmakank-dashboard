@@ -1,0 +1,2 @@
+import{j as e,I as n}from"./index-CkOAiIbX.js";function a({...t}){return e.jsxDEV(e.Fragment,{children:e.jsxDEV(n,{...t,"data-testid":t.name},void 0,!1,{fileName:"/media/compumisr/hardOld1/neovidia/FrontEnd/dashboard-react/src/components/common/Inputs/text/TextInput.tsx",lineNumber:9,columnNumber:7},this)},void 0,!1,{fileName:"/media/compumisr/hardOld1/neovidia/FrontEnd/dashboard-react/src/components/common/Inputs/text/TextInput.tsx",lineNumber:8,columnNumber:5},this)}export{a as default};
+//# sourceMappingURL=TextInput-66MnK9Hr.js.map
