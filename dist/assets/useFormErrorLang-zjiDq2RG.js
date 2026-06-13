@@ -1,2 +1,0 @@
-import{b as e,u as E,r as n,t as r}from"./index-CkOAiIbX.js";function f({errors:o,name:t}){const i=e(),a=E(),[u,c]=n.useState(i==="ar"?"Ar":"En");return n.useEffect(()=>{t.forEach(s=>{Object.keys(o).includes(`${s}En`)&&(c("changeToEn"),window.scrollTo(0,0),r.error(`${a(s)} (${a("En")})`,{description:o[`${s}En`]?.message})),Object.keys(o).includes(`${s}Ar`)&&(c("changeToAr"),window.scrollTo(0,0),r.error(`${a(s)} (${a("Ar")})`,{description:o[`${s}Ar`]?.message}))})},[o]),{lang:u}}export{f as u};
-//# sourceMappingURL=useFormErrorLang-zjiDq2RG.js.map

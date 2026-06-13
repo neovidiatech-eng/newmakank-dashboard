@@ -1,2 +1,0 @@
-import{j as s,I as a}from"./index-CkOAiIbX.js";function o({name:t,pattern:n,...r}){return s.jsxDEV(a,{...r,type:"number",step:"any",pattern:n??"[0-9]*\\.?[0-9]*","data-testid":t,onKeyPress:e=>{/[0-9.]/.test(e.key)||e.preventDefault()}},void 0,!1,{fileName:"/media/compumisr/hardOld1/neovidia/FrontEnd/dashboard-react/src/components/common/Inputs/text/NumberInput.tsx",lineNumber:10,columnNumber:5},this)}export{o as default};
-//# sourceMappingURL=NumberInput-CGmXEZbU.js.map
