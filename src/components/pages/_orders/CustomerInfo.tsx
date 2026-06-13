@@ -1,12 +1,12 @@
 import type { ApiResponseCustomer } from "@/pages/dashboard/orders/types";
 import { User as UserIcon } from "lucide-react";
-import { getTranslations } from "@/lib/i18n";
+import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 
 const imgUrl = import.meta.env.VITE_API_URL;
 
-export default async function CustomerInfo({ customer }: { customer: ApiResponseCustomer | null | undefined }) {
-    const t = await getTranslations();
+export default function CustomerInfo({ customer }: { customer: ApiResponseCustomer | null | undefined }) {
+    const t = useTranslations();
 
     if (!customer)
         return <div className="text-muted-foreground text-sm">{t("No Customer Info")}</div>;

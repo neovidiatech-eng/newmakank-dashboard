@@ -36,7 +36,13 @@ export function useRouter() {
     replace: (to, options) => navigate(localizePath(to, locale), { replace: true, ...options }),
     back: () => navigate(-1),
     forward: () => navigate(1),
-    refresh: () => window.location.reload()
+    refresh: () => {
+      import("@/lib/queryClient").then(({ queryClient }) => {
+        queryClient.clear();
+      });
+      // Force remount by navigating to the same path
+      navigate(window.location.pathname + window.location.search, { replace: true });
+    }
   }), [navigate, locale]);
 }
 

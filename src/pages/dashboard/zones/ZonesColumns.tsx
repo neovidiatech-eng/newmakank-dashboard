@@ -3,6 +3,29 @@ import DateCol from "@/components/common/table/columns/date.column";
 import IconHeader from "@/components/common/table/columns/icon-header";
 import LocaleViewColumn from "@/components/common/table/columns/locale-view.column";
 import { type ColumnDef } from "@tanstack/react-table";
+import { useApiQuery } from "@/hooks/useApiQuery";
+
+function CityCell({ row }: { row: any }) {
+  const cityObj = row.original.City || row.original.city;
+  const initialCityName = cityObj?.name?.ar || cityObj?.name?.en;
+  
+  const { data: response } = useApiQuery({
+    queryKey: ["cities-zones"],
+    endPoint: ["cities"],
+    params: { limit: 1000 },
+    enabled: !initialCityName && !!row.original.cityId
+  });
+
+  if (initialCityName) {
+    return <span>{initialCityName}</span>;
+  }
+
+  const citiesList = response?.data?.data || response?.data || [];
+  const city = Array.isArray(citiesList) ? citiesList.find((c: any) => Number(c.id) === Number(row.original.cityId)) : null;
+  const fetchedName = city?.name?.ar || city?.name?.en;
+
+  return <span>{fetchedName || row.original.cityId || "-"}</span>;
+}
 
 export default function ZonesColumns(): ColumnDef<Record<string, unknown>>[] {
   const columns = [
@@ -18,12 +41,9 @@ export default function ZonesColumns(): ColumnDef<Record<string, unknown>>[] {
       }
     },
     {
-      accessorKey: "City.name",
+      accessorKey: "cityId",
       header: () => <IconHeader columnKey="City" />,
-      cell: ({ row }) => {
-        const city = row.original.City as { name?: { en?: string; ar?: string } } | undefined;
-        return <span>{city?.name?.ar || city?.name?.en || "-"}</span>;
-      }
+      cell: ({ row }) => <CityCell row={row} />
     },
     // {
     //   accessorKey: "coordinates",

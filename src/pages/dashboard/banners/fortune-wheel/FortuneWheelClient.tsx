@@ -24,6 +24,7 @@ import { useLocale, useTranslations } from "@/lib/i18n";
 import { useRouter } from "@/lib/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useApiQuery } from "@/hooks/useApiQuery";
 
 type RewardType = "DISCOUNT" | "FREE_DELIVERY" | "FIXED_AMOUNT" | "NONE" | "CUSTOM";
 
@@ -105,19 +106,28 @@ function getNumberOrNull(value: string) {
   return Number.isFinite(numberValue) ? numberValue : null;
 }
 
-export default function FortuneWheelClient({
-  settings,
-  items
-}: {
-  settings?: FortuneWheelSettings | null;
-  items: FortuneWheelItem[];
-}) {
+export default function FortuneWheelClient() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
+
+  const { data: settingsRes, refetch: refetchSettings } = useApiQuery({
+    queryKey: ["fortuneWheelSettings"],
+    endPoint: ["fortuneWheel", "fortuneWheelSettings"]
+  });
+  const { data: itemsRes, refetch: refetchItems } = useApiQuery({
+    queryKey: ["fortuneWheelItems"],
+    endPoint: ["fortuneWheel"]
+  });
+
+  const settings: FortuneWheelSettings | null = settingsRes?.data ?? null;
+  const items: FortuneWheelItem[] = Array.isArray(itemsRes?.data) ? itemsRes.data : [];
+
+  const refetchAll = () => { refetchSettings(); refetchItems(); };
+
   const [form, setForm] = useState<FortuneWheelForm>(emptyForm);
-  const [displayIntervalHours, setDisplayIntervalHours] = useState(String(settings?.displayIntervalHours ?? 24));
-  const [isEnabled, setIsEnabled] = useState(settings?.isEnabled ?? true);
+  const [displayIntervalHours, setDisplayIntervalHours] = useState("24");
+  const [isEnabled, setIsEnabled] = useState(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
@@ -148,7 +158,7 @@ export default function FortuneWheelClient({
 
     if (response?.success) {
       toast.success(t("Success"));
-      router.refresh();
+      refetchAll();
     } else {
       toast.error(response?.message || t("Something went wrong"));
     }
@@ -218,7 +228,7 @@ export default function FortuneWheelClient({
     if (response?.success) {
       toast.success(t("Success"));
       resetForm();
-      router.refresh();
+      refetchAll();
     } else {
       toast.error(response?.message || t("Something went wrong"));
     }
@@ -290,7 +300,7 @@ export default function FortuneWheelClient({
 
     if (response?.success) {
       toast.success(t("Deleted"));
-      router.refresh();
+      refetchAll();
     } else {
       toast.error(response?.message || t("Something went wrong"));
     }
@@ -305,7 +315,7 @@ export default function FortuneWheelClient({
 
     if (response?.success) {
       toast.success(t("Success"));
-      router.refresh();
+      refetchAll();
     } else {
       toast.error(response?.message || t("Failed to change status"));
     }

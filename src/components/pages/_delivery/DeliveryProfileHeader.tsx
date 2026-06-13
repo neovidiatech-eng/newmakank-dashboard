@@ -1,7 +1,7 @@
 import ToggleStatus from "@/components/common/table/tableActions/ToggleStatus";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, User as UserIcon, Zap } from "lucide-react";
-import { getTranslations } from "@/lib/i18n";
+import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 
 const imgUrl = import.meta.env.VITE_API_URL;
@@ -24,8 +24,8 @@ export interface DeliveryUser {
   DeliveryDetails?: { forceAvailable: boolean }[];
 }
 
-export default async function DeliveryProfileHeader({ data }: { data: DeliveryUser }) {
-  const t = await getTranslations();
+export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) {
+  const t = useTranslations();
   const forceAvailable = data.isAvailable ?? data.forceAvailable ?? data.DeliveryDetails?.[0]?.forceAvailable;
   const avatar = data.avatar ?? data.image;
   const isVerified = data.isVerified ?? data.verified;

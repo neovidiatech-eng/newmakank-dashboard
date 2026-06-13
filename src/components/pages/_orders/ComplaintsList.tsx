@@ -2,14 +2,14 @@ import type { ApiResponseComplaintsItem } from "@/pages/dashboard/orders/types";
 import DateCol from "@/components/common/table/columns/date.column";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle } from "lucide-react";
-import { getTranslations } from "@/lib/i18n";
+import { useTranslations } from "@/lib/i18n";
 
-export default async function ComplaintsList({
+export default function ComplaintsList({
     complaints,
 }: {
     complaints: ApiResponseComplaintsItem[];
 }) {
-    const t = await getTranslations();
+    const t = useTranslations();
 
     if (!complaints || complaints.length === 0)
         return (

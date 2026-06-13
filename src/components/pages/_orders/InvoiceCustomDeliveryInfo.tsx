@@ -2,7 +2,7 @@ import type { ApiResponseInvoiceCustomDelivery } from "@/pages/dashboard/orders/
 import { PriceAmount } from "@/components/PriceAmount";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Clock3, ImageIcon, MapPin, Navigation, Package, Truck } from "lucide-react";
-import { getTranslations } from "@/lib/i18n";
+import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 import dynamic from "@/lib/dynamic";
 
@@ -65,7 +65,7 @@ function getStatusIcon(status?: string) {
   return <Clock3 className="h-4 w-4 text-muted-foreground" />;
 }
 
-export default async function InvoiceCustomDeliveryInfo({
+export default function InvoiceCustomDeliveryInfo({
   customDelivery,
   stations,
   progress
@@ -74,7 +74,7 @@ export default async function InvoiceCustomDeliveryInfo({
   stations?: CustomDeliveryStation[];
   progress?: CustomDeliveryProgress | null;
 }) {
-  const t = await getTranslations();
+  const t = useTranslations();
   const sortedStations = [...(stations ?? [])].sort(
     (first, second) =>
       Number(first.sequence ?? first.order ?? first.step ?? 0) -

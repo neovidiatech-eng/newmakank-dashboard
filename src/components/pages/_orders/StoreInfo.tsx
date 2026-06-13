@@ -1,19 +1,19 @@
 import type { ApiResponseBranch, ApiResponseInvoice } from "@/pages/dashboard/orders/types";
 import { MapPin } from "lucide-react";
-import { getLocale, getTranslations } from "@/lib/i18n";
+import { useLocale, useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 
 const imgUrl = import.meta.env.VITE_API_URL;
 
-export default async function StoreInfo({
+export default function StoreInfo({
     branch,
     invoice,
 }: {
     branch: ApiResponseBranch | null | undefined;
     invoice: ApiResponseInvoice | null | undefined;
 }) {
-    const t = await getTranslations();
-    const locale = await getLocale();
+    const t = useTranslations();
+    const locale = useLocale();
 
     return (
         <>

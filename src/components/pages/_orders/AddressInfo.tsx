@@ -1,9 +1,9 @@
 import type { ApiResponseAddress } from "@/pages/dashboard/orders/types";
 import { ExternalLink, MapPin } from "lucide-react";
-import { getTranslations } from "@/lib/i18n";
+import { useTranslations } from "@/lib/i18n";
 
-export default async function AddressInfo({ address }: { address: ApiResponseAddress | null | undefined }) {
-    const t = await getTranslations();
+export default function AddressInfo({ address }: { address: ApiResponseAddress | null | undefined }) {
+    const t = useTranslations();
 
     if (!address)
         return <div className="text-muted-foreground text-sm">{t("No Address Provided")}</div>;

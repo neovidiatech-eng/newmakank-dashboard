@@ -1,4 +1,4 @@
-﻿
+
 import useFormErrorLang from "@/components/common/Form/hooks/useFormErrorLang";
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
@@ -29,6 +29,7 @@ export default function useCouponsLogic({ data }: { data?: CouponsType }) {
 
 	const onSubmit = async (formData: CouponsType) => {
 		const normalizedData = {
+			usageCount: 0,
 			...formData,
 			userIds: formData.type === "USER_WISE" ? formData.userIds : undefined,
 			storeIds: formData.type === "STORE_WISE" ? formData.storeIds : undefined,

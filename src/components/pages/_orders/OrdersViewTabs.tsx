@@ -4,12 +4,13 @@ import TableBasic from "@/components/common/table/TableBasic";
 import { useTranslations } from "@/lib/i18n";
 import { useState } from "react";
 import BulkAssignOrdersAction from "./BulkAssignOrdersAction";
+import { useApiQuery } from "@/hooks/useApiQuery";
+import { useSearchParams } from "@/lib/navigation";
 
 type OrdersViewTabsProps = {
-  orders: Record<string, unknown>[];
-  total?: number;
   tableTitle: string;
   filters?: FormInput[];
+  endPoint?: (string | number)[];
 };
 
 const getDefaultFilters = (t: ReturnType<typeof useTranslations>): FormInput[] => [
@@ -51,15 +52,25 @@ const getDefaultFilters = (t: ReturnType<typeof useTranslations>): FormInput[] =
 ];
 
 export default function OrdersViewTabs({
-  orders,
-  total,
   tableTitle,
-  filters
+  filters,
+  endPoint = ["orders"]
 }: OrdersViewTabsProps) {
   const t = useTranslations();
+  const searchParams = useSearchParams();
   const columns = OrdersColumns();
   const resolvedFilters = filters ?? getDefaultFilters(t);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+
+  // Build params from URL search params
+  const params: Record<string, unknown> = {};
+  searchParams.forEach((value, key) => { params[key] = value; });
+
+  const queryKey = [endPoint.join("/"), JSON.stringify(params)];
+  const { data: response } = useApiQuery({ queryKey, endPoint, params, staleTime: 0 });
+
+  const orders: Record<string, unknown>[] = Array.isArray(response?.data) ? response.data : [];
+  const total = response?.total ?? orders.length;
 
   const toggleOrderSelection = (orderId: string) => {
     setSelectedOrderIds(prev =>

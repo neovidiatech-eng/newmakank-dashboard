@@ -1,45 +1,29 @@
-
-import { fetchHelper } from '@/api/fetch';
-import TableBasic from '@/components/common/table/TableBasic';
 import CustomHeader from "@/components/layouts/header/CustomHeader";
-import { PROJECT_NAME } from "@/utils/config";
-import { getTranslations } from '@/lib/i18n';
-import CategoryColumns from '../../../category/CategoryColumns';
-async function page({ searchParams, params }: { params: Params; searchParams: SearchParams }): Promise<JSX.Element> {
-  const t = await getTranslations();
-  // const permissions = await getPermissions();
-  // const permission = permissions?.["storeCategories"] ?? permissions?.["storecategories"];
-  const data = await fetchHelper({
-    endPoint: ["storeCategories", 'store', Number((await params).id)],
-    method: "GET",
-    params: await searchParams,
-  });
+import TableWithQuery from "@/components/common/table/TableWithQuery";
+import getPermissions from "@/api/permissions";
+import { getTranslations } from "@/lib/i18n";
+import CategoryColumns from "@/pages/dashboard/category/CategoryColumns";
 
-  if (!data) return <div>Error...</div>;
-  const filteredData = data?.data
+export default async function page({ params }: { params: Promise<{ id: string }> }): Promise<JSX.Element> {
+  const t = await getTranslations();
+  const permissions = await getPermissions();
+  const permission = permissions?.["storeCategories"];
+  const { id } = await params;
 
   return (
     <>
-      <CustomHeader >
-        <></>
-      </CustomHeader>
-      <TableBasic
-        data={filteredData}
-        // hideCreateNew={!permission?.post}
+      <CustomHeader />
+      <TableWithQuery
+        endPoint={["storeCategories", "store", Number(id)]}
         columns={CategoryColumns}
-        pagination={{
-          total: data?.total,
-        }}
+        hideCreateNew={!permission?.post}
+        cardHeader={t("Category")}
         tableActions={{
           onEdit: true,
           onDelete: ["categories"],
-          //onInfo: true,
         }}
-        cardHeader={t("Category")}
-        filters={[{ "name": "name", "type": "text", "width": 3 }]}
+        filters={[{ name: "name", type: "text", width: 3 }]}
       />
     </>
   );
 }
-
-export default page;

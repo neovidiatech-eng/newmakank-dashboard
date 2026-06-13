@@ -35,11 +35,14 @@ export function useFormAction() {
         console.error("Failed to revalidate path:", e);
       }
 
-      window.location.reload()
+      const { queryClient } = await import("@/lib/queryClient");
+      queryClient.clear();
 
       if (args?.data?.id) {
-        window.location.reload();
+        // Editing: force re-navigate to current page to reload server data
+        router.replace(pathname);
       } else {
+        // Creating: navigate to list page (forces remount and fresh data fetch)
         router.push(listPath);
       }
     }

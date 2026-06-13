@@ -2,14 +2,14 @@ import type { ApiResponseOrderItemsItem } from "@/pages/dashboard/orders/types";
 import { PriceAmount } from "@/components/PriceAmount";
 import { Badge } from "@/components/ui/badge";
 import { User as UserIcon } from "lucide-react";
-import { getLocale, getTranslations } from "@/lib/i18n";
+import { useLocale, useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 
 const imgUrl = import.meta.env.VITE_API_URL;
 
-export default async function OrderItemsList({ items }: { items: ApiResponseOrderItemsItem[] }) {
-    const t = await getTranslations();
-    const locale = await getLocale();
+export default function OrderItemsList({ items }: { items: ApiResponseOrderItemsItem[] }) {
+    const t = useTranslations();
+    const locale = useLocale();
 
     return (
         <div className="flex flex-col gap-4 w-full">

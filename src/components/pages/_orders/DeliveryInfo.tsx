@@ -1,12 +1,12 @@
 import type { ApiResponseDelivery } from "@/pages/dashboard/orders/types";
 import { User as UserIcon } from "lucide-react";
-import { getTranslations } from "@/lib/i18n";
+import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 
 const imgUrl = import.meta.env.VITE_API_URL;
 
-export default async function DeliveryInfo({ delivery }: { delivery: ApiResponseDelivery | null | undefined }) {
-    const t = await getTranslations();
+export default function DeliveryInfo({ delivery }: { delivery: ApiResponseDelivery | null | undefined }) {
+    const t = useTranslations();
 
     if (!delivery?.User)
         return <div className="text-muted-foreground text-sm">{t("No Delivery Assigned")}</div>;
