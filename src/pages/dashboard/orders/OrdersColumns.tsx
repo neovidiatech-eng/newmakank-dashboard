@@ -240,17 +240,27 @@ export default function OrdersColumns(): any {
     {
       accessorKey: "adminCommission",
       header: () => <IconHeader columnKey="AdminCommission" />,
-      cell: ({ getValue }) => <span>{getValue() as string}</span>
+      cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
+    },
+    {
+      accessorKey: "globalCommission",
+      header: () => <IconHeader columnKey="Platform Fee" />,
+      cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
+    },
+    {
+      accessorKey: "storeCommission",
+      header: () => <IconHeader columnKey="Store Commission" />,
+      cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
     },
     {
       accessorKey: "shipping",
       header: () => <IconHeader columnKey="Shipping" />,
-      cell: ({ getValue }) => <span>{getValue() as string}</span>
+      cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
     },
     {
       accessorKey: "tax",
       header: () => <IconHeader columnKey="Tax" />,
-      cell: ({ getValue }) => <span>{getValue() as string}</span>
+      cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
     },
     {
       accessorKey: "paymentStatus",

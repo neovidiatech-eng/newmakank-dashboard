@@ -29,7 +29,7 @@ const resolveInputWidth = (item: SettingsItem): number => {
   return 6;
 };
 
-export const SettingsInputs = ({
+const SettingsInputs = ({
   settings,
   t
 }: {
@@ -38,10 +38,13 @@ export const SettingsInputs = ({
 }): FormInput[] => {
   return settings.map(item => ({
     name: item.setting,
-    label: item.setting,
+    label: t(item.setting),
     type: resolveInputType(item),
     options: item.dataType =='BOOLEAN' ? booleanOptions(t)  : item?.enumValues?.map(value => ({ label: t(value), value })) ?? undefined,
     cardId: "settings",
-    width: resolveInputWidth(item)
+    width: resolveInputWidth(item),
+    ...(item.setting === "shippingKMCharge" ? { min: 0.000001 } : {})
   }));
 };
+
+export { SettingsInputs };

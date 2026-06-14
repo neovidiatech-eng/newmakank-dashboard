@@ -9,7 +9,6 @@ type CouponType =
   | "FIRST_ORDER"
   | "USER_WISE"
   | "STORE_WISE"
-  | "ZONE_WISE"
   | "ALL_MODULES"
   | "MODULE_WISE";
 
@@ -17,7 +16,6 @@ export const CouponsInputs = (couponType?: CouponType | null) => {
   const t = useTranslations()
   const showUserRestrictions = couponType === "USER_WISE";
   const showStoreRestrictions = couponType === "STORE_WISE";
-  const showZoneRestrictions = couponType === "ZONE_WISE";
   const showModuleRestrictions = couponType === "MODULE_WISE";
 
   const inputs: FormInput[] = [
@@ -34,7 +32,14 @@ export const CouponsInputs = (couponType?: CouponType | null) => {
     { name: "endDate", type: "date", cardId: 'dates' },
     { name: "userIds", isHidden: !showUserRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['customers'], isMulti: true },
     { name: "storeIds", isHidden: !showStoreRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['stores'], isMulti: true },
-    { name: "zoneIds", isHidden: !showZoneRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['zones'], isMulti: true },
+    {
+      name: "zoneIds",
+      type: "selectPaginated",
+      cardId: 'restrictions',
+      apiUrl: ['zones'],
+      isMulti: true,
+      toolTip: t("couponZonesTooltip")
+    },
     { name: "moduleIds", isHidden: !showModuleRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['modules'], isMulti: true },
     {
       name: "specialDelivery",

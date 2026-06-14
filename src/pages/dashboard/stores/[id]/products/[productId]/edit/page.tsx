@@ -22,12 +22,14 @@ export default async function Page({ params }: { params: Promise<{ id: string, p
                     nameAr: item?.name?.ar,
                     nameEn: item?.name?.en,
                     price: item?.price,
+                    priceAfterDiscount: item?.priceAfterDiscount,
                     isDefault: item?.isDefault
                 })),
                 Addons: data?.data?.Addons?.map((item: any) => ({
                     nameAr: item?.name?.ar,
                     nameEn: item?.name?.en,
-                    price: item?.price
+                    price: item?.price,
+                    priceAfterDiscount: item?.priceAfterDiscount
                 }))
             }} /></>;
 }

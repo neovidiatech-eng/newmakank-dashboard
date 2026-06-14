@@ -219,6 +219,8 @@ export interface ApiResponse {
   discountAmount: number;
   paidWithWallet: boolean;
   adminCommission: number;
+  globalCommission?: number;
+  storeCommission?: number;
   shipping: number;
   tax: number;
   paymentStatus: string;

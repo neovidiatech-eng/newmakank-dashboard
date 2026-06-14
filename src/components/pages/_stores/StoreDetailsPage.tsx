@@ -24,6 +24,11 @@ export default function StoreDetailsPage({
 }: StoreDetailsPageProps) {
   const t = useTranslations();
   const currentCommission = Number((data as any)?.commission ?? (data as any)?.commotion ?? 0);
+  const currentCommissionType = ((data as any)?.commissionType === "FIXED" ? "FIXED" : "PERCENTAGE") as
+    | "PERCENTAGE"
+    | "FIXED";
+  const commissionLabel =
+    currentCommissionType === "PERCENTAGE" ? `${currentCommission}%` : String(currentCommission);
 
   return (
     <div className="flex flex-col gap-8 pb-20">
@@ -33,11 +38,13 @@ export default function StoreDetailsPage({
         <div className="flex justify-end items-center gap-4 px-1">
           <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border">
             <span>{t("Store Commission")}:</span>
-            <span className="text-foreground font-semibold">{currentCommission}%</span>
+            <span className="text-foreground font-semibold">{commissionLabel}</span>
+            <span className="text-xs">({t(currentCommissionType)})</span>
           </div>
           <StoreCommotionButton
             storeId={Number(data.id)}
             initialValue={currentCommission}
+            initialType={currentCommissionType}
           />
         </div>
       </div>
