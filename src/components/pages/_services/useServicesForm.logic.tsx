@@ -7,6 +7,7 @@ import { useTranslations } from "@/lib/i18n";
 import { useFieldArray, useForm } from "react-hook-form";
 import { ServicesInputs } from "./services.inputs";
 import { ServicesSchema, type ServicesType } from "./services.schema";
+import { log } from "console";
 
 export default function useServicesLogic({ data, hideStoreInput }: { data?: ServicesType; hideStoreInput?: boolean }) {
   const t = useTranslations();
@@ -27,9 +28,28 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
     resolver: zodResolver(ServicesSchema(t)),
     defaultValues: {
       ...extractFormDefaultInputs(inputs, data),
+      priceBeforeDiscount: data ? (data.priceAfterDiscount ? data.price : "") : undefined,
+      priceAfterDiscount: data ? (data.priceAfterDiscount ? data.priceAfterDiscount : data.price) : undefined,
       available: data?.available !== undefined ? String(data.available) : "true",
-      Sizes: data?.Sizes,
-      Addons: data?.Addons,
+      Sizes: data?.Sizes?.map((item: any) => {
+        const hasDiscount = Boolean(item?.priceAfterDiscount);
+        return {
+          nameAr: item.nameAr,
+          nameEn: item.nameEn,
+          priceBeforeDiscount: hasDiscount ? item.price : "",
+          priceAfterDiscount: hasDiscount ? item.priceAfterDiscount : item.price,
+          isDefault: item.isDefault
+        };
+      }),
+      Addons: data?.Addons?.map((item: any) => {
+        const hasDiscount = Boolean(item?.priceAfterDiscount);
+        return {
+          nameAr: item.nameAr,
+          nameEn: item.nameEn,
+          priceBeforeDiscount: hasDiscount ? item.price : "",
+          priceAfterDiscount: hasDiscount ? item.priceAfterDiscount : item.price
+        };
+      }),
       storeId: (data?.Store as any)?.id
     } as ServicesType
   });
@@ -39,6 +59,9 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
     if (formData.storeId == null) {
       formData.storeId = data?.storeId as number;
     }
+    console.log("front",{formData});
+    delete formData.Store;
+    
     if (!(data as any)?.id) {
       const hasImage =
         formData.image &&
@@ -144,10 +167,9 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
       durationMinutes: serviceData?.durationMinutes ?? 0,
       price: serviceData?.price ?? 0,
       priceBeforeDiscount:
-        serviceData?.priceBeforeDiscount ??
-        serviceData?.oldPrice ??
-        serviceData?.priceBeforeOffer ??
-        "",
+        serviceData?.priceAfterDiscount || serviceData?.salePrice || serviceData?.offerPrice
+          ? (serviceData?.price ?? "")
+          : "",
       priceAfterDiscount:
         serviceData?.priceAfterDiscount ??
         serviceData?.salePrice ??
@@ -163,21 +185,25 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
             : "true",
       storeId: hideStoreInput ? (data?.storeId as number) : (serviceData?.Store?.id ?? serviceData?.storeId),
       categoryId: serviceData?.Category?.id ?? serviceData?.categoryId,
-      Sizes: serviceData?.Sizes?.map((item: any) => ({
-        nameAr: item?.name?.ar ?? "",
-        nameEn: item?.name?.en ?? "",
-        price: item?.price ?? 0,
-        priceBeforeDiscount: item?.priceBeforeDiscount ?? item?.oldPrice ?? "",
-        priceAfterDiscount: item?.priceAfterDiscount ?? item?.salePrice ?? item?.price ?? 0,
-        isDefault: Boolean(item?.isDefault)
-      })) ?? [],
-      Addons: serviceData?.Addons?.map((item: any) => ({
-        nameAr: item?.name?.ar ?? "",
-        nameEn: item?.name?.en ?? "",
-        price: item?.price ?? 0,
-        priceBeforeDiscount: item?.priceBeforeDiscount ?? item?.oldPrice ?? "",
-        priceAfterDiscount: item?.priceAfterDiscount ?? item?.salePrice ?? item?.price ?? 0
-      })) ?? []
+      Sizes: serviceData?.Sizes?.map((item: any) => {
+        const hasDiscount = Boolean(item?.priceAfterDiscount || item?.salePrice || item?.offerPrice);
+        return {
+          nameAr: item?.name?.ar ?? "",
+          nameEn: item?.name?.en ?? "",
+          priceBeforeDiscount: hasDiscount ? (item?.price ?? "") : "",
+          priceAfterDiscount: item?.priceAfterDiscount ?? item?.salePrice ?? item?.offerPrice ?? item?.price ?? "",
+          isDefault: Boolean(item?.isDefault)
+        };
+      }) ?? [],
+      Addons: serviceData?.Addons?.map((item: any) => {
+        const hasDiscount = Boolean(item?.priceAfterDiscount || item?.salePrice || item?.offerPrice);
+        return {
+          nameAr: item?.name?.ar ?? "",
+          nameEn: item?.name?.en ?? "",
+          priceBeforeDiscount: hasDiscount ? (item?.price ?? "") : "",
+          priceAfterDiscount: item?.priceAfterDiscount ?? item?.salePrice ?? item?.offerPrice ?? item?.price ?? ""
+        };
+      }) ?? []
     };
 
     reset(normalizedData as ServicesType);

@@ -51,7 +51,7 @@ export async function request<T = unknown>({
     data: body,
     skipAuthRedirect: redirectOnUnauthorized === false,
     headers: {
-      ...(isFormData ? { "Content-Type": "multipart/form-data" } : {}),
+      ...(isFormData ? { "Content-Type": undefined } : {}),
       isLocalized: isLocalized ? "true" : "false",
       ...headers
     }
