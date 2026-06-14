@@ -23,6 +23,7 @@ interface CouponDetailsProps {
         createdAt: string;
         UserCoupons?: any[];
         StoreCoupons?: any[];
+        CouponZones?: any[];
         ZoneCoupons?: any[];
         ModuleCoupons?: any[];
     };
@@ -30,6 +31,7 @@ interface CouponDetailsProps {
 
 export function CouponDetails({ data }: CouponDetailsProps) {
     const t = useTranslations();
+    const couponZones = data.CouponZones || data.ZoneCoupons || [];
 
     const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString('en-US', {
@@ -156,7 +158,9 @@ export function CouponDetails({ data }: CouponDetailsProps) {
                         <div className="space-y-2">
                             <p className="text-sm font-medium text-muted-foreground">{t("Zones")}</p>
                             <Badge variant="outline">
-                                {data.ZoneCoupons?.length || 0} {t("Zones")}
+                                {couponZones.length > 0
+                                    ? `${couponZones.length} ${t("Zones")}`
+                                    : t("Global coupon")}
                             </Badge>
                         </div>
 

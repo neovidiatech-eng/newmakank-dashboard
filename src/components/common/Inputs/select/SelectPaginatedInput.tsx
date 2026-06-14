@@ -84,7 +84,8 @@ export default function SelectPaginated({
         return serviceName || storeName || "Unknown";
       }
 
-      return item[labelKey] || "Unknown";
+      const labelValue = item[labelKey];
+      return getLocalizedText(labelValue) || (typeof labelValue === "number" ? String(labelValue) : "Unknown");
     },
     [getLocalizedText, labelFormat, labelKey]
   );

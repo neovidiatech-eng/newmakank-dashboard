@@ -32,7 +32,6 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
   const data = response?.data as ApiResponse;
   if (!data)
     return <div className="p-8 text-center text-muted-foreground">{t("No Data Available")}</div>;
-  console.log(data, 'sdae2ds')
   const customDeliveryStations = (data as any)?.Stations ?? (data as any)?.stations ?? [];
   const hasCustomDeliveryInfo =
     data?.invoice?.customDelivery ||

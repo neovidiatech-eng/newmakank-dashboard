@@ -30,8 +30,8 @@ export default function useSettingsLogic({
   }, [inputs, settings]);
 
   const { control, handleSubmit, reset } = useForm<SettingsFormValues>({
-    mode: "onSubmit",
-    resolver: zodResolver(SettingsSchema()),
+    mode: "onChange",
+    resolver: zodResolver(SettingsSchema(t)),
     defaultValues
   });
 
@@ -43,7 +43,13 @@ export default function useSettingsLogic({
   const onSubmit = async (formData: SettingsFormValues) => {
     const payload = new FormData();
     const settingsPayload = settings.map(item => {
-      const value = formData[item.setting];
+      let value = formData[item.setting];
+      if (item.setting === "shippingKMCharge") {
+        const val = Number(value);
+        if (isNaN(val) || val <= 0) {
+          value = "1";
+        }
+      }
       return {
         setting: item.setting,
         value: value instanceof File ? "" : (value ?? ""),

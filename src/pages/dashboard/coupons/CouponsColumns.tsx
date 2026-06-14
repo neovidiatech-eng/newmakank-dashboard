@@ -4,9 +4,23 @@ import DateCol from "@/components/common/table/columns/date.column";
 import IconHeader from "@/components/common/table/columns/icon-header";
 import LocaleViewColumn from "@/components/common/table/columns/locale-view.column";
 import TextCol from "@/components/common/table/columns/text.column";
+import { Badge } from "@/components/ui/badge";
+import { useLocale, useTranslations } from "@/lib/i18n";
 import { type ColumnDef } from "@tanstack/react-table";
 
+const getLocalizedName = (value: unknown, locale: string) => {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    const localizedValue = value as Record<string, unknown>;
+    return String(localizedValue[locale] || localizedValue.en || localizedValue.ar || "");
+  }
+  return String(value);
+};
+
 export default function CouponsColumns(): ColumnDef<Record<string, unknown>>[] {
+  const t = useTranslations();
+  const locale = useLocale();
   const columns = [
     {
       accessorKey: "title",
@@ -73,6 +87,33 @@ export default function CouponsColumns(): ColumnDef<Record<string, unknown>>[] {
       accessorKey: "maxDiscountValue",
       header: () => <IconHeader columnKey="maxDiscountValue" />,
       cell: ({ getValue }) => <TextCol text={getValue() as string} />
+    },
+    {
+      id: "couponZones",
+      header: () => <IconHeader columnKey="zoneIds" />,
+      cell: ({ row }) => {
+        const couponZones = (row.original.CouponZones || row.original.ZoneCoupons || []) as Array<{
+          Zone?: { name?: unknown };
+          zoneId?: number;
+        }>;
+
+        if (couponZones.length === 0) {
+          return <Badge variant="outline">{t("Global coupon")}</Badge>;
+        }
+
+        return (
+          <div className="flex flex-wrap gap-1">
+            {couponZones.slice(0, 2).map((item, index) => (
+              <Badge key={`${item.zoneId ?? index}`} variant="secondary">
+                {getLocalizedName(item.Zone?.name, locale) || `#${item.zoneId}`}
+              </Badge>
+            ))}
+            {couponZones.length > 2 && (
+              <Badge variant="outline">+{couponZones.length - 2}</Badge>
+            )}
+          </div>
+        );
+      }
     },
     {
       accessorKey: "createdAt",

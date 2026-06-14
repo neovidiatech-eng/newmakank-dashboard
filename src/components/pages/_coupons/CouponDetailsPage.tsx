@@ -10,6 +10,7 @@ interface CouponDetailsPageProps {
         createdAt: string;
         UserCoupons?: any[];
         StoreCoupons?: any[];
+        CouponZones?: any[];
         ZoneCoupons?: any[];
         ModuleCoupons?: any[];
     };

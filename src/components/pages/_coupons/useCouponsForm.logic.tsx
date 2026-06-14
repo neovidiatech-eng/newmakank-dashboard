@@ -52,7 +52,7 @@ export default function useCouponsLogic({ data }: { data?: CouponsType }) {
 			if (value === undefined || value === null || value === "") {
 				delete normalizedData[key as keyof typeof normalizedData];
 			}
-			if (Array.isArray(value) && value.length === 0) {
+			if (Array.isArray(value) && value.length === 0 && (key !== "zoneIds" || !(data as any)?.id)) {
 				delete normalizedData[key as keyof typeof normalizedData];
 			}
 		});
