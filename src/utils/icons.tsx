@@ -12,6 +12,7 @@ import {
   GraduationCap,
   Image,
   Languages,
+  Layers,
   Lock,
   MapPin,
   MessageSquare,
@@ -73,7 +74,9 @@ export const mainIcons = {
   socialMedia: Share2,
   academicContent: GraduationCap,
   systemSettings: Settings,
-  settings: Settings
+  settings: Settings,
+  storeTemplates: Layers,
+  customerCategories: Users
 };
 
 export const columnsIcons = {

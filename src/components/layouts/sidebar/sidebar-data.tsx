@@ -13,9 +13,13 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         title: "stores",
         url: "/stores"
       },
-      permissions?.Modules?.get && {
-        title: "modules",
-        url: "/modules"
+      (permissions?.["customer-categories"]?.get || permissions?.customerCategories?.get) && {
+        title: "customerCategories",
+        url: "/customer-categories"
+      },
+      (permissions?.["store-templates"]?.get || permissions?.storeTemplates?.get) && {
+        title: "storeTemplates",
+        url: "/store-templates"
       },
       permissions?.Schedule?.get && {
         title: "schedule",

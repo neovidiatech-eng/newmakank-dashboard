@@ -12,7 +12,7 @@ import { noSchema } from "@/validations/String.schema";
     nameAr:StringReq(t),
     nameEn:StringReq(t),
 storeId:selectNotReq(),
-moduleId:selectNotReq(),
+customerCategoryId:selectNotReq(),
 targetType:noSchema(),
 categoryId:selectNotReq(),
 serviceId:selectNotReq(),

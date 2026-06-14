@@ -97,7 +97,12 @@ export const endpoints = {
   CANCELLED: "/CANCELLED",
   REJECTED: "/REJECTED",
   PAYMENT_FAILD: "/PAYMENT_FAILD",
-  PENDING_PAYMENT: "/PENDING_PAYMENT"
+  PENDING_PAYMENT: "/PENDING_PAYMENT",
+  customerCategories: "/api/customer-categories",
+  customerCategoriesAssign: "/api/customer-categories/assign",
+  storeTemplates: "/api/store-templates",
+  applyTemplate: "/apply-template",
+  appliedTemplates: "/applied-templates"
 };
 // addresses
 // allPermissions

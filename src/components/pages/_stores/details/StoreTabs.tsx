@@ -4,7 +4,7 @@ import OrdersColumns from "@/pages/dashboard/orders/OrdersColumns";
 import ServicesColumns from "@/pages/dashboard/services/ServicesColumns";
 import CustomTabs, { TabItem } from "@/components/common/CustomTabs/custom-tab";
 import TableBasic from "@/components/common/table/TableBasic";
-import { Layers, MapPin, Package, ShoppingBag } from "lucide-react";
+import { Layers, MapPin, Package, ShoppingBag, FileCode2 } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { useMemo } from "react";
 
@@ -13,10 +13,11 @@ interface StoreTabsProps {
   categories: ApiResponse<any[]>;
   orders: ApiResponse<any[]>;
   services: ApiResponse<any[]>;
+  appliedTemplates?: ApiResponse<any[]>;
   storeId: number;
 }
 
-export function StoreTabs({ branches, categories, orders, services, storeId }: StoreTabsProps) {
+export function StoreTabs({ branches, categories, orders, services, appliedTemplates, storeId }: StoreTabsProps) {
   const t = useTranslations();
   const ordersColumns = OrdersColumns();
   const formattedBranches = useMemo(() => {
@@ -153,6 +154,30 @@ export function StoreTabs({ branches, categories, orders, services, storeId }: S
           tableActions={{
             onInfo: true,
             fixedActions: true
+          }}
+        />
+      )
+    },
+    {
+      value: "appliedTemplates",
+      label: (
+        <div className="flex items-center gap-2">
+          <FileCode2 className="w-4 h-4" />
+          {t("appliedTemplates")}
+        </div>
+      ),
+      content: (
+        <TableBasic
+          data={appliedTemplates?.data}
+          columns={[{ accessorKey: "template.name", header: t("Template Name"), cell: ({ row }: any) => {
+            const tpl = row.original.template?.name;
+            return tpl ? (tpl.ar || tpl.en || tpl) : "-";
+          }}, { accessorKey: "appliedAt", header: t("Applied At"), cell: ({ getValue }: any) => new Date(getValue() as string).toLocaleString() }]}
+          cardHeader={t("appliedTemplates")}
+          hideCreateNew
+          isInnerTable={false}
+          pagination={{
+            total: appliedTemplates?.total
           }}
         />
       )

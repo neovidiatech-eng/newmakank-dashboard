@@ -39,7 +39,12 @@ export function useRouter() {
     refresh: () => {
       import("@/lib/queryClient").then(({ queryClient }) => {
         queryClient.clear();
+        queryClient.invalidateQueries();
       });
+      import("@/app/router").then(({ routeResultCache }) => {
+        routeResultCache.clear();
+      });
+      window.dispatchEvent(new Event("router-refresh"));
       // Force remount by navigating to the same path
       navigate(window.location.pathname + window.location.search, { replace: true });
     }
