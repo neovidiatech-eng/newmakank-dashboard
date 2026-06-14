@@ -3,11 +3,11 @@
   
   import { EmailReq, noSchema, StringNotReq, StringReq } from "@/validations/String.schema";
   
-  import { selectNotReq } from "@/validations/Select.schema";
+  import { selectNotReq, SelectReq } from "@/validations/Select.schema";
   export const StoresSchema = (t:TFunction,isEdit:boolean) => {
     return z.object({
     nameAr:StringReq(t), nameEn:StringReq(t),
-moduleId:selectNotReq(),
+moduleId:SelectReq(t),
 logo:noSchema(),
 cover:noSchema(),
 categoryId:noSchema(),
@@ -20,7 +20,11 @@ map: z.object({
 address:StringReq(t),
 UserName:isEdit ? noSchema() : StringReq(t),
 userEmail:isEdit ? noSchema() : EmailReq(t),
-userPhone:isEdit ? noSchema() : StringReq(t),
+userPhone: isEdit
+  ? noSchema()
+  : StringReq(t).refine((val) => /^(\+20|0020|20)?0?1[0125]\d{8}$/.test(val), {
+      message: t("enterValidEgyptianPhone")
+    }),
 userPass:isEdit ? noSchema() : StringReq(t)
 })
   };

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import useFormErrorLang from "@/components/common/Form/hooks/useFormErrorLang";
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
@@ -70,6 +70,16 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       }
     }
     const { map, userEmail, userPass, userPhone, UserName, ...rest } = formData;
+
+    let formattedPhone = userPhone;
+    if (formattedPhone && !isEdit) {
+      formattedPhone = formattedPhone.replace(/^(\+20|0020|20)/, "");
+      if (formattedPhone.startsWith("0")) {
+        formattedPhone = formattedPhone.substring(1);
+      }
+      formattedPhone = "+20" + formattedPhone;
+    }
+
     const formattedData = {
       ...rest,
       lat: map?.lat,
@@ -80,7 +90,7 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
             name: UserName,
             email: userEmail,
             password: userPass,
-            phone: userPhone
+            phone: formattedPhone
           })
         }
         : {})

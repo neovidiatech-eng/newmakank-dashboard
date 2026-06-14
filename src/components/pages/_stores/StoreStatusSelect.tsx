@@ -59,12 +59,6 @@ export function StoreStatusSelect({ storeId, initialStatus }: StoreStatusSelectP
             <span className="text-orange-500 font-medium">{t("Busy")}</span>
           </span>
         </SelectItem>
-        <SelectItem value="NORMAL">
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-orange-400 flex-shrink-0" />
-            <span className="text-orange-500 font-medium">{t("normal")}</span>
-          </span>
-        </SelectItem>
         <SelectItem value="CLOSED">
           <span className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-red-500 flex-shrink-0" />

@@ -19,7 +19,7 @@ async function page({
   const { id } = await params;
   const storeId = Number(id);
 
-  const [data, branchesData, categoriesData, ordersData, servicesData] = await Promise.all([
+  const [data, branchesData, categoriesData, ordersData, servicesData, appliedTemplatesData] = await Promise.all([
     fetchData(["stores", storeId]),
     fetchData(["branches"], {
       ...(await searchParams),
@@ -35,11 +35,16 @@ async function page({
     fetchData(["services"], {
       ...(await searchParams),
       storeId
+    }),
+    fetchData(["stores", storeId, "appliedTemplates"], {
+      ...(await searchParams)
     })
   ]);
+  
   if (!data?.data) {
     return notFound();
   }
+  
   return (
     <StoreDetailsPage
       data={data.data}
@@ -47,6 +52,7 @@ async function page({
       categories={categoriesData || emptyListResponse}
       orders={ordersData || emptyListResponse}
       services={servicesData || emptyListResponse}
+      appliedTemplates={appliedTemplatesData || emptyListResponse}
     />
   );
 }

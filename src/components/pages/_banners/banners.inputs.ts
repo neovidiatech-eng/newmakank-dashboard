@@ -29,7 +29,7 @@ export const BannersInputs = ({
       disabled: isSpecialDelivery,
       options: [
         { label: "GENERAL", value: "GENERAL" },
-        { label: "MODULE", value: "MODULE" },
+        { label: "CUSTOMER_CATEGORY", value: "CUSTOMER_CATEGORY" },
         { label: "STORE", value: "STORE" },
         { label: "CATEGORY", value: "CATEGORY" },
         { label: "SERVICE", value: "SERVICE" },
@@ -37,9 +37,9 @@ export const BannersInputs = ({
       ]
     },
     {
-      name: "moduleId",
+      name: "customerCategoryId",
       type: "selectPaginated",
-      apiUrl: ['modules'],
+      apiUrl: ['customerCategories'],
       cardId: 'targeting',
       width: 3,
       disabled: isSpecialDelivery || targetType === "GENERAL",

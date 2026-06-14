@@ -17,7 +17,10 @@ import { useMemo } from "react";
 const FALLBACK_SIDEBAR_PERMISSIONS = {
   statistics: { get: true },
   Stores: { get: true },
-  Modules: { get: true },
+  "customer-categories": { get: true },
+  customerCategories: { get: true },
+  "store-templates": { get: true },
+  storeTemplates: { get: true },
   Schedule: { get: true },
   Branches: { get: true },
   Rating: { get: true },
@@ -42,7 +45,7 @@ const FALLBACK_SIDEBAR_PERMISSIONS = {
   bankAccounts: { get: true },
   wallet: { get: true },
   settings: { get: true }
-} as Permission;
+} as unknown as Permission;
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const permissionsQuery = useQuery({
