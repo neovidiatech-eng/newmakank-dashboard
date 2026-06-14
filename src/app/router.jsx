@@ -25,11 +25,11 @@ import { useLocale, useSetLocale } from "@/lib/i18n";
 const dashboardPages = import.meta.glob("../pages/dashboard/**/page.tsx");
 const authPages = import.meta.glob("../pages/auth/**/page.tsx");
 const supportedLocales = new Set(["ar", "en"]);
-const routeResultCache = new Map();
+export const routeResultCache = new Map();
 
 function LoadingRoute() {
   const location = useLocation();
-  const isDashboardRoute = /^\/(?:ar|en)\/(dashboard|logs|stores|orders|zones|branches|services|category|coupons|banners|modules|schedule|users|customers|roles|permissions|banks|bankAccounts|fund|transactions|withdraw|complaint|socialMedia|rating|delivery|settings|profile)(?:\/|$)/.test(location.pathname);
+  const isDashboardRoute = /^\/(?:ar|en)\/(dashboard|logs|stores|orders|zones|branches|services|category|coupons|banners|modules|schedule|users|customers|roles|permissions|banks|bankAccounts|fund|transactions|withdraw|complaint|socialMedia|rating|delivery|settings|profile|customer-categories|store-templates)(?:\/|$)/.test(location.pathname);
 
   if (isDashboardRoute) {
     return <DashboardLoading />;
@@ -127,6 +127,34 @@ function createLazyPage(loader, filePath) {
 
       return () => {
         cancelled = true;
+      };
+    }, [moduleState.Component, routeKey, routeProps]);
+
+    useEffect(() => {
+      const handleRefresh = () => {
+        const Component = moduleState.Component;
+        if (!Component || !isAsyncComponent(Component)) return;
+
+        routeResultCache.delete(routeKey);
+        setAsyncState({ element: null, error: null, routeKey: "" });
+
+        const promise = Component(routeProps);
+        routeResultCache.set(routeKey, { promise });
+
+        Promise.resolve(promise)
+          .then(element => {
+            routeResultCache.set(routeKey, { element });
+            setAsyncState({ element, error: null, routeKey });
+          })
+          .catch(error => {
+            routeResultCache.delete(routeKey);
+            setAsyncState({ element: null, error, routeKey });
+          });
+      };
+
+      window.addEventListener("router-refresh", handleRefresh);
+      return () => {
+        window.removeEventListener("router-refresh", handleRefresh);
       };
     }, [moduleState.Component, routeKey, routeProps]);
 

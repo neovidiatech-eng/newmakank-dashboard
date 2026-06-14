@@ -43,8 +43,8 @@ export default function useCouponsLogic({ data }: { data?: CouponsType }) {
 			specialDelivery: undefined,
 			userIds: formData.type === "USER_WISE" ? formData.userIds : undefined,
 			storeIds: formData.type === "STORE_WISE" ? formData.storeIds : undefined,
-			zoneIds: Array.isArray(formData.zoneIds) ? formData.zoneIds : [],
-			moduleIds: formData.type === "MODULE_WISE" ? formData.moduleIds : undefined,
+			zoneIds: formData.type === "ZONE_WISE" ? formData.zoneIds : undefined,
+			customerCategoryIds: formData.type === "CUSTOMER_CATEGORY_WISE" ? formData.customerCategoryIds : undefined,
 		}
 
 		Object.keys(normalizedData).forEach(key => {

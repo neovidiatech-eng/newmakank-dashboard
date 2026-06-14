@@ -37,6 +37,7 @@ export function useFormAction() {
 
       const { queryClient } = await import("@/lib/queryClient");
       queryClient.clear();
+      router.refresh();
 
       if (args?.data?.id) {
         // Editing: force re-navigate to current page to reload server data

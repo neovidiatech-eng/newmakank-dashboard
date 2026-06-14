@@ -11,12 +11,17 @@ type CouponType =
   | "STORE_WISE"
   | "ALL_MODULES"
   | "MODULE_WISE";
+  | "ZONE_WISE"
+  | "ALL_CUSTOMER_CATEGORIES"
+  | "CUSTOMER_CATEGORY_WISE";
 
 export const CouponsInputs = (couponType?: CouponType | null) => {
   const t = useTranslations()
   const showUserRestrictions = couponType === "USER_WISE";
   const showStoreRestrictions = couponType === "STORE_WISE";
   const showModuleRestrictions = couponType === "MODULE_WISE";
+  const showZoneRestrictions = couponType === "ZONE_WISE";
+  const showCustomerCategoryRestrictions = couponType === "CUSTOMER_CATEGORY_WISE";
 
   const inputs: FormInput[] = [
     { name: "title", type: "text", multiLang: true, cardId: 'lang', required: true },
@@ -41,6 +46,8 @@ export const CouponsInputs = (couponType?: CouponType | null) => {
       toolTip: t("couponZonesTooltip")
     },
     { name: "moduleIds", isHidden: !showModuleRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['modules'], isMulti: true },
+    { name: "zoneIds", isHidden: !showZoneRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['zones'], isMulti: true },
+    { name: "customerCategoryIds", isHidden: !showCustomerCategoryRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['customerCategories'], isMulti: true },
     {
       name: "specialDelivery",
       type: "checkbox",

@@ -1,6 +1,7 @@
 import { stores } from "@/pages/dashboard/stores/types";
 import { StoreAbout } from "./details/StoreAbout";
 import { StoreCommotionButton } from "./details/StoreCommotionButton";
+import { ApplyTemplateButton } from "./details/ApplyTemplateButton";
 import { StoreHero } from "./details/StoreHero";
 import { StoreSidebar } from "./details/StoreSidebar";
 import { StoreStats } from "./details/StoreStats";
@@ -13,6 +14,7 @@ interface StoreDetailsPageProps {
   categories: ApiResponse<any[]>;
   orders: ApiResponse<any[]>;
   services: ApiResponse<any[]>;
+  appliedTemplates: ApiResponse<any[]>;
 }
 
 export default function StoreDetailsPage({
@@ -20,7 +22,8 @@ export default function StoreDetailsPage({
   branches,
   categories,
   orders,
-  services
+  services,
+  appliedTemplates
 }: StoreDetailsPageProps) {
   const t = useTranslations();
   const currentCommission = Number((data as any)?.commission ?? (data as any)?.commotion ?? 0);
@@ -41,6 +44,7 @@ export default function StoreDetailsPage({
             <span className="text-foreground font-semibold">{commissionLabel}</span>
             <span className="text-xs">({t(currentCommissionType)})</span>
           </div>
+          <ApplyTemplateButton storeId={Number(data.id)} />
           <StoreCommotionButton
             storeId={Number(data.id)}
             initialValue={currentCommission}
@@ -69,6 +73,7 @@ export default function StoreDetailsPage({
         categories={categories}
         orders={orders}
         services={services}
+        appliedTemplates={appliedTemplates}
         storeId={Number(data.id)}
       />
     </div>
