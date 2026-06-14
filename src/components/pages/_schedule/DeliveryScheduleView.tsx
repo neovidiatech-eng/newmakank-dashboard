@@ -33,12 +33,7 @@ export default function DeliveryScheduleView({ schedule, locale }: DeliverySched
 
   const formatTime = (value?: string) => {
     if (!value) return t("Not Available");
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return t("Not Available");
-    return date.toLocaleTimeString(locale === "ar" ? "ar-EG" : "en-US", {
-      hour: "2-digit",
-      minute: "2-digit"
-    });
+    return value;
   };
 
   return (
@@ -85,15 +80,7 @@ export default function DeliveryScheduleView({ schedule, locale }: DeliverySched
               </div>
 
               {(() => {
-                const dOpen = new Date(entry.openingTime);
-                const dClose = new Date(entry.closingTime);
-                const is24Hrs =
-                  !Number.isNaN(dOpen.getTime()) &&
-                  !Number.isNaN(dClose.getTime()) &&
-                  dOpen.getHours() === 0 &&
-                  dOpen.getMinutes() === 0 &&
-                  dClose.getHours() === 23 &&
-                  dClose.getMinutes() === 59;
+                const is24Hrs = entry.openingTime === "00:00" && entry.closingTime === "23:59";
 
                 if (is24Hrs) {
                   return (

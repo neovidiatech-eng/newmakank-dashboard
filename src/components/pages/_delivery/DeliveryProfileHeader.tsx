@@ -97,7 +97,7 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
           </div>
           <ToggleStatus
             id={data.id}
-            body={{ isAvailable: !forceAvailable }}
+            body={{ forceAvailable: !forceAvailable }}
             isActive={!!forceAvailable}
             endpoint={["delivery"]}
           />

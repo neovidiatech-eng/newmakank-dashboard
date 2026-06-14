@@ -12,6 +12,7 @@ import { noSchema } from "@/validations/String.schema";
     nameAr:StringReq(t),
     nameEn:StringReq(t),
 storeId:selectNotReq(),
+moduleId:selectNotReq(),
 targetType:noSchema(),
 categoryId:selectNotReq(),
 serviceId:selectNotReq(),
@@ -19,9 +20,35 @@ zoneIds:noSchema(),
 specialDelivery:noSchema(),
 startDate:noSchema(),
 endDate:noSchema(),
-order:noSchema(),
-image:noSchema()
-})
+    order: noSchema(),
+    image: noSchema()
+    }).superRefine((data, ctx) => {
+      const isSpecialDelivery = Array.isArray(data.specialDelivery)
+        ? data.specialDelivery.includes("true")
+        : Boolean(data.specialDelivery);
+      const targetType = isSpecialDelivery ? "SPECIAL_DRIVER" : data.targetType;
+
+      if (["STORE", "CATEGORY", "SERVICE", "ZONE"].includes(targetType as string)) {
+        if (!data.storeId) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: t("Required"), path: ["storeId"] });
+        }
+      }
+      if (["CATEGORY", "SERVICE"].includes(targetType as string)) {
+        if (!data.categoryId) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: t("Required"), path: ["categoryId"] });
+        }
+      }
+      if (targetType === "SERVICE") {
+        if (!data.serviceId) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: t("Required"), path: ["serviceId"] });
+        }
+      }
+      if (targetType === "ZONE") {
+        if (!data.zoneIds || (Array.isArray(data.zoneIds) && data.zoneIds.length === 0)) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: t("Required"), path: ["zoneIds"] });
+        }
+      }
+    });
   };
 
   export type BannersType = z.infer<

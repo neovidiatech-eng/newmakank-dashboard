@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "@/lib/i18n";
 import { useRouter } from "@/lib/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 
 interface StoreCommotionButtonProps {
@@ -27,6 +27,10 @@ export function StoreCommotionButton({ storeId, initialValue = 0 }: StoreCommoti
   const [value, setValue] = useState<number>(initialValue);
   const [isSaving, setIsSaving] = useState(false);
 
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
   const normalizedValue = useMemo(() => {
     if (Number.isNaN(Number(value))) return 0;
     return Math.max(0, Math.min(100, Number(value)));
@@ -39,7 +43,8 @@ export function StoreCommotionButton({ storeId, initialValue = 0 }: StoreCommoti
       endPoint: ["stores", storeId, 'commission'],
       method: "PATCH",
       body: {
-        commission: Number(normalizedValue)
+        commission: Number(normalizedValue),
+        commissionType: "PERCENTAGE"
       }
     });
 

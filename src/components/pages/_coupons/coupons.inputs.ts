@@ -35,7 +35,16 @@ export const CouponsInputs = (couponType?: CouponType | null) => {
     { name: "userIds", isHidden: !showUserRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['customers'], isMulti: true },
     { name: "storeIds", isHidden: !showStoreRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['stores'], isMulti: true },
     { name: "zoneIds", isHidden: !showZoneRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['zones'], isMulti: true },
-    { name: "moduleIds", isHidden: !showModuleRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['modules'], isMulti: true }
+    { name: "moduleIds", isHidden: !showModuleRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['modules'], isMulti: true },
+    {
+      name: "specialDelivery",
+      type: "checkbox",
+      cardId: 'restrictions',
+      width: 3,
+      label: "",
+      inputClassName: "button-checkbox",
+      options: [{ label: t("Special Delivery"), value: "true" }]
+    }
   ];
   return inputs;
 };

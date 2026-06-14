@@ -21,7 +21,7 @@ import { toast } from "sonner";
 
 type CampaignFormType = "NOTIFICATION" | "OFFER";
 type IncentiveType = "none" | "freeDelivery";
-type CampaignTargetType = "ALL" | "CUSTOMER" | "STORE" | "SERVICE" | "SELECTED_USERS";
+type CampaignTargetType = "ALL" | "CUSTOMER" | "STORE" | "SERVICE" | "SELECTED_USERS" | "SPECIAL_DRIVER";
 
 type LocalizedText = string | { ar?: string; en?: string } | null | undefined;
 
@@ -60,7 +60,7 @@ type CampaignFormState = {
 };
 
 const incentiveTypes: IncentiveType[] = ["none", "freeDelivery"];
-const targetTypes: CampaignTargetType[] = ["ALL", "CUSTOMER", "STORE", "SERVICE", "SELECTED_USERS"];
+const targetTypes: CampaignTargetType[] = ["ALL", "CUSTOMER", "STORE", "SERVICE", "SELECTED_USERS", "SPECIAL_DRIVER"];
 const intervalOptions = ["0", "1", "6", "12", "24", "48"];
 
 function getLocalizedText(value: LocalizedText, locale: string) {

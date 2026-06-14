@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { fetchHelper } from "@/api/fetch";
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
@@ -121,34 +121,10 @@ export default function useScheduleLogic({
     if (branchId) formData.branchId = Number(branchId);
     if (deliveryId) (formData as any).deliveryId = Number(deliveryId);
 
-    const adjustTime = (timeVal: string) => {
-      if (!timeVal) return "";
-      let date: Date;
-
-      if (timeVal.includes("T")) {
-        date = new Date(timeVal);
-      } else {
-        // Fallback for HH:mm string
-        const [h, m] = timeVal.split(":").map(Number);
-        date = new Date();
-        date.setUTCHours(h, m, 0, 0);
-      }
-
-      // Subtract 2 hours
-      date.setUTCHours(date.getUTCHours() - 2);
-
-      // Format as string with specific date
-      const timePart = date.toISOString().split("T")[1];
-      return "2026-02-10T" + timePart;
-    };
-
     if ((formData as any).is24Hours?.includes("true")) {
       formData.openingTime = "00:00";
       formData.closingTime = "23:59";
     }
-
-    formData.openingTime = adjustTime(formData.openingTime);
-    formData.closingTime = adjustTime(formData.closingTime);
 
     // Remove is24Hours from formData before sending to API
     delete (formData as any).is24Hours;

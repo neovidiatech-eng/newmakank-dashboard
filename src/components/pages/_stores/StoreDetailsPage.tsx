@@ -5,6 +5,7 @@ import { StoreHero } from "./details/StoreHero";
 import { StoreSidebar } from "./details/StoreSidebar";
 import { StoreStats } from "./details/StoreStats";
 import { StoreTabs } from "./details/StoreTabs";
+import { useTranslations } from "@/lib/i18n";
 
 interface StoreDetailsPageProps {
   data: stores;
@@ -21,15 +22,22 @@ export default function StoreDetailsPage({
   orders,
   services
 }: StoreDetailsPageProps) {
+  const t = useTranslations();
+  const currentCommission = Number((data as any)?.commission ?? (data as any)?.commotion ?? 0);
+
   return (
     <div className="flex flex-col gap-8 pb-20">
       {/* Hero + commission action in one strip */}
       <div className="space-y-3">
         <StoreHero data={data} />
-        <div className="flex justify-end px-1">
+        <div className="flex justify-end items-center gap-4 px-1">
+          <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border">
+            <span>{t("Store Commission")}:</span>
+            <span className="text-foreground font-semibold">{currentCommission}%</span>
+          </div>
           <StoreCommotionButton
             storeId={Number(data.id)}
-            initialValue={Number((data as stores & { commotion?: number })?.commotion ?? 0)}
+            initialValue={currentCommission}
           />
         </div>
       </div>

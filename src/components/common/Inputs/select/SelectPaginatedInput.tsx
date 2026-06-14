@@ -111,6 +111,7 @@ export default function SelectPaginated({
   const searchParams = useSearchParams();
   const fetchOptions = useCallback(
     async (isNewSearch = false) => {
+      if (!apiUrl || apiUrl.length === 0) return;
       if (!hasMore && !isNewSearch) return;
 
       try {

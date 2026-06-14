@@ -1,5 +1,5 @@
 'use client'
-import DateCol from "@/components/common/table/columns/date.column";
+
 import IconHeader from "@/components/common/table/columns/icon-header";
 import StatusCol from "@/components/common/table/columns/status.column";
 import { type ColumnDef } from "@tanstack/react-table";
@@ -15,20 +15,12 @@ export default function ScheduleColumns(): ColumnDef<Record<string, unknown>>[] 
   {
     accessorKey: "openingTime", 
     header: () => <IconHeader columnKey="OpeningTime" />,
-   cell: ({ getValue }) => {
-		  return (
-			<DateCol date={getValue()} />
-		  );
-		}
+    cell: ({ getValue }) => <span>{getValue() as string}</span>
   },
   {
     accessorKey: "closingTime",
     header: () => <IconHeader columnKey="ClosingTime" />,
-   cell: ({ getValue }) => {
-		  return (
-			<DateCol date={getValue()} />
-		  );
-		}
+    cell: ({ getValue }) => <span>{getValue() as string}</span>
   },
   {
     accessorKey: "day",

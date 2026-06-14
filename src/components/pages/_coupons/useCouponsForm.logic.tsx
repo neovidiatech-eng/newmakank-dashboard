@@ -21,16 +21,26 @@ export default function useCouponsLogic({ data }: { data?: CouponsType }) {
 	} = useForm<CouponsType>({
 		mode: "onSubmit",
 		resolver: zodResolver(CouponsSchema(t)),
-		defaultValues: extractFormDefaultInputs(defaultInputs, data) as CouponsType,
+		defaultValues: extractFormDefaultInputs(defaultInputs, {
+			...data,
+			specialDelivery: data?.type === "SPECIAL_DRIVER" ? ["true"] : undefined,
+			type: data?.type === "SPECIAL_DRIVER" ? "ALL_USERS" : data?.type // fallback type for the UI
+		}) as CouponsType,
 	});
 
 	const couponType = useWatch({ control, name: "type" });
 	const inputs = CouponsInputs(couponType as any);
 
 	const onSubmit = async (formData: CouponsType) => {
+		const isSpecialDelivery = Array.isArray(formData.specialDelivery)
+			? formData.specialDelivery.includes("true")
+			: Boolean(formData.specialDelivery);
+
 		const normalizedData = {
 			usageCount: 0,
 			...formData,
+			type: isSpecialDelivery ? "SPECIAL_DRIVER" : formData.type,
+			specialDelivery: undefined,
 			userIds: formData.type === "USER_WISE" ? formData.userIds : undefined,
 			storeIds: formData.type === "STORE_WISE" ? formData.storeIds : undefined,
 			zoneIds: formData.type === "ZONE_WISE" ? formData.zoneIds : undefined,

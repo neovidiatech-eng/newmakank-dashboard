@@ -40,25 +40,11 @@ export default function ScheduleGrid({ data, branchId }: ScheduleGridProps) {
   const sharedBranchId = branchId || (data[0]?.branchId ? String(data[0].branchId) : undefined);
 
   const toHHMM = (timeStr: string) => {
-    const parsedDate = new Date(timeStr);
-    if (!Number.isNaN(parsedDate.getTime())) {
-      return `${String(parsedDate.getHours()).padStart(2, "0")}:${String(parsedDate.getMinutes()).padStart(2, "0")}`;
-    }
-
-    const match = timeStr.match(/(\d{2}:\d{2})/);
-    return match ? match[1] : "";
+    return timeStr;
   };
 
   const formatTime = (timeStr: string) => {
-    try {
-      return new Date(timeStr).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true
-      });
-    } catch {
-      return timeStr;
-    }
+    return timeStr;
   };
 
   const handleOpenDay = (dayValue: string, scheduleEntry?: ScheduleItem) => {

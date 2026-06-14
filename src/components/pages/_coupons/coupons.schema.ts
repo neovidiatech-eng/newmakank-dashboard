@@ -22,7 +22,8 @@ maxDiscountValue:PriceSchema(t,0),
 userIds:noSchema(),
 storeIds:noSchema(),
 zoneIds:noSchema(),
-moduleIds:noSchema()
+moduleIds:noSchema(),
+specialDelivery:noSchema()
 })
   };
 

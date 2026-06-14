@@ -60,41 +60,48 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
       }
     }
 
+    const hasGlobalDiscount = Boolean(formData.priceBeforeDiscount && Number(formData.priceBeforeDiscount) > 0);
+
     const formattedData = {
       ...formData,
       image: finalImage,
-      price: formData.priceAfterDiscount || formData.price || formData.priceBeforeDiscount,
+      price: hasGlobalDiscount ? Number(formData.priceBeforeDiscount) : Number(formData.priceAfterDiscount),
+      priceAfterDiscount: hasGlobalDiscount ? Number(formData.priceAfterDiscount) : undefined,
       available: formData.available === "true" || formData.available === true,
       Sizes: JSON.stringify(
         formData.Sizes?.map(item => {
-          const finalPrice = item.priceAfterDiscount || item.price || item.priceBeforeDiscount || 0;
+          const hasDiscount = Boolean(item.priceBeforeDiscount && Number(item.priceBeforeDiscount) > 0);
+          const finalPrice = hasDiscount ? Number(item.priceBeforeDiscount) : Number(item.priceAfterDiscount);
+          const finalDiscount = hasDiscount ? Number(item.priceAfterDiscount) : undefined;
           return {
             name: {
               ar: item.nameAr,
               en: item.nameEn
             },
             price: finalPrice,
-            priceBeforeDiscount: item.priceBeforeDiscount,
-            priceAfterDiscount: item.priceAfterDiscount,
+            priceAfterDiscount: finalDiscount,
             isDefault: Boolean(item.isDefault)
           };
         })
       ),
       Addons: JSON.stringify(
         formData.Addons?.map(item => {
-          const finalPrice = item.priceAfterDiscount || item.price || item.priceBeforeDiscount || 0;
+          const hasDiscount = Boolean(item.priceBeforeDiscount && Number(item.priceBeforeDiscount) > 0);
+          const finalPrice = hasDiscount ? Number(item.priceBeforeDiscount) : Number(item.priceAfterDiscount);
+          const finalDiscount = hasDiscount ? Number(item.priceAfterDiscount) : undefined;
           return {
             name: {
               ar: item.nameAr,
               en: item.nameEn
             },
             price: finalPrice,
-            priceBeforeDiscount: item.priceBeforeDiscount,
-            priceAfterDiscount: item.priceAfterDiscount
+            priceAfterDiscount: finalDiscount
           };
         })
       )
     };
+
+    delete (formattedData as any).priceBeforeDiscount;
     await formAction({
       data,
       formData: extractFormNameInputs({ inputs, data: formattedData }),

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
@@ -20,17 +20,7 @@ type DeliveryScheduleData = {
   requiredLng?: number | string;
 };
 
-const toDateTimeString = (timeVal: string) => {
-  if (!timeVal) return "";
-  const [hours, minutes] = timeVal.split(":").map(Number);
-  const date = new Date();
 
-  date.setUTCHours(hours, minutes, 0, 0);
-  date.setUTCHours(date.getUTCHours() - 2);
-
-  const timePart = date.toISOString().split("T")[1];
-  return "2026-02-10T" + timePart;
-};
 
 export default function useDeliveryScheduleLogic({
   deliveryId,
@@ -83,8 +73,8 @@ export default function useDeliveryScheduleLogic({
 
     for (const day of formData.days) {
       const payload = {
-        openingTime: toDateTimeString(formData.openingTime),
-        closingTime: toDateTimeString(formData.closingTime),
+        openingTime: formData.openingTime,
+        closingTime: formData.closingTime,
         day: day,
         deliveryId: Number(deliveryId),
         requiredLat: Number(formData.map.lat),

@@ -12,7 +12,8 @@ import { BannersSchema } from "./banners.schema";
       }
       return count + 1; // Single input
     }, 0);
-  if (inputCount !== Object.keys(schema.shape).length) {
+  const shape = (schema as any).shape || (schema as any)._def?.schema?.shape || {};
+  if (inputCount !== Object.keys(shape).length) {
     throw new Error("Inputs and schema do not match");
   }
   }

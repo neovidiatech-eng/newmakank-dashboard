@@ -180,7 +180,7 @@ export default function DeliveryCardsView({ deliveries }: { deliveries: Delivery
                   </div>
                   <ToggleStatus
                     id={delivery.id as string | number}
-                    body={{ isAvailable: !forceAvailable }}
+                    body={{ forceAvailable: !forceAvailable }}
                     isActive={forceAvailable}
                     endpoint={["delivery"]}
                   />

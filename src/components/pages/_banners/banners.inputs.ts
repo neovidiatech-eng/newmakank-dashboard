@@ -19,7 +19,7 @@ export const BannersInputs = ({
   const needsZones = targetType === "ZONE";
 
   const inputs: FormInput[] = [
-    { name: "name", type: "text", multiLang:true, cardId:'lang', required: true },
+    { name: "name", type: "text", multiLang: true, cardId: 'lang', required: true },
     {
       name: "targetType",
       type: "select",
@@ -29,11 +29,20 @@ export const BannersInputs = ({
       disabled: isSpecialDelivery,
       options: [
         { label: "GENERAL", value: "GENERAL" },
+        { label: "MODULE", value: "MODULE" },
         { label: "STORE", value: "STORE" },
         { label: "CATEGORY", value: "CATEGORY" },
         { label: "SERVICE", value: "SERVICE" },
         { label: "ZONE", value: "ZONE" }
       ]
+    },
+    {
+      name: "moduleId",
+      type: "selectPaginated",
+      apiUrl: ['modules'],
+      cardId: 'targeting',
+      width: 3,
+      disabled: isSpecialDelivery || targetType === "GENERAL",
     },
     {
       name: "storeId",
@@ -47,7 +56,7 @@ export const BannersInputs = ({
     {
       name: "categoryId",
       type: "selectPaginated",
-      apiUrl: selectedStore ? ["storeCategories", "store", Number(selectedStore)] : ["storeCategories"],
+      apiUrl: selectedStore ? ["subCategoryStore", Number(selectedStore)] : [],
       cardId: 'targeting',
       width: 3,
       disabled: isSpecialDelivery || !needsCategory || !selectedStore
@@ -64,7 +73,7 @@ export const BannersInputs = ({
     {
       name: "zoneIds",
       type: "selectPaginated",
-      apiUrl: selectedStore ? ["banners", "store", Number(selectedStore), "bannerStoreZones"] : ['zones'],
+      apiUrl: selectedStore ? ["banners", "store", Number(selectedStore), "bannerStoreZones"] : [],
       cardId: 'targeting',
       width: 3,
       isMulti: true,

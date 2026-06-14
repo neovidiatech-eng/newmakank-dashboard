@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import useFormErrorLang from "@/components/common/Form/hooks/useFormErrorLang";
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
