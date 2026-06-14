@@ -26,7 +26,7 @@ export function CouponTypesOPtions(t: TFunction) {
     { label: t("USER_WISE"), value: "USER_WISE" },
     { label: t("STORE_WISE"), value: "STORE_WISE" },
     { label: t("ALL_MODULES"), value: "ALL_MODULES" },
-    { label: t("MODULE_WISE"), value: "MODULE_WISE" }
+    { label: t("MODULE_WISE"), value: "MODULE_WISE" },
     { label: t("ZONE_WISE"), value: "ZONE_WISE" },
     { label: t("ALL_CUSTOMER_CATEGORIES"), value: "ALL_CUSTOMER_CATEGORIES" },
     { label: t("CUSTOMER_CATEGORY_WISE"), value: "CUSTOMER_CATEGORY_WISE" }

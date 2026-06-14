@@ -10,7 +10,7 @@ type CouponType =
   | "USER_WISE"
   | "STORE_WISE"
   | "ALL_MODULES"
-  | "MODULE_WISE";
+  | "MODULE_WISE"
   | "ZONE_WISE"
   | "ALL_CUSTOMER_CATEGORIES"
   | "CUSTOMER_CATEGORY_WISE";
