@@ -18,16 +18,15 @@ const page = async ({ params }: { params: Params }) => {
         nameAr: item?.name?.ar,
         nameEn: item?.name?.en,
         price: item?.price,
+        priceAfterDiscount: item?.priceAfterDiscount,
         isDefault: item?.isDefault
-      })
-      )
-      ,
+      })),
       Addons: data?.data?.Addons?.map((item) => ({
         nameAr: item?.name?.ar,
         nameEn: item?.name?.en,
-        price: item?.price
-      })
-      )
+        price: item?.price,
+        priceAfterDiscount: item?.priceAfterDiscount
+      }))
     }} /></>;
 };
 
