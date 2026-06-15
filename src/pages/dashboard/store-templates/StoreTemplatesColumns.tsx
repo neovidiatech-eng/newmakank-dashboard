@@ -16,11 +16,6 @@ export default function Columns(): ColumnDef<Record<string, unknown>>[] {
       }
     },
     {
-      accessorKey: "moduleType",
-      header: () => <IconHeader columnKey="Module Type" />,
-      cell: ({ getValue }) => <span>{getValue() as string}</span>
-    },
-    {
       accessorKey: "order",
       header: () => <IconHeader columnKey="sorting Order" />,
       cell: ({ getValue }) => <span>{getValue() as string}</span>

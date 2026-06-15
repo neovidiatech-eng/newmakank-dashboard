@@ -89,43 +89,7 @@ export default function AssignOrderDeliveryDialog({
     }
   };
 
-  const handleLate = async () => {
-    try {
-      setIsSubmitting(true);
-      const response = await fetchHelper({
-        endPoint: ["orders", orderId, "unassign"],
-        method: "PATCH"
-      });
-      if (!response?.success) throw response;
-      toast.success(response?.message || t("Order marked as late"));
-      setOpen(false);
-      await revalidatePathAction(pathname);
-      router.refresh();
-    } catch (error: any) {
-      toast.error(error?.result?.message || error?.message || t("Failed to mark as late"));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
-  const handleFox = async () => {
-    try {
-      setIsSubmitting(true);
-      const response = await fetchHelper({
-        endPoint: ["orders", orderId, "fox"],
-        method: "PATCH"
-      });
-      if (!response?.success) throw response;
-      toast.success(response?.message || t("Order disconnected (Fox)"));
-      setOpen(false);
-      await revalidatePathAction(pathname);
-      router.refresh();
-    } catch (error: any) {
-      toast.error(error?.result?.message || error?.message || t("Failed to execute Fox action"));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -152,10 +116,6 @@ export default function AssignOrderDeliveryDialog({
             <SelectPaginated
               apiUrl={["delivery"]}
               name="deliveryId"
-              searchFilters={[
-                { key: "isAvailable", value: "true" },
-                { key: "isOnShift", value: "true" }
-              ]}
               value={deliveryId?.toString() ?? ""}
               onChange={value => setDeliveryId(value as string)}
               labelKey="name"
@@ -164,33 +124,13 @@ export default function AssignOrderDeliveryDialog({
             />
           </div>
         </div>
-        <DialogFooter className="flex flex-col sm:flex-row gap-3">
-          <div className="flex gap-2 w-full sm:w-auto mb-2 sm:mb-0">
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleLate}
-              isLoading={isSubmitting}
-            >
-              {t("Late")}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleFox}
-              isLoading={isSubmitting}
-            >
-              {t("Fox")}
-            </Button>
-          </div>
-          <div className="flex gap-2 w-full sm:w-auto justify-end">
-            <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
-              {t("Cancel")}
-            </Button>
-            <Button type="button" onClick={handleAssign} isLoading={isSubmitting}>
-              {t("Assign")}
-            </Button>
-          </div>
+        <DialogFooter className="flex gap-2 justify-end">
+          <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+            {t("Cancel")}
+          </Button>
+          <Button type="button" onClick={handleAssign} isLoading={isSubmitting}>
+            {t("Assign")}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

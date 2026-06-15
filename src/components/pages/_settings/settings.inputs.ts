@@ -36,15 +36,17 @@ const SettingsInputs = ({
   settings: SettingsItem[];
   t: (key: string) => string;
 }): FormInput[] => {
-  return settings.map(item => ({
-    name: item.setting,
-    label: t(item.setting),
-    type: resolveInputType(item),
-    options: item.dataType =='BOOLEAN' ? booleanOptions(t)  : item?.enumValues?.map(value => ({ label: t(value), value })) ?? undefined,
-    cardId: "settings",
-    width: resolveInputWidth(item),
-    ...(item.setting === "shippingKMCharge" ? { min: 0.000001 } : {})
-  }));
+  return settings
+    .filter(item => !["StoreTaxRate", "filterByZone", "storeNearestByKM", "StoreTaxForAll"].includes(item.setting))
+    .map(item => ({
+      name: item.setting,
+      label: t(item.setting),
+      type: resolveInputType(item),
+      options: item.dataType =='BOOLEAN' ? booleanOptions(t)  : item?.enumValues?.map(value => ({ label: t(value), value })) ?? undefined,
+      cardId: "settings",
+      width: resolveInputWidth(item),
+      ...(item.setting === "shippingKMCharge" ? { min: 0.000001 } : {})
+    }));
 };
 
 export { SettingsInputs };

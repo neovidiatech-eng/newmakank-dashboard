@@ -36,9 +36,17 @@ export default function useCouponsLogic({ data }: { data?: CouponsType }) {
 			? formData.specialDelivery.includes("true")
 			: Boolean(formData.specialDelivery);
 
+		const parseToIso = (val: any) => {
+			if (!val) return undefined;
+			const d = new Date(val);
+			return isNaN(d.getTime()) ? undefined : d.toISOString();
+		};
+
 		const normalizedData = {
 			usageCount: 0,
 			...formData,
+			startDate: parseToIso(formData.startDate),
+			endDate: parseToIso(formData.endDate),
 			type: isSpecialDelivery ? "SPECIAL_DRIVER" : formData.type,
 			specialDelivery: undefined,
 			userIds: formData.type === "USER_WISE" ? formData.userIds : undefined,

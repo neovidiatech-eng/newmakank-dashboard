@@ -4,6 +4,7 @@ import DateCol from "@/components/common/table/columns/date.column";
 import IconHeader from "@/components/common/table/columns/icon-header";
 import TableStatusBadge from "@/components/common/table/tableHelperComponents/TableStatusBadge";
 import AssignOrderDeliveryDialog from "@/components/pages/_orders/AssignOrderDeliveryDialog";
+import OrderDelaySelect from "@/components/pages/_orders/OrderDelaySelect";
 import { OrderCustomerCell } from "@/components/pages/_orders/OrderCustomerCell";
 import { OrderServicesCell } from "@/components/pages/_orders/OrderServicesCell";
 import OrderStatusSelect from "@/components/pages/_orders/OrderStatusSelect";
@@ -287,14 +288,6 @@ export default function OrdersColumns(): any {
       }
     },
     {
-      accessorKey: "Delivery.User.name",
-      header: () => <IconHeader columnKey="Delivery Name" />,
-      cell: ({ row }) => {
-        const value = row?.original?.Delivery?.User?.name;
-        return <span>{value || "-"}</span>;
-      }
-    },
-    {
       id: "assignDelivery",
       header: () => <IconHeader columnKey="Assign Delivery" />,
       cell: ({ row }) => (
@@ -305,6 +298,21 @@ export default function OrdersColumns(): any {
           triggerVariant="outline"
           triggerSize="sm"
         />
+      )
+    },
+    {
+      accessorKey: "Delivery.User.name",
+      header: () => <IconHeader columnKey="Delivery Name" />,
+      cell: ({ row }) => {
+        const value = row?.original?.Delivery?.User?.name;
+        return <span>{value || "-"}</span>;
+      }
+    },
+    {
+      id: "delayAction",
+      header: () => <IconHeader columnKey="Delay Action" />,
+      cell: ({ row }) => (
+        <OrderDelaySelect orderId={row?.original?.id} compact />
       )
     },
     {

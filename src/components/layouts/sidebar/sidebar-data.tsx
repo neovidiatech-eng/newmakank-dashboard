@@ -21,10 +21,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         title: "storeTemplates",
         url: "/store-templates"
       },
-      permissions?.Schedule?.get && {
-        title: "schedule",
-        url: "/schedule"
-      },
+      // permissions?.Schedule?.get && {
+      //   title: "schedule",
+      //   url: "/schedule"
+      // },
       permissions?.Branches?.get && {
         title: "branches",
         url: "/branches"
@@ -36,7 +36,6 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
       },
 
       (permissions?.Banners?.get ||
-        permissions?.Categories?.get ||
         permissions?.Service?.get ||
         permissions?.Coupons?.get ||
         permissions?.["Social Media"]?.get ||
@@ -54,10 +53,6 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
           (permissions?.Banners?.get || permissions?.Coupons?.get) && {
             title: "campaignsCenter",
             url: "/campaigns"
-          },
-          permissions?.Categories?.get && {
-            title: "category",
-            url: "/category"
           },
           permissions?.Service?.get && {
             title: "services",

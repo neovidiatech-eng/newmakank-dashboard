@@ -43,7 +43,7 @@ export default function useSettingsLogic({
   const onSubmit = async (formData: SettingsFormValues) => {
     const payload = new FormData();
     const settingsPayload = settings.map(item => {
-      let value = formData[item.setting];
+      let value = formData[item.setting] !== undefined ? formData[item.setting] : item.value;
       if (item.setting === "shippingKMCharge") {
         const val = Number(value);
         if (isNaN(val) || val <= 0) {

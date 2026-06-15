@@ -94,10 +94,6 @@ export default function BulkAssignOrdersAction({
             <SelectPaginated
               apiUrl={["delivery"]}
               name="bulkDeliveryId"
-              searchFilters={[
-                { key: "isAvailable", value: "true" },
-                { key: "isOnShift", value: "true" }
-              ]}
               value={deliveryId}
               onChange={value => setDeliveryId(String(value))}
               labelKey="name"

@@ -1,4 +1,6 @@
 import { fetchHelper } from "@/api/fetch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 import SelectPaginated from "@/components/common/Inputs/select/SelectPaginatedInput";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,13 +16,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Bell, Gift, ImagePlus, Save, Send } from "lucide-react";
+import type { endpointType } from "@/utils/endpoints";
 import { useLocale, useTranslations } from "@/lib/i18n";
 import { useRouter } from "@/lib/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 type CampaignFormType = "NOTIFICATION" | "OFFER";
-type IncentiveType = "none" | "freeDelivery";
+type IncentiveType = "none" | "freeDelivery" | "discount";
 type CampaignTargetType = "ALL" | "CUSTOMER" | "STORE" | "SERVICE" | "SELECTED_USERS" | "SPECIAL_DRIVER";
 
 type LocalizedText = string | { ar?: string; en?: string } | null | undefined;
@@ -49,6 +52,8 @@ type CampaignFormState = {
   descriptionAr: string;
   descriptionEn: string;
   incentiveType: IncentiveType;
+  discountValueAr: string;
+  discountValueEn: string;
   image: File | null;
   targetType: CampaignTargetType;
   targetUserIds: string[];
@@ -59,8 +64,8 @@ type CampaignFormState = {
   displayIntervalHours: string;
 };
 
-const incentiveTypes: IncentiveType[] = ["none", "freeDelivery"];
-const targetTypes: CampaignTargetType[] = ["ALL", "CUSTOMER", "STORE", "SERVICE", "SELECTED_USERS", "SPECIAL_DRIVER"];
+const incentiveTypes: IncentiveType[] = ["none", "freeDelivery", "discount"];
+const targetTypes: CampaignTargetType[] = ["ALL", "CUSTOMER", "STORE", "SERVICE", "SELECTED_USERS"];
 const intervalOptions = ["0", "1", "6", "12", "24", "48"];
 
 function getLocalizedText(value: LocalizedText, locale: string) {
@@ -81,13 +86,39 @@ function toIsoDate(value: string) {
 }
 
 function getInitialForm(data?: CampaignData | null, locale = "ar"): CampaignFormState {
+  const valueTextStr = data?.valueText ? getLocalizedText(data.valueText, locale) : "";
+  const isFreeDelivery = valueTextStr.includes("توصيل") || valueTextStr.toLowerCase().includes("free");
+  const incentiveType: IncentiveType = isFreeDelivery ? "freeDelivery" : (data?.valueText ? "discount" : "none");
+
+  let discountValueAr = "";
+  let discountValueEn = "";
+  if (incentiveType === "discount" && data?.valueText) {
+    if (typeof data.valueText === "object" && data.valueText !== null) {
+      discountValueAr = data.valueText.ar || "";
+      discountValueEn = data.valueText.en || "";
+    } else if (typeof data.valueText === "string") {
+      discountValueAr = data.valueText;
+      discountValueEn = data.valueText;
+    }
+
+    if (discountValueAr.trim().startsWith("خصم")) {
+      discountValueAr = discountValueAr.trim().substring(3).trim();
+    }
+    if (discountValueEn.trim().toLowerCase().endsWith("discount")) {
+      const trimmed = discountValueEn.trim();
+      discountValueEn = trimmed.substring(0, trimmed.length - 8).trim();
+    }
+  }
+
   return {
     type: data?.type || "NOTIFICATION",
     titleAr: typeof data?.title === "object" ? data?.title?.ar || "" : locale === "ar" ? data?.title || "" : "",
     titleEn: typeof data?.title === "object" ? data?.title?.en || "" : locale === "en" ? data?.title || "" : "",
     descriptionAr: typeof data?.description === "object" ? data?.description?.ar || "" : locale === "ar" ? data?.description || "" : "",
     descriptionEn: typeof data?.description === "object" ? data?.description?.en || "" : locale === "en" ? data?.description || "" : "",
-    incentiveType: getLocalizedText(data?.valueText, locale).includes("توصيل") || getLocalizedText(data?.valueText, locale).toLowerCase().includes("free") ? "freeDelivery" : "none",
+    incentiveType,
+    discountValueAr,
+    discountValueEn,
     image: null,
     targetType: data?.targetType || "ALL",
     targetUserIds: data?.targetUserIds?.map(String) || [],
@@ -112,6 +143,11 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
   const requiresStore = form.targetType === "STORE" || form.targetType === "SERVICE";
   const requiresService = form.targetType === "SERVICE";
   const requiresUsers = form.targetType === "SELECTED_USERS";
+
+  const storesApiUrl = useMemo<endpointType>(() => ["stores"], []);
+  const servicesApiUrl = useMemo<endpointType>(() => ["services"], []);
+  const customersApiUrl = useMemo<endpointType>(() => ["customers"], []);
+  const serviceSearchFilters = useMemo(() => form.storeId ? [{ key: "storeId", value: form.storeId }] : [], [form.storeId]);
 
   const existingImageLabel = useMemo(() => data?.image ? String(data.image).split("/").pop() : "", [data?.image]);
 
@@ -150,13 +186,27 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
       const freeDeliveryText = { ar: "توصيل مجاني", en: "Free delivery" };
       body.append("featureText", JSON.stringify(freeDeliveryText));
       body.append("valueText", JSON.stringify(freeDeliveryText));
+    } else if (form.incentiveType === "discount") {
+      const arVal = form.discountValueAr.trim().startsWith("خصم") 
+        ? form.discountValueAr.trim() 
+        : `خصم ${form.discountValueAr.trim()}`;
+        
+      const enVal = form.discountValueEn.trim().toLowerCase().endsWith("discount")
+        ? form.discountValueEn.trim()
+        : `${form.discountValueEn.trim()} discount`;
+
+      const discountText = { ar: arVal, en: enVal };
+      body.append("featureText", JSON.stringify(discountText));
+      body.append("valueText", JSON.stringify(discountText));
     }
 
     if (form.image) body.append("image", form.image);
     body.append("targetType", form.targetType);
 
     if (requiresUsers) {
-      body.append("targetUserIds", JSON.stringify(form.targetUserIds.map(Number).filter(Boolean)));
+      form.targetUserIds.map(Number).filter(Boolean).forEach(id => {
+        body.append("targetUserIds", String(id));
+      });
     }
 
     if (requiresStore) body.append("storeId", form.storeId);
@@ -171,6 +221,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
   const validate = () => {
     if (!form.titleAr.trim() || !form.titleEn.trim()) return t("campaignTitleRequired");
     if (requiresDescription && (!form.descriptionAr.trim() || !form.descriptionEn.trim())) return t("campaignDescriptionRequired");
+    if (form.incentiveType === "discount" && (!form.discountValueAr.trim() || !form.discountValueEn.trim())) return t("campaignDiscountValueRequired");
     if (isOffer && !form.image && !data?.image) return t("campaignImageRequired");
     if (requiresStore && !form.storeId) return t("campaignStoreRequired");
     if (requiresService && !form.serviceId) return t("campaignServiceRequired");
@@ -227,9 +278,8 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
           <button
             type="button"
             onClick={() => handleTypeChange("NOTIFICATION")}
-            className={`rounded-2xl border p-5 text-start transition ${
-              form.type === "NOTIFICATION" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
-            }`}
+            className={`rounded-2xl border p-5 text-start transition ${form.type === "NOTIFICATION" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
+              }`}
           >
             <Bell className="mb-3 h-6 w-6 text-primary" />
             <h3 className="font-semibold">{t("campaignTypeValue.notification")}</h3>
@@ -238,9 +288,8 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
           <button
             type="button"
             onClick={() => handleTypeChange("OFFER")}
-            className={`rounded-2xl border p-5 text-start transition ${
-              form.type === "OFFER" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
-            }`}
+            className={`rounded-2xl border p-5 text-start transition ${form.type === "OFFER" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
+              }`}
           >
             <Gift className="mb-3 h-6 w-6 text-primary" />
             <h3 className="font-semibold">{t("campaignTypeValue.offer")}</h3>
@@ -283,6 +332,18 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                 </SelectContent>
               </Select>
             </div>
+            {form.incentiveType === "discount" && (
+              <>
+                <div className="grid gap-2">
+                  <Label>{t("valueAr")} *</Label>
+                  <Input value={form.discountValueAr} onChange={event => updateForm("discountValueAr", event.target.value)} placeholder={t("campaignValuePlaceholder")} />
+                </div>
+                <div className="grid gap-2">
+                  <Label>{t("valueEn")} *</Label>
+                  <Input value={form.discountValueEn} onChange={event => updateForm("discountValueEn", event.target.value)} placeholder={t("campaignValuePlaceholder")} />
+                </div>
+              </>
+            )}
             {isOffer && (
               <div className="grid gap-2">
                 <Label>{t("Offer Image")} *</Label>
@@ -298,24 +359,64 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
             <ImagePlus className="h-5 w-5 text-primary" />
             <h3 className="font-semibold">{t("targeting")}</h3>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3 items-end">
             <div className="grid gap-2">
               <Label>{t("targetType")}</Label>
-              <Select value={form.targetType} onValueChange={value => handleTargetChange(value as CampaignTargetType)}>
+              <Select 
+                value={form.targetType === "SPECIAL_DRIVER" ? "ALL" : form.targetType} 
+                disabled={form.targetType === "SPECIAL_DRIVER"}
+                onValueChange={value => handleTargetChange(value as CampaignTargetType)}
+              >
                 <SelectTrigger><SelectValue placeholder={t("targetType")} /></SelectTrigger>
                 <SelectContent>
                   {targetTypes.map(type => <SelectItem key={type} value={type}>{t(`campaignTargetType.${type}`)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
+            <div className="flex items-center">
+              <div
+                className={cn(
+                  "flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-primary transition hover:bg-primary/15 cursor-pointer h-10 w-full select-none",
+                  form.targetType === "SPECIAL_DRIVER" && "border-primary bg-primary text-primary-foreground"
+                )}
+                onClick={() => {
+                  if (form.targetType === "SPECIAL_DRIVER") {
+                    handleTargetChange("ALL");
+                  } else {
+                    handleTargetChange("SPECIAL_DRIVER");
+                  }
+                }}
+              >
+                <Checkbox
+                  checked={form.targetType === "SPECIAL_DRIVER"}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      handleTargetChange("SPECIAL_DRIVER");
+                    } else {
+                      handleTargetChange("ALL");
+                    }
+                  }}
+                  id="specialDriverCampaign"
+                  className={cn(
+                    form.targetType === "SPECIAL_DRIVER" && "border-primary-foreground data-[state=checked]:bg-primary-foreground data-[state=checked]:text-primary"
+                  )}
+                />
+                <label
+                  htmlFor="specialDriverCampaign"
+                  className="text-sm flex gap-2 font-medium leading-none cursor-pointer"
+                >
+                  {t("SPECIAL_DRIVER")}
+                </label>
+              </div>
+            </div>
             <div className="grid gap-2">
               <Label>{t("store")} {requiresStore ? "*" : `(${t("optional")})`}</Label>
               <SelectPaginated
                 name="storeId"
-                apiUrl={["stores"]}
+                apiUrl={storesApiUrl}
                 value={form.storeId}
                 disabled={!requiresStore}
-                onChange={value => updateForm("storeId", typeof value === "string" ? value : "")}
+                onChange={value => updateForm("storeId", value ? String(value) : "")}
                 placeholder={t("store")}
               />
             </div>
@@ -323,12 +424,12 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
               <Label>{t("products")} {requiresService ? "*" : `(${t("optional")})`}</Label>
               <SelectPaginated
                 name="serviceId"
-                apiUrl={["services"]}
+                apiUrl={servicesApiUrl}
                 value={form.serviceId}
                 disabled={!requiresService || !form.storeId}
-                searchFilters={form.storeId ? [{ key: "storeId", value: form.storeId }] : []}
+                searchFilters={serviceSearchFilters}
                 labelFormat="serviceStore"
-                onChange={value => updateForm("serviceId", typeof value === "string" ? value : "")}
+                onChange={value => updateForm("serviceId", value ? String(value) : "")}
                 placeholder={t("products")}
               />
             </div>
@@ -338,7 +439,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                 <SelectPaginated
                   isMulti
                   name="targetUserIds"
-                  apiUrl={["customers"]}
+                  apiUrl={customersApiUrl}
                   value={form.targetUserIds}
                   onChange={value => updateForm("targetUserIds", Array.isArray(value) ? value.map(item => String(item.value ?? item)) : [])}
                   placeholder={t("selectedCustomers")}

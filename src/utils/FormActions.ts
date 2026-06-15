@@ -19,10 +19,9 @@ export function useFormAction() {
       const segments = pathname.split("/");
       const last = segments[segments.length - 1];
 
-      // if (last === "create") {
-      //   listPath = segments.slice(0, -1).join("/");
-      // } else 
-      if (last === "edit") {
+      if (last === "create") {
+        listPath = segments.slice(0, -1).join("/");
+      } else if (last === "edit") {
         listPath = segments.slice(0, -2).join("/");
       }
 
@@ -39,13 +38,8 @@ export function useFormAction() {
       queryClient.clear();
       router.refresh();
 
-      if (args?.data?.id) {
-        // Editing: force re-navigate to current page to reload server data
-        router.replace(pathname);
-      } else {
-        // Creating: navigate to list page (forces remount and fresh data fetch)
-        router.push(listPath);
-      }
+      // Navigate to list page (forces remount and fresh data fetch)
+      router.push(listPath);
     }
     return res;
   };

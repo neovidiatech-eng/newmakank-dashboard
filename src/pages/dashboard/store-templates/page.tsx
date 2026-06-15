@@ -22,18 +22,7 @@ export default async function page({ searchParams }: { searchParams: SearchParam
           onDelete: permission?.delete ? ["storeTemplates"] : undefined,
         }}
         filters={[
-          { "name": "name", "type": "text", "width": 3 },
-          {
-            "name": "moduleType",
-            "type": "select",
-            "width": 3,
-            "options": [
-              { label: "GROCERY", value: "GROCERY" },
-              { label: "PHARMACY", value: "PHARMACY" },
-              { label: "RESTAURANT", value: "RESTAURANT" },
-              { label: "MARKET", value: "MARKET" }
-            ]
-          }
+          { "name": "name", "type": "text", "width": 4 }
         ]}
       />
     </>

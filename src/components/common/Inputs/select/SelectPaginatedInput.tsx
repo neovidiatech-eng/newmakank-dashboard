@@ -1,4 +1,5 @@
 import { fetchHelper } from "@/api/fetch";
+import type { endpointType } from "@/utils/endpoints";
 import { useLocale, useTranslations } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { useSearchParams } from "@/lib/navigation";
@@ -278,13 +279,13 @@ export default function SelectPaginated({
 
     // For single select
     if (!isMulti) {
-      const exiest = allOptions.find(opt => opt.value === value);
+      const exiest = allOptions.find((opt: Option) => String(opt.value) === String(value));
       return exiest;
     }
 
     // For multi select
     if (Array.isArray(value)) {
-      return value.map(v => allOptions.find(opt => opt.value === v)).filter(Boolean);
+      return value.map(v => allOptions.find((opt: Option) => String(opt.value) === String(v))).filter(Boolean);
     }
 
     return undefined;
@@ -292,29 +293,65 @@ export default function SelectPaginated({
 
   // Fetch missing selected value only on first mount
   useEffect(() => {
-    if (!isMulti && value && !allOptions.find(opt => opt.value === value)) {
-      (async () => {
-        const data = await fetchHelper({
-          endPoint: apiUrl,
-          revalidate: 60, isLocalized: true,
+    const fetchMissingValue = async (val: string | number) => {
+      const resolvedEndPoint: endpointType = (() => {
+        if (apiUrl.includes("subCategoryStore") || apiUrl.includes("storeCategories")) {
+          return ["storeCategories", Number(val)];
+        }
+        if (apiUrl.length > 1) {
+          return [apiUrl[0], Number(val)];
+        }
+        return [...apiUrl, Number(val)];
+      })();
 
-          params: {
-            id: value
-          },
-          tags: apiUrl,
-        });
-        if (data?.data?.length == 1) {
-          const formattedData = Array.isArray(data?.data) ? data.data : data;
-          setApiOptions(prev => [
+      const data = await fetchHelper({
+        endPoint: resolvedEndPoint,
+        revalidate: 60,
+        isLocalized: true,
+        tags: resolvedEndPoint,
+      });
+
+      const item = data?.data || data;
+      if (item && !Array.isArray(item)) {
+        setApiOptions(prev => {
+          if (prev.some(opt => String(opt.value) === String(item[idKey]))) return prev;
+          return [
             ...prev,
             {
-              label: getOptionLabel(formattedData[0]),
-              value: formattedData[0][idKey] || "",
-              group: groupBy ? formattedData[0][groupBy] : undefined,
+              label: getOptionLabel(item),
+              value: String(item[idKey]) || "",
+              group: groupBy ? item[groupBy] : undefined,
             },
-          ]);
+          ];
+        });
+      } else if (Array.isArray(item) && item.length >= 1) {
+        const firstItem = item[0];
+        setApiOptions(prev => {
+          if (prev.some(opt => String(opt.value) === String(firstItem[idKey]))) return prev;
+          return [
+            ...prev,
+            {
+              label: getOptionLabel(firstItem),
+              value: String(firstItem[idKey]) || "",
+              group: groupBy ? firstItem[groupBy] : undefined,
+            },
+          ];
+        });
+      }
+    };
+
+    if (value) {
+      if (isMulti && Array.isArray(value)) {
+        value.forEach(val => {
+          if (!allOptions.find((opt: Option) => String(opt.value) === String(val))) {
+            fetchMissingValue(val);
+          }
+        });
+      } else if (!isMulti && !Array.isArray(value)) {
+        if (!allOptions.find((opt: Option) => String(opt.value) === String(value))) {
+          fetchMissingValue(value as string | number);
         }
-      })();
+      }
     }
     // Only run on mount
   }, []);

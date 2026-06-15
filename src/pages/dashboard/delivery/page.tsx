@@ -24,11 +24,7 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
   if (!data) return <div>Error...</div>;
 
   const filteredData = data?.data ?? [];
-  const filters: FormInput[] = [{ "name": "search", "type": "text", "width": 3 }, {
-    name: 'isAvailable',
-    type: 'select',
-    options: booleanOptions(t),
-  }];
+  const filters: FormInput[] = [{ "name": "search", "type": "text", "width": 3 }];
 
   return (
     <>
