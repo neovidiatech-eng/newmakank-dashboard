@@ -15,16 +15,46 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
   const t = await getTranslations();
   // const permissions = await getPermissions();
   // const permission = permissions?.["deliveryAll"] ?? permissions?.["deliveryall"];
+  const params = await searchParams;
+  const fromDate = params?.fromDate as string | undefined;
+  const toDate = params?.toDate as string | undefined;
+
+  const apiParams = { ...params };
+  delete apiParams.fromDate;
+  delete apiParams.toDate;
+
   const data = await fetchHelper({
     endPoint: ["delivery"],
     method: "GET",
-    params: await searchParams,
+    params: apiParams,
   });
 
   if (!data) return <div>Error...</div>;
 
-  const filteredData = data?.data ?? [];
-  const filters: FormInput[] = [{ "name": "search", "type": "text", "width": 3 }];
+  let filteredData = data?.data ?? [];
+
+  if (fromDate) {
+    const fromTime = new Date(fromDate).getTime();
+    filteredData = filteredData.filter((item: any) => {
+      if (!item.createdAt) return true;
+      return new Date(item.createdAt).getTime() >= fromTime;
+    });
+  }
+
+  if (toDate) {
+    const to = new Date(toDate);
+    to.setHours(23, 59, 59, 999);
+    const toTime = to.getTime();
+    filteredData = filteredData.filter((item: any) => {
+      if (!item.createdAt) return true;
+      return new Date(item.createdAt).getTime() <= toTime;
+    });
+  }
+  const filters: FormInput[] = [
+    { "name": "search", "type": "text", "width": 3 },
+    { "name": "fromDate", "type": "date", "width": 3 },
+    { "name": "toDate", "type": "date", "width": 3 },
+  ];
 
   return (
     <>
@@ -33,6 +63,7 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
         <div className="p-6 border-b border-gray-200/80 dark:border-gray-800">
           <BasicTableHeader
             headers={[
+              {name:"id"},
               { name: "name" },
               { name: "email" },
               { name: "phone" },
@@ -49,7 +80,7 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
         </div>
         {data?.total ? (
           <div className="border-t border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-950 p-6">
-            <TablePagination pagination={{ total: data.total }} />
+            <TablePagination pagination={{ total: filteredData.length }} />
           </div>
         ) : null}
       </Card>

@@ -48,6 +48,14 @@ const getDefaultFilters = (t: ReturnType<typeof useTranslations>): FormInput[] =
     name: "zoneId",
     type: "selectPaginated",
     apiUrl: ["zones"]
+  },
+  {
+    name: "fromDate",
+    type: "date"
+  },
+  {
+    name: "toDate",
+    type: "date"
   }
 ];
 
@@ -66,11 +74,36 @@ export default function OrdersViewTabs({
   const params: Record<string, unknown> = {};
   searchParams.forEach((value, key) => { params[key] = value; });
 
+  const fromDate = params.fromDate as string | undefined;
+  const toDate = params.toDate as string | undefined;
+
+  delete params.fromDate;
+  delete params.toDate;
+
   const queryKey = [endPoint.join("/"), JSON.stringify(params)];
   const { data: response } = useApiQuery({ queryKey, endPoint, params, staleTime: 0 });
 
-  const orders: Record<string, unknown>[] = Array.isArray(response?.data) ? response.data : [];
-  const total = response?.total ?? orders.length;
+  let orders: Record<string, unknown>[] = Array.isArray(response?.data) ? response.data : [];
+
+  if (fromDate) {
+    const fromTime = new Date(fromDate).getTime();
+    orders = orders.filter((item: any) => {
+      if (!item.createdAt) return true;
+      return new Date(item.createdAt).getTime() >= fromTime;
+    });
+  }
+
+  if (toDate) {
+    const to = new Date(toDate);
+    to.setHours(23, 59, 59, 999);
+    const toTime = to.getTime();
+    orders = orders.filter((item: any) => {
+      if (!item.createdAt) return true;
+      return new Date(item.createdAt).getTime() <= toTime;
+    });
+  }
+
+  const total = (fromDate || toDate) ? orders.length : (response?.total ?? orders.length);
 
   const toggleOrderSelection = (orderId: string) => {
     setSelectedOrderIds(prev =>

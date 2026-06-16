@@ -22,7 +22,7 @@ import {
 import { Gift, Pencil, Plus, Power, RotateCcw, Trash2, X } from "lucide-react";
 import { useLocale, useTranslations } from "@/lib/i18n";
 import { useRouter } from "@/lib/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useApiQuery } from "@/hooks/useApiQuery";
 
@@ -131,6 +131,17 @@ export default function FortuneWheelClient() {
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (settings) {
+      if (settings.displayIntervalHours !== undefined && settings.displayIntervalHours !== null) {
+        setDisplayIntervalHours(String(settings.displayIntervalHours));
+      }
+      if (settings.isEnabled !== undefined && settings.isEnabled !== null) {
+        setIsEnabled(settings.isEnabled);
+      }
+    }
+  }, [settings]);
 
   const isFixedRewardValue = form.rewardType in fixedRewardValues;
   const currentRewardValue = isFixedRewardValue ? fixedRewardValues[form.rewardType] || "" : form.rewardValue;

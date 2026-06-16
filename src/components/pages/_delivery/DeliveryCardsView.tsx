@@ -14,7 +14,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Link } from "@/lib/navigation";
-import { Mail, PackageCheck, PackageX, Phone, Trash2, UserRound, View } from "lucide-react";
+import { IdCard, Mail, PackageCheck, PackageX, Phone, Trash2, UserRound, View } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { usePathname, useRouter } from "@/lib/navigation";
 import { useState } from "react";
@@ -159,7 +159,13 @@ export default function DeliveryCardsView({ deliveries }: { deliveries: Delivery
                       {isOnShift ? t("Working Today") : t("Not Working")}
                     </Badge>
                   </div>
+
+
                   <div className="mt-2 grid gap-1.5 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-2">
+                      < IdCard className="h-15 w-15" />
+                      <span className="truncate text-lg"> {delivery.id || "-"} </span>
+                    </span>
                     <span className="flex items-center gap-2">
                       <Mail className="h-4 w-4" />
                       <span className="truncate">{delivery.email || "-"}</span>
