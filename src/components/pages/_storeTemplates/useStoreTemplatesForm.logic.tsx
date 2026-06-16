@@ -61,7 +61,10 @@ export default function useStoreTemplatesLogic({
   } = useForm<StoreTemplatesType>({
     mode: "onSubmit",
     resolver: zodResolver(StoreTemplatesSchema(t)),
-    defaultValues: extractFormDefaultInputs(inputs, mappedData) as StoreTemplatesType
+    defaultValues: {
+      ...(extractFormDefaultInputs(inputs, mappedData) as object),
+      categories: mappedData?.categories || []
+    } as StoreTemplatesType
   });
 
   const onSubmit = async (formData: StoreTemplatesType) => {
