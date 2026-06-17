@@ -16,7 +16,9 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
     params: { domain }
   });
 
-  const settings = (response?.data ?? []) as SettingsItem[];
+  const allSettings = (response?.data ?? []) as SettingsItem[];
+  const ALLOWED_SETTINGS = ["StoreTaxRate", "businessOrderCommissionType"];
+  const settings = allSettings.filter(item => ALLOWED_SETTINGS.includes(item.setting));
 
   return (
     <div className="flex flex-col gap-4">

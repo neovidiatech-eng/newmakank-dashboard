@@ -56,7 +56,8 @@ export const BannersInputs = ({
     {
       name: "categoryId",
       type: "selectPaginated",
-      apiUrl: selectedStore ? ["subCategoryStore", Number(selectedStore)] : [],
+      apiUrl: ["storeCategories"],
+      searchFilters: selectedStore ? [{ key: "storeId", value: Number(selectedStore) }] : [],
       cardId: 'targeting',
       width: 3,
       disabled: isSpecialDelivery || !needsCategory || !selectedStore

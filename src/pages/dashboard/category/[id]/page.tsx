@@ -12,8 +12,9 @@ export default async function CategoryPage({
   const { id } = await params;
   const categoryId = Number(id);
 
-  const [categoryData, storesData, servicesData] = await Promise.all([
-    fetchData(["categories", categoryId]),
+  // Fetch all templates categories and filter the selected one locally in frontend
+  const [allCategoriesData, storesData, servicesData] = await Promise.all([
+    fetchData(["storeTemplatesCategories"]),
     fetchData(["stores"], {
       ...(await searchParams),
       categoryId
@@ -24,13 +25,15 @@ export default async function CategoryPage({
     })
   ]);
 
-  if (!categoryData?.data) {
+  const categoryItem = allCategoriesData?.data?.find((cat: any) => cat.id === categoryId);
+
+  if (!categoryItem) {
     return notFound();
   }
 
   return (
     <CategoryDetailsPage
-      category={categoryData.data}
+      category={categoryItem}
       stores={storesData}
       services={servicesData}
     />

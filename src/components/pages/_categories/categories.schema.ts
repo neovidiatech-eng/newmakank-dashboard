@@ -11,7 +11,6 @@
     return z.object({
     nameAr:StringReq(t), nameEn:StringReq(t),
 image:noSchema(),
-customerCategoryId:selectNotReq(),
 storeId:selectNotReq()
 })
   };

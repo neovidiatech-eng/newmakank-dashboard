@@ -94,7 +94,7 @@ export const ServicesInputs = ({storeId,hideStore}:{
     { name: "status", type: "radioGroup", cardId: 'basic', required: true, width: 6, options:servicesStatusOptions(t) },
     { name: "available", type: "radioGroup", cardId: 'basic', required: true, width: 6, options: booleanOptions(t) },
     { name: "storeId", isHidden: hideStore , type: "selectPaginated",onChange:(value) => setSelectedStore(value as string), cardId: 'associations', apiUrl: ['stores'], width: 6 },
-    { name: "categoryId", type: "selectPaginated", cardId: 'associations', apiUrl: ["storeCategories", 'store', Number(selectedStore)], width: 6 }
+    { name: "categoryId", type: "selectPaginated", cardId: 'associations', apiUrl: ["storeCategories"], searchFilters: selectedStore ? [{ key: "storeId", value: Number(selectedStore) }] : [], width: 6 }
   ];
   return inputs;
 };

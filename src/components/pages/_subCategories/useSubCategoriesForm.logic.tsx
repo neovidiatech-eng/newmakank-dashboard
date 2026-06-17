@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { extractFormNameInputs } from "@/utils/extractFormNameInputs";

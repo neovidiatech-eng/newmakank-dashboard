@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { endpointType } from "@/utils/endpoints";
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
@@ -19,7 +19,8 @@ export default function useCategoryLogic({
   const t = useTranslations();
   const formAction = useFormAction();
   const hasStoreId = Boolean(data?.storeId);
-  const inputs = CategoryInputs({ hasStoreId });
+  const isEdit = Boolean(data);
+  const inputs = CategoryInputs({ hasStoreId, isEdit });
   const {
     control,
     handleSubmit,
@@ -32,10 +33,36 @@ export default function useCategoryLogic({
 
   const onSubmit = async (formData: CategoryType) => {
     if (data?.storeId) formData.storeId = data.storeId;
+    
+    // Resolve dynamic endpoint for templates categories
+    let finalEndpoint = endpoint;
+    const isTemplateFlow = !finalEndpoint;
+    if (!finalEndpoint) {
+      if (!isEdit && formData.templateId) {
+        finalEndpoint = ["storeTemplates", Number(formData.templateId), "/categories" as any];
+      } else {
+        finalEndpoint = ["storeTemplatesCategories"];
+      }
+    }
+
+    let payload: any = extractFormNameInputs({ inputs, data: formData });
+    
+    // If it is template categories POST or PATCH, convert it to raw JSON object body matching the required structure.
+    if (isTemplateFlow) {
+      payload = {
+        name: {
+          ar: formData.nameAr,
+          en: formData.nameEn
+        },
+        image: typeof formData.image === "string" ? formData.image : "",
+        order: Number(formData.order)
+      };
+    }
+
     await formAction({
       data,
-      formData: extractFormNameInputs({ inputs, data: formData }),
-      endpoint: endpoint ?? ["categories"],
+      formData: payload,
+      endpoint: finalEndpoint,
       reset: reset,
       t
     });

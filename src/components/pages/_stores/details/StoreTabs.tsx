@@ -91,9 +91,10 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
           }}
           filters={[
             {
-              name: "subCategoryId",
+              name: "categoryId",
               type: "selectPaginated",
-              apiUrl: ["storeCategories", "store", storeId]
+              apiUrl: ["storeCategories"],
+              searchFilters: [{ key: "storeId", value: storeId }]
             }
           ]}
           tableActions={{

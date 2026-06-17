@@ -25,8 +25,9 @@ async function page({
       ...(await searchParams),
       storeId
     }),
-    fetchData(["storeCategories", "store", storeId], {
-      ...(await searchParams)
+    fetchData(["storeCategories"], {
+      ...(await searchParams),
+      storeId
     }),
     fetchData(["orders"], {
       ...(await searchParams),

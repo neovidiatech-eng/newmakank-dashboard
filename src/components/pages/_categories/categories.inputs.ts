@@ -5,7 +5,6 @@ export const CategoriesInputs = () => {
   const inputs: FormInput[] = [
     { name: "name", type: "text", multiLang: true, cardId: 'lang', required: true },
     { name: "image", type: "img", required: true },
-    { name: "customerCategoryId", type: "selectPaginated", apiUrl: ['customerCategories'] },
     { name: "storeId", type: "selectPaginated", apiUrl: ['stores'] }
   ];
   return inputs;

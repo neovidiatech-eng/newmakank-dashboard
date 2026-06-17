@@ -48,6 +48,7 @@ export const mainIcons = {
   transactions: Banknote,
   stores: Store,
   category: Folder,
+  categories: Folder,
   branches: MapPin,
   rating: Star,
   banks: Banknote,

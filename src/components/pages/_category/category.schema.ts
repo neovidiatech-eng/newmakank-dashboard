@@ -10,10 +10,10 @@
   export const CategorySchema = (t:TFunction) => {
     return z.object({
     nameAr:StringReq(t), nameEn:StringReq(t),
-customerCategoryId:selectNotReq(),
 image:noSchema(),
 order:noSchema(),
 storeId:selectNotReq(),
+templateId:selectNotReq(),
 })
   };
 

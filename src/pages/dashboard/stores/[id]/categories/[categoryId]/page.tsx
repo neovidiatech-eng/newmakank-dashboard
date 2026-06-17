@@ -21,7 +21,7 @@ async function CategoryServicesPage({
     fetchData(["services"], {
       ...sParams,
       storeId: Number(storeId),
-      subCategoryId: Number(categoryId)
+      categoryId: Number(categoryId)
     })
   ]);
   if (!categoryData?.data) {

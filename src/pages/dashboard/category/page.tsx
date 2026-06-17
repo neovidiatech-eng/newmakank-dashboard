@@ -13,13 +13,13 @@ export default async function page({ searchParams }: { searchParams: SearchParam
     <>
       <CustomHeader />
       <TableWithQuery
-        endPoint={["categories"]}
+        endPoint={["storeTemplatesCategories"]}
         columns={CategoryColumns}
         hideCreateNew={!permission?.post}
         cardHeader={t("Category")}
         tableActions={{
           onEdit: permission?.put || permission?.patch,
-          onDelete: permission?.delete ? ["categories"] : undefined,
+          onDelete: permission?.delete ? ["storeTemplatesCategories"] : undefined,
           //onInfo: true,
         }}
         filters={[{ "name": "name", "type": "text", "width": 3 }]}

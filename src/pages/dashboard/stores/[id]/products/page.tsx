@@ -14,7 +14,8 @@ export default async function page({ params }: { params: Promise<{ id: string }>
     <>
       <CustomHeader />
       <TableWithQuery
-        endPoint={["services", "store", Number(id)]}
+        endPoint={["services"]}
+        extraParams={{ storeId: Number(id) }}
         columns={ServicesColumns}
         hideCreateNew={!permission?.post}
         cardHeader={t("Services")}
