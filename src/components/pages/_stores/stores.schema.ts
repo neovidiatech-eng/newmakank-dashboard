@@ -7,10 +7,9 @@
   export const StoresSchema = (t:TFunction,isEdit:boolean) => {
     return z.object({
     nameAr:StringReq(t), nameEn:StringReq(t),
-moduleId:SelectReq(t),
+templateId:SelectReq(t),
 logo:noSchema(),
 cover:noSchema(),
-categoryId:noSchema(),
 lat:StringNotReq(),
 lng:StringNotReq(),
 map: z.object({

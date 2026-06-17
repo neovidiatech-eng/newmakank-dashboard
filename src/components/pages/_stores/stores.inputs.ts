@@ -6,9 +6,7 @@ export const StoresInputs = ({ isEdit }: {
 }) => {
   const inputs: FormInput[] = [
     { name: "name", type: "text", multiLang: true, cardId: 'lang', required: true, width: 6 },
-    { name: "moduleId", type: "selectPaginated", apiUrl: ['customerCategories'], cardId: 'info', required: true, width: 3 },
-    { name: "categoryId", type: "selectPaginated", required: true, isMulti: true, cardId: 'info', apiUrl: ['categories'] }
-    ,
+    { name: "templateId", type: "selectPaginated", apiUrl: ['storeTemplates'], cardId: 'info', required: true, width: 3 },
     { name: "logo", type: "img", cardId: 'info', width: 3 },
     { name: "cover", type: "img", cardId: 'info', width: 3 },
     {

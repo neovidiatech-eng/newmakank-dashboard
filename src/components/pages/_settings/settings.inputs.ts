@@ -37,7 +37,6 @@ const SettingsInputs = ({
   t: (key: string) => string;
 }): FormInput[] => {
   return settings
-    .filter(item => !["StoreTaxRate", "filterByZone", "storeNearestByKM", "StoreTaxForAll"].includes(item.setting))
     .map(item => ({
       name: item.setting,
       label: t(item.setting),
