@@ -1,6 +1,5 @@
 import CustomForm from "@/components/common/Form/CustomForm";
 import useStoreTemplatesLogic from "./useStoreTemplatesForm.logic";
-import { StoreTemplateBuilder } from "./StoreTemplateBuilder";
 
 export default function StoreTemplatesForm({
   data
@@ -25,7 +24,6 @@ export default function StoreTemplatesForm({
         }
       ]}
     >
-      <StoreTemplateBuilder control={control as any} lang={lang as string} />
     </CustomForm>
   );
 }

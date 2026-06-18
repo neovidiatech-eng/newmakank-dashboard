@@ -3,7 +3,7 @@
 import { fetchHelper } from "@/api/fetch";
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
-import { useFormAction } from "@/utils/FormActions";
+import { FormAction } from "@/utils/FormActions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "@/lib/i18n";
 import { useEffect } from "react";
@@ -25,7 +25,6 @@ export default function useScheduleLogic({
   onSuccess?: () => void;
 }) {
   const t = useTranslations();
-  const formAction = useFormAction();
   //   const [selectedBranchId, setSelectedBranchId] = useState<number | undefined>(
   //     branchId ? Number(branchId) : data?.branchId ? Number(data.branchId) : undefined
   //   );
@@ -136,7 +135,7 @@ export default function useScheduleLogic({
       });
     }
 
-    const response = await formAction({
+    const response = await FormAction({
       data: undefined,
       formData: extractFormNameInputs({ inputs, data: formData }),
       endpoint: deliveryId ? ["deliverySchedule"] : ["schedule"],

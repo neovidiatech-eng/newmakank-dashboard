@@ -21,10 +21,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         title: "storeTemplates",
         url: "/store-templates"
       },
-      // permissions?.Schedule?.get && {
-      //   title: "schedule",
-      //   url: "/schedule"
-      // },
+      permissions?.Schedule?.get && {
+        title: "schedule",
+        url: "/schedule"
+      },
       permissions?.Branches?.get && {
         title: "branches",
         url: "/branches"

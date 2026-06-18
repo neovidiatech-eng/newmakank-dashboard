@@ -55,7 +55,7 @@ export default function BasicTableHeader({
   const getFilterSplit = () => {
     if (!formattedFilters.length) return { quick: [], advanced: [] };
 
-    if (formattedFilters.length === 1) {
+    if (formattedFilters.length <= 2) {
       return { quick: formattedFilters, advanced: [] };
     }
 
