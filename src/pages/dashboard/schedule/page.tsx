@@ -3,7 +3,9 @@ import BasicTableHeader from "@/components/common/table/tableHelperComponents/Ba
 import TableNoData from "@/components/common/table/tableHelperComponents/TableNoData";
 import CustomHeader from "@/components/layouts/header/CustomHeader";
 import ScheduleGrid from "@/components/pages/_schedule/ScheduleGrid";
-import { PROJECT_NAME } from "@/utils/config";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "@/lib/navigation";
 import { getTranslations } from "@/lib/i18n";
 
 async function page({ searchParams }: { searchParams: SearchParams }): Promise<JSX.Element> {
@@ -36,35 +38,47 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
     <div className="flex flex-col gap-4">
       <CustomHeader />
       <div className="p-6">
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200/80 dark:border-gray-800 overflow-hidden">
-          <div className="p-6 border-b border-gray-200/80 dark:border-gray-800">
-            <BasicTableHeader
-              headers={headers}
-              data={filteredData}
-              cardHeader={t("Schedule")}
-              filters={[
-                {
-                  name: "storeId",
-                  type: "selectPaginated",
-                  apiUrl: ["stores"]
-                },
-                {
-                  name: "branchId",
-                  type: "selectPaginated",
-                  apiUrl: ["branches"],
-                  labelFormat: "storeBranch",
-                  searchFilters: storeId ? [{ key: "storeId", value: storeId }] : undefined,
-                  disabled: !storeId
-                }
-              ]}
-            />
-          </div>
-          {branchId ? (
-            <ScheduleGrid data={filteredData} branchId={branchId} />
-          ) : (
-            <TableNoData message="select branch to view data" />
-          )}
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>{t("Working hours")}</CardTitle>
+            {branchId && (
+              <Link href={`/schedule/create?branchId=${branchId}`}>
+                <Button variant="outline" size="sm">
+                  {t("Create")}
+                </Button>
+              </Link>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4 p-0">
+            <div className="px-6 pb-4">
+              <BasicTableHeader
+                headers={headers}
+                data={filteredData}
+                cardHeader={t("Working hours")}
+                filters={[
+                  {
+                    name: "storeId",
+                    type: "selectPaginated",
+                    apiUrl: ["stores"]
+                  },
+                  {
+                    name: "branchId",
+                    type: "selectPaginated",
+                    apiUrl: ["branches"],
+                    labelFormat: "storeBranch",
+                    searchFilters: storeId ? [{ key: "storeId", value: storeId }] : undefined,
+                    disabled: !storeId
+                  }
+                ]}
+              />
+            </div>
+            {branchId ? (
+              <ScheduleGrid data={filteredData} branchId={branchId} />
+            ) : (
+              <TableNoData message="select branch to view data" />
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
