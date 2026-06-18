@@ -7,7 +7,7 @@ export default async function getPermissions(): Promise<Permission> {
     endPoint: ['myPermissions'],
     method: "GET",
     isLocalized: false,
-    cache: "force-cache"
+    cache: "no-store"
   });
 
   const output = permissions?.reduce((acc: any, curr: any) => {

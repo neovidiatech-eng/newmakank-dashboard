@@ -125,8 +125,9 @@ export default function DeliveryCardsView({ deliveries }: { deliveries: Delivery
     <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
       {deliveries.map(delivery => {
         const details = getDeliveryDetails(delivery);
-        const forceAvailable = Boolean(delivery.isAvailable ?? delivery.forceAvailable ?? details.forceAvailable);
+        const forceAvailable = Boolean(delivery.isAvailable);
         const isOnShift = Boolean(delivery.isOnShift ?? details.availableNow);
+        const isActiveStatus = Boolean(delivery.active ?? details.active ?? true);
         const activeOrdersCount = getActiveOrdersCount(delivery);
         const hasActiveOrders = activeOrdersCount > 0;
         const avatar = delivery.avatar ?? delivery.image;
@@ -179,6 +180,18 @@ export default function DeliveryCardsView({ deliveries }: { deliveries: Delivery
               </div>
 
               <div className="grid gap-3 rounded-2xl border bg-muted/20 p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold">{t("Account Status")}</p>
+                    <p className="text-xs text-muted-foreground">{t("Active Status")}</p>
+                  </div>
+                  <ToggleStatus
+                    id={delivery.id as string | number}
+                    body={{ active: !isActiveStatus }}
+                    isActive={isActiveStatus}
+                    endpoint={["delivery"]}
+                  />
+                </div>
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm font-semibold">{t("Forced Availability")}</p>

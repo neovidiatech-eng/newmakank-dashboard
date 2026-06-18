@@ -1,8 +1,9 @@
 import { setRefreshToken, setToken } from "@/api/actions";
 import { fetchHelper } from "@/api/fetch";
+import { links } from "@/components/layouts/sidebar/sidebar-data";
+import { useLocale } from "@/lib/i18n";
 import { useRouter } from "@/lib/navigation";
 import { REDIRECT_AFTER_AUTH } from "@/utils/config";
-import { useLocale } from "@/lib/i18n";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useFcmToken } from "./use-fcm-token";
@@ -85,9 +86,55 @@ export function useLoginForm() {
     await setToken(res?.data?.AccessToken);
     await setRefreshToken(res?.data?.RefreshToken);
 
+    let destination = res?.data?.user?.roleId === "ADMIN" ? REDIRECT_AFTER_AUTH : "/dashboard";
+
+    if (res?.data?.user?.roleId !== "ADMIN" && res?.data?.user?.Permissions) {
+      // Parse permissions locally the same way api/permissions.ts does
+      const parsedPermissions = res.data.user.Permissions.reduce((acc: any, curr: any) => {
+        const allMethods = ["get", "post", "put", "patch", "delete", "manage"];
+        const methodsObject = allMethods.reduce((methodsInit: any, method: string) => {
+          methodsInit[method] = false;
+          return methodsInit;
+        }, {} as Record<string, boolean>);
+
+        const methodsArray = curr.method || curr.methods || [];
+        methodsArray.forEach((method: any) => {
+          if (typeof method === "string") {
+            methodsObject[method.toLowerCase()] = true;
+          } else if (method && typeof method === "object" && method.method) {
+            methodsObject[method.method.toLowerCase()] = true;
+          }
+        });
+
+        const keys: string[] = [];
+        if (curr.prefix) keys.push(curr.prefix);
+        if (typeof curr.name === "string") keys.push(curr.name);
+        else if (curr.name && typeof curr.name === "object") {
+          if (curr.name.en) keys.push(curr.name.en);
+          if (curr.name.ar) keys.push(curr.name.ar);
+        }
+
+        keys.forEach(key => {
+          if (key) {
+            acc[key] = methodsObject;
+            acc[key.toLowerCase()] = methodsObject;
+          }
+        });
+        return acc;
+      }, {});
+
+      const allowedLinks = links({ permissions: parsedPermissions });
+      if (allowedLinks.length > 0) {
+        const firstLink = allowedLinks[0];
+        if (firstLink.items && firstLink.items.length > 0) {
+          destination = (firstLink.items[0] as any).url as string;
+        } else if (firstLink.url) {
+          destination = firstLink.url as string;
+        }
+      }
+    }
+
     // Hard redirect so the browser sends a fresh request with the new cookie
-    // This avoids Next.js router cache racing ahead before the cookie is set
-    const destination = res?.data?.user?.roleId === "ADMIN" ? REDIRECT_AFTER_AUTH : "/dashboard";
     window.location.href = `/${locale}${destination}`;
   };
 

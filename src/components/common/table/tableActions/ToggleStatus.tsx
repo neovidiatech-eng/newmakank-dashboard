@@ -28,10 +28,20 @@ export default function ToggleStatus({
     setIsLoading(true);
     const targetState = !localIsActive;
 
+    let finalBody = body;
+    if (body && typeof body === "object") {
+      finalBody = { ...body };
+      Object.keys(finalBody).forEach(key => {
+        if (typeof (finalBody as any)[key] === "boolean") {
+          (finalBody as any)[key] = targetState;
+        }
+      });
+    }
+
     const res = await fetchHelper({
       endPoint: [...endpoint, Number(id)],
       method: "PATCH",
-      body: body
+      body: finalBody
     });
     if (res.success) {
       toast.success(t("done"), {
