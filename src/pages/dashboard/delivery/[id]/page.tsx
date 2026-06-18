@@ -1,6 +1,7 @@
 import { fetchHelper } from "@/api/fetch";
 import CustomHeader from "@/components/layouts/header/CustomHeader";
 import DeliveryProfileHeader from "@/components/pages/_delivery/DeliveryProfileHeader";
+import DeliveryScheduleSection from "@/components/pages/_delivery/DeliveryScheduleSection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -112,6 +113,8 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
       <CustomHeader />
       <div className="container mx-auto max-w-6xl space-y-6 py-8">
         <DeliveryProfileHeader data={dashboard.profile as any} />
+
+        <DeliveryScheduleSection />
 
         <Card className="border-border/60 bg-card/80">
           <CardHeader>
