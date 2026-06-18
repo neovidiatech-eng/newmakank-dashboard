@@ -306,6 +306,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                 triggerLabel={t("Assign")}
                 triggerVariant="outline"
                 triggerSize="sm"
+                disabled={!!data?.Delivery?.User?.id}
               />
             </div>
             <DeliveryInfo delivery={data?.Delivery} />

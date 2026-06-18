@@ -2118,6 +2118,7 @@
   "filterByZone": "تصفية حسب المنطقة",
   "deliveryAcceptanceTimer": "مؤقت قبول التوصيل",
   "deliveryAssignmentMode": "وضع تعيين التوصيل",
+  "deliveryAfkBreakMinutes": "مدة استراحة المندوب (بالدقائق)",
   "deliveryCompletionTimer": "مؤقت إكمال التوصيل",
   "StoreTaxRateForAll": "معدل ضريبة المتجر للجميع",
   "StoreTaxForAll": "ضريبة المتجر للجميع",

@@ -24,6 +24,7 @@ type AssignOrderDeliveryDialogProps = {
   triggerVariant?: ButtonProps["variant"];
   triggerSize?: ButtonProps["size"];
   triggerClassName?: string;
+  disabled?: boolean;
 };
 
 export default function AssignOrderDeliveryDialog({
@@ -32,7 +33,8 @@ export default function AssignOrderDeliveryDialog({
   triggerLabel,
   triggerVariant = "outline",
   triggerSize = "sm",
-  triggerClassName
+  triggerClassName,
+  disabled
 }: AssignOrderDeliveryDialogProps) {
   const t = useTranslations();
   const router = useRouter();
@@ -99,6 +101,7 @@ export default function AssignOrderDeliveryDialog({
           variant={triggerVariant}
           size={triggerSize}
           className={triggerClassName}
+          disabled={disabled}
         >
           {triggerLabel ? t(triggerLabel) : defaultLabel}
         </Button>
