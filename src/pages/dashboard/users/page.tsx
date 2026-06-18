@@ -7,7 +7,7 @@ import UsersColumns from './UsersColumns';
 export default async function page({ searchParams }: { searchParams: SearchParams }): Promise<JSX.Element> {
   const t = await getTranslations();
   const permissions = await getPermissions();
-  const permission = permissions?.[""];
+  const permission = permissions?.["Users"];
 
   return (
     <>
@@ -15,11 +15,11 @@ export default async function page({ searchParams }: { searchParams: SearchParam
       <TableWithQuery
         endPoint={["users"]}
         columns={UsersColumns as any}
-        
+        hideCreateNew={!permission?.post}
         cardHeader={t("Users")}
         tableActions={{
-          onEdit: true,
-          onDelete: ["users"],
+          onEdit: permission?.put || permission?.patch,
+          onDelete: permission?.delete ? ["users"] : undefined,
           //onInfo: true,
         }}
         filters={[{ "name": "name", "type": "text", "width": 3 }]}

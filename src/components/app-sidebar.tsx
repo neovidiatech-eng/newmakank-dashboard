@@ -33,6 +33,7 @@ const FALLBACK_SIDEBAR_PERMISSIONS = {
   Permissions: { get: true },
   Users: { get: true },
   Customers: { get: true },
+  delivery: { get: true },
   specialists: { get: true },
   Cities: { get: true },
   Zones: { get: true },
@@ -54,6 +55,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     staleTime: 60_000,
     retry: false
   });
+
+  console.log("DEBUG MY PERMISSIONS:", permissionsQuery.data);
 
   const profileQuery = useQuery({
     queryKey: ["profile"],

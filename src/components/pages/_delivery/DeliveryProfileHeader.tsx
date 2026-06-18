@@ -26,7 +26,7 @@ export interface DeliveryUser {
 
 export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) {
   const t = useTranslations();
-  const forceAvailable = data.isAvailable ?? data.forceAvailable ?? data.DeliveryDetails?.[0]?.forceAvailable;
+  const forceAvailable = Boolean(data.isAvailable);
   const avatar = data.avatar ?? data.image;
   const isVerified = data.isVerified ?? data.verified;
 
@@ -85,6 +85,23 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
       </div>
 
       <div className="flex flex-col items-end gap-2 pr-2">
+        <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-2xl border border-primary/10">
+          <div className="flex flex-col items-end mr-2">
+            <span className="text-sm font-bold text-primary flex items-center gap-1">
+              <UserIcon className="size-3 fill-primary" />
+              {t("Account Status")}
+            </span>
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+              {t("Active Status")}
+            </span>
+          </div>
+          <ToggleStatus
+            id={data.id}
+            body={{ active: !data.active }}
+            isActive={!!data.active}
+            endpoint={["delivery"]}
+          />
+        </div>
         <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-2xl border border-primary/10">
           <div className="flex flex-col items-end mr-2">
             <span className="text-sm font-bold text-primary flex items-center gap-1">
