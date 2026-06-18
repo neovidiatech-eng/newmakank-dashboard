@@ -6,7 +6,7 @@ export const CategoryInputs = (
 ) => {
   const inputs: FormInput[] = [
     { name: "name", type: "text", multiLang: true, cardId: 'lang', required: true },
-    { name: 'image', type: 'text', cardId: "lang" },
+    { name: 'image', type: 'img', cardId: "lang" },
     {
       name: "templateId",
       type: "selectPaginated",

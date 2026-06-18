@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import { fetchHelper } from "@/api/fetch";
 import CustomHeader from "@/components/layouts/header/CustomHeader";
 import type { SettingsItem } from "@/components/pages/_settings/settings.types";

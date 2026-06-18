@@ -43,6 +43,7 @@ export const StoreTemplatesSchema = (t: TFunction) => {
     moduleType: noSchema(),
     order: noSchema(),
     active: noSchema(),
+    image: noSchema(),
     categories: z.array(CategorySchema(t)).optional()
   });
 };

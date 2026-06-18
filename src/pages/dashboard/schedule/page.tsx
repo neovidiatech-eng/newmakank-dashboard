@@ -9,13 +9,19 @@ import { getTranslations } from "@/lib/i18n";
 async function page({ searchParams }: { searchParams: SearchParams }): Promise<JSX.Element> {
   const t = await getTranslations();
   const searchParam = await searchParams;
+  const storeId = searchParam.storeId as string | undefined;
   const branchId = searchParam.branchId as string | undefined;
 
-  const data = await fetchHelper({
-    endPoint: ["schedule", ...(branchId ? [Number(branchId)] : [])],
-    method: "GET",
-    params: await searchParams
-  });
+  let data;
+  if (branchId) {
+    data = await fetchHelper({
+      endPoint: ["schedule", Number(branchId)],
+      method: "GET",
+      params: await searchParams
+    });
+  } else {
+    data = { data: [] };
+  }
 
   if (!data) return <div>{t("Error")}...</div>;
   const filteredData = (data?.data || []) as any[];
@@ -38,10 +44,17 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
               cardHeader={t("Schedule")}
               filters={[
                 {
+                  name: "storeId",
+                  type: "selectPaginated",
+                  apiUrl: ["stores"]
+                },
+                {
                   name: "branchId",
                   type: "selectPaginated",
                   apiUrl: ["branches"],
-                  labelFormat: "storeBranch"
+                  labelFormat: "storeBranch",
+                  searchFilters: storeId ? [{ key: "storeId", value: storeId }] : undefined,
+                  disabled: !storeId
                 }
               ]}
             />

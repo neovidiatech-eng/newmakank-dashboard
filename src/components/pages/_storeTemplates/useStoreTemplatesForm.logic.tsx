@@ -2,7 +2,6 @@
 
 import useFormErrorLang from "@/components/common/Form/hooks/useFormErrorLang";
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
-import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
 import { useFormAction } from "@/utils/FormActions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "@/lib/i18n";
@@ -68,32 +67,28 @@ export default function useStoreTemplatesLogic({
   });
 
   const onSubmit = async (formData: StoreTemplatesType) => {
-    // Basic fields are extracted using standard utility
-    const basePayload = extractFormNameInputs({ inputs, data: formData });
+    const imageIsFile = formData.image instanceof File;
 
-    // We must manually reconstruct the nested structure with translation objects
-    const mappedCategories = formData.categories?.map((c) => ({
-      ...c,
-      name: { ar: c.nameAr, en: c.nameEn },
-      services: c.services?.map((s) => ({
-        ...s,
-        name: { ar: s.nameAr, en: s.nameEn },
-        description: { ar: s.descriptionAr, en: s.descriptionEn },
-        sizes: s.sizes?.map((sz) => ({
-          ...sz,
-          name: { ar: sz.nameAr, en: sz.nameEn }
-        })),
-        addons: s.addons?.map((ad) => ({
-          ...ad,
-          name: { ar: ad.nameAr, en: ad.nameEn }
-        }))
-      }))
-    }));
+    let finalPayload: FormData | Record<string, unknown>;
 
-    const finalPayload = {
-      ...basePayload,
-      categories: mappedCategories
-    };
+    if (imageIsFile) {
+      // Send as FormData so the image file is uploaded correctly
+      const fd = new FormData();
+      fd.append("name", JSON.stringify({ ar: formData.nameAr, en: formData.nameEn }));
+      fd.append("description", JSON.stringify({ ar: formData.descriptionAr, en: formData.descriptionEn }));
+      fd.append("order", String(formData.order ?? ""));
+      fd.append("moduleType", String(formData.moduleType ?? ""));
+      fd.append("image", formData.image as File);
+      finalPayload = fd;
+    } else {
+      // No new image selected — send as JSON (existing image stays on server)
+      finalPayload = {
+        name: { ar: formData.nameAr, en: formData.nameEn },
+        description: { ar: formData.descriptionAr, en: formData.descriptionEn },
+        order: formData.order,
+        moduleType: formData.moduleType,
+      };
+    }
 
     await formAction({
       data,

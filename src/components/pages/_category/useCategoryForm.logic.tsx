@@ -45,18 +45,30 @@ export default function useCategoryLogic({
       }
     }
 
-    let payload: any = extractFormNameInputs({ inputs, data: formData });
-    
-    // If it is template categories POST or PATCH, convert it to raw JSON object body matching the required structure.
+    let payload: any;
+
     if (isTemplateFlow) {
-      payload = {
-        name: {
-          ar: formData.nameAr,
-          en: formData.nameEn
-        },
-        image: typeof formData.image === "string" ? formData.image : "",
-        order: Number(formData.order)
-      };
+      const imageIsFile = formData.image instanceof File;
+
+      if (imageIsFile) {
+        // Send as FormData so the file is uploaded correctly
+        const fd = new FormData();
+        fd.append("name", JSON.stringify({ ar: formData.nameAr, en: formData.nameEn }));
+        fd.append("order", String(Number(formData.order)));
+        fd.append("image", formData.image as unknown as File);
+        payload = fd;
+      } else {
+        payload = {
+          name: {
+            ar: formData.nameAr,
+            en: formData.nameEn
+          },
+          image: typeof formData.image === "string" ? formData.image : "",
+          order: Number(formData.order)
+        };
+      }
+    } else {
+      payload = extractFormNameInputs({ inputs, data: formData });
     }
 
     await formAction({
