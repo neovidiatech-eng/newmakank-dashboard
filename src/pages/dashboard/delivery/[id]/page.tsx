@@ -88,17 +88,30 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
   const deliveryId = Number(resolvedParams.id);
   const selectedDate = typeof resolvedSearchParams.date === "string" ? resolvedSearchParams.date : undefined;
 
-  const response = await fetchHelper<DeliveryDashboard>({
-    endPoint: ["delivery", deliveryId, "deliveryDashboard"],
-    method: "GET",
-    params: selectedDate ? { date: selectedDate } : undefined,
-    redirectOnUnauthorized: false
-  });
+  const [response, scheduleResponse] = await Promise.all([
+    fetchHelper<DeliveryDashboard>({
+      endPoint: ["delivery", deliveryId, "deliveryDashboard"],
+      method: "GET",
+      params: selectedDate ? { date: selectedDate } : undefined,
+      redirectOnUnauthorized: false
+    }),
+    fetchHelper({
+      endPoint: ["delivery", deliveryId],
+      method: "GET",
+      redirectOnUnauthorized: false
+    })
+  ]);
 
   const dashboard = response?.data;
   if (!dashboard?.profile) {
     return <div className="p-8 text-center text-muted-foreground">{t("No Data Available")}</div>;
   }
+
+  // Extract schedules from DeliveryDetails
+  const scheduleData = (scheduleResponse as any)?.DeliveryDetails?.[0]?.Schedule ||
+                       scheduleResponse?.data?.DeliveryDetails?.[0]?.Schedule || 
+                       scheduleResponse?.data?.data?.DeliveryDetails?.[0]?.Schedule || 
+                       [];
 
   const statistics = dashboard.statistics ?? {};
   const financialSummary = dashboard.financialSummary ?? {};
@@ -114,7 +127,14 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
       <div className="container mx-auto max-w-6xl space-y-6 py-8">
         <DeliveryProfileHeader data={dashboard.profile as any} />
 
-        <DeliveryScheduleSection />
+        <Card className="border-border/60 bg-card/80">
+          <CardHeader>
+            <CardTitle>{t("Working hours")}</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <DeliveryScheduleSection data={scheduleData as any} deliveryId={String(deliveryId)} />
+          </CardContent>
+        </Card>
 
         <Card className="border-border/60 bg-card/80">
           <CardHeader>
