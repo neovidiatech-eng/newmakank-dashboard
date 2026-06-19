@@ -24,6 +24,7 @@ type AssignOrderDeliveryDialogProps = {
   triggerVariant?: ButtonProps["variant"];
   triggerSize?: ButtonProps["size"];
   triggerClassName?: string;
+  disabled?: boolean;
 };
 
 export default function AssignOrderDeliveryDialog({
@@ -32,7 +33,8 @@ export default function AssignOrderDeliveryDialog({
   triggerLabel,
   triggerVariant = "outline",
   triggerSize = "sm",
-  triggerClassName
+  triggerClassName,
+  disabled
 }: AssignOrderDeliveryDialogProps) {
   const t = useTranslations();
   const router = useRouter();
@@ -99,6 +101,7 @@ export default function AssignOrderDeliveryDialog({
           variant={triggerVariant}
           size={triggerSize}
           className={triggerClassName}
+          disabled={disabled}
         >
           {triggerLabel ? t(triggerLabel) : defaultLabel}
         </Button>
@@ -121,6 +124,22 @@ export default function AssignOrderDeliveryDialog({
               labelKey="name"
               idKey="id"
               placeholder={t("Select delivery")}
+              searchFilters={[{ key: "active", value: "true" }]}
+              onLabelAction={(res: any) => {
+                const filterFunc = (d: any) => {
+                  const details = d.DeliveryDetails?.[0] ?? {};
+                  const forceAvailable = Boolean(d.isAvailable ?? d.forceAvailable ?? details.forceAvailable);
+                  const isOnShift = Boolean(d.isOnShift ?? details.availableNow);
+                  return isOnShift || forceAvailable;
+                };
+
+                if (res?.data && Array.isArray(res.data)) {
+                  res.data = res.data.filter(filterFunc);
+                } else if (Array.isArray(res)) {
+                  res = res.filter(filterFunc);
+                }
+                return res;
+              }}
             />
           </div>
         </div>

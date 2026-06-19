@@ -30,13 +30,13 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         url: "/branches"
       },
 
-      permissions?.Rating?.get && {
-        title: "rating",
-        url: "/rating"
+      permissions?.Service?.get && {
+        title: "services",
+        url: "/services"
       },
 
       (permissions?.Banners?.get ||
-        permissions?.Service?.get ||
+        permissions?.Rating?.get ||
         permissions?.Coupons?.get ||
         permissions?.["Social Media"]?.get ||
         permissions?.["store-categories"]?.get ||
@@ -57,9 +57,9 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
             title: "campaignsCenter",
             url: "/campaigns"
           },
-          permissions?.Service?.get && {
-            title: "services",
-            url: "/services"
+          permissions?.Rating?.get && {
+            title: "rating",
+            url: "/rating"
           },
           permissions?.Coupons?.get && {
             title: "coupons",

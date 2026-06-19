@@ -24,7 +24,7 @@ import { toast } from "sonner";
 
 type CampaignFormType = "NOTIFICATION" | "OFFER";
 type IncentiveType = "none" | "freeDelivery" | "discount";
-type CampaignTargetType = "ALL" | "CUSTOMER" | "STORE" | "SERVICE" | "SELECTED_USERS" | "SPECIAL_DRIVER";
+type CampaignTargetType = "ALL" | "CUSTOMER" | "STORE" | "SERVICE" | "SELECTED_USERS";
 
 type LocalizedText = string | { ar?: string; en?: string } | null | undefined;
 
@@ -363,8 +363,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
             <div className="grid gap-2">
               <Label>{t("targetType")}</Label>
               <Select 
-                value={form.targetType === "SPECIAL_DRIVER" ? "ALL" : form.targetType} 
-                disabled={form.targetType === "SPECIAL_DRIVER"}
+                value={form.targetType} 
                 onValueChange={value => handleTargetChange(value as CampaignTargetType)}
               >
                 <SelectTrigger><SelectValue placeholder={t("targetType")} /></SelectTrigger>
@@ -372,42 +371,6 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                   {targetTypes.map(type => <SelectItem key={type} value={type}>{t(`campaignTargetType.${type}`)}</SelectItem>)}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="flex items-center">
-              <div
-                className={cn(
-                  "flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-primary transition hover:bg-primary/15 cursor-pointer h-10 w-full select-none",
-                  form.targetType === "SPECIAL_DRIVER" && "border-primary bg-primary text-primary-foreground"
-                )}
-                onClick={() => {
-                  if (form.targetType === "SPECIAL_DRIVER") {
-                    handleTargetChange("ALL");
-                  } else {
-                    handleTargetChange("SPECIAL_DRIVER");
-                  }
-                }}
-              >
-                <Checkbox
-                  checked={form.targetType === "SPECIAL_DRIVER"}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      handleTargetChange("SPECIAL_DRIVER");
-                    } else {
-                      handleTargetChange("ALL");
-                    }
-                  }}
-                  id="specialDriverCampaign"
-                  className={cn(
-                    form.targetType === "SPECIAL_DRIVER" && "border-primary-foreground data-[state=checked]:bg-primary-foreground data-[state=checked]:text-primary"
-                  )}
-                />
-                <label
-                  htmlFor="specialDriverCampaign"
-                  className="text-sm flex gap-2 font-medium leading-none cursor-pointer"
-                >
-                  {t("SPECIAL_DRIVER")}
-                </label>
-              </div>
             </div>
             <div className="grid gap-2">
               <Label>{t("store")} {requiresStore ? "*" : `(${t("optional")})`}</Label>
@@ -449,28 +412,30 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
           </div>
         </div>
 
-        <div className="grid gap-5 rounded-2xl border bg-muted/20 p-5">
-          <h3 className="font-semibold">{t("campaignTiming")}</h3>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="grid gap-2">
-              <Label>{t("appearanceInterval")}</Label>
-              <Select value={form.displayIntervalHours} onValueChange={value => updateForm("displayIntervalHours", value)}>
-                <SelectTrigger><SelectValue placeholder={t("appearanceInterval")} /></SelectTrigger>
-                <SelectContent>
-                  {intervalOptions.map(interval => <SelectItem key={interval} value={interval}>{interval === "0" ? t("showEveryFetch") : `${interval} ${t("hours")}`}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label>{t("startDate")} ({t("optional")})</Label>
-              <Input type="datetime-local" value={form.startAt} onChange={event => updateForm("startAt", event.target.value)} />
-            </div>
-            <div className="grid gap-2">
-              <Label>{t("endDate")} ({t("optional")})</Label>
-              <Input type="datetime-local" value={form.endAt} onChange={event => updateForm("endAt", event.target.value)} />
+        {isOffer && (
+          <div className="grid gap-5 rounded-2xl border bg-muted/20 p-5">
+            <h3 className="font-semibold">{t("campaignTiming")}</h3>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-2">
+                <Label>{t("appearanceInterval")}</Label>
+                <Select value={form.displayIntervalHours} onValueChange={value => updateForm("displayIntervalHours", value)}>
+                  <SelectTrigger><SelectValue placeholder={t("appearanceInterval")} /></SelectTrigger>
+                  <SelectContent>
+                    {intervalOptions.map(interval => <SelectItem key={interval} value={interval}>{interval === "0" ? t("showEveryFetch") : `${interval} ${t("hours")}`}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>{t("startDate")} ({t("optional")})</Label>
+                <Input type="datetime-local" value={form.startAt} onChange={event => updateForm("startAt", event.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <Label>{t("endDate")} ({t("optional")})</Label>
+                <Input type="datetime-local" value={form.endAt} onChange={event => updateForm("endAt", event.target.value)} />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="flex justify-end">
           <Button type="button" className="min-w-[180px]" disabled={isSubmitting} onClick={handleSubmit}>

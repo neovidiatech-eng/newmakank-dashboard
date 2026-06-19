@@ -128,6 +128,17 @@ export default function useScheduleLogic({
     // Remove is24Hours from formData before sending to API
     delete (formData as any).is24Hours;
 
+    let payloadToSubmit = extractFormNameInputs({ inputs, data: formData });
+
+    if (deliveryId) {
+      payloadToSubmit = {
+        ...payloadToSubmit,
+        requiredLat: 0,
+        requiredLng: 0,
+        requiredRadius: 0
+      };
+    }
+
     if (data?.id) {
       await fetchHelper({
         endPoint: ["schedule", Number(data.id)],
@@ -137,7 +148,7 @@ export default function useScheduleLogic({
 
     const response = await FormAction({
       data: undefined,
-      formData: extractFormNameInputs({ inputs, data: formData }),
+      formData: payloadToSubmit,
       endpoint: deliveryId ? ["deliverySchedule"] : ["schedule"],
       reset: reset,
 

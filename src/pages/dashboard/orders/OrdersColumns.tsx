@@ -290,15 +290,19 @@ export default function OrdersColumns(): any {
     {
       id: "assignDelivery",
       header: () => <IconHeader columnKey="Assign Delivery" />,
-      cell: ({ row }) => (
-        <AssignOrderDeliveryDialog
-          orderId={row?.original?.id}
-          currentDeliveryId={row?.original?.Delivery?.User?.id}
-          triggerLabel={t("Assign")}
-          triggerVariant="outline"
-          triggerSize="sm"
-        />
-      )
+      cell: ({ row }) => {
+        const deliveryId = row?.original?.Delivery?.User?.id;
+        return (
+          <AssignOrderDeliveryDialog
+            orderId={row?.original?.id}
+            currentDeliveryId={deliveryId}
+            triggerLabel={t("Assign")}
+            triggerVariant="outline"
+            triggerSize="sm"
+            disabled={!!deliveryId}
+          />
+        );
+      }
     },
     {
       accessorKey: "Delivery.User.name",
