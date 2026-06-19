@@ -4,6 +4,8 @@ import LocaleViewColumn from "@/components/common/table/columns/locale-view.colu
 import ToggleStatus from "@/components/common/table/tableActions/ToggleStatus";
 import { type ColumnDef } from "@tanstack/react-table";
 
+import { ImageCell } from "@/components/common/table/columns/img-cell";
+
 export default function Columns(): ColumnDef<Record<string, unknown>>[] {
   const columns = [
     {
@@ -13,6 +15,18 @@ export default function Columns(): ColumnDef<Record<string, unknown>>[] {
         const en = row.original.name?.en as string;
         const ar = row.original.name?.ar as string;
         return <LocaleViewColumn value={{ en, ar }} />;
+      }
+    },
+    {
+      accessorKey: "image",
+      header: () => <IconHeader columnKey="Image" />,
+      cell: ({ getValue }) => {
+        const image = getValue() as string;
+        return (
+          <div className="flex items-center justify-start w-full h-12 overflow-hidden">
+            <ImageCell cell={image} />
+          </div>
+        );
       }
     },
     {
