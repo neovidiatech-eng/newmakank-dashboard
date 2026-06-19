@@ -38,8 +38,15 @@ export function useFormAction() {
       queryClient.clear();
       router.refresh();
 
-      // Navigate to list page (forces remount and fresh data fetch)
-      router.push(listPath);
+      // Navigate to list page only if it's not a create action
+      if (last !== "create") {
+        router.push(listPath);
+      } else {
+        // Wait 0.5 seconds for the success toast to be read, then reload to clear the form
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+      }
     }
     return res;
   };

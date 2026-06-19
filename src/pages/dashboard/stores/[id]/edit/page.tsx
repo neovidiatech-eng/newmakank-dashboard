@@ -13,7 +13,10 @@ const page = async ({ params }: { params: Params }) => {
       storeId: Number((await params).id)
     }
   });
-  console.log(categories, "dsa2eds");
+  const appliedTemplates = await fetchHelper({
+    endPoint: ["stores", Number((await params).id), "appliedTemplates"]
+  });
+
   return (
     <>
       <CustomHeader />
@@ -21,7 +24,10 @@ const page = async ({ params }: { params: Params }) => {
         data={{
           ...data?.data,
           moduleId: data?.data?.Module?.id || "",
-          categoryId: categories?.data?.map((category: { id: number }) => category.id) || []
+          categoryId: categories?.data?.map((category: { id: number }) => category.id) || [],
+          templateId: Array.isArray(appliedTemplates?.data) 
+            ? appliedTemplates?.data[0]?.StoreTemplate?.id || appliedTemplates?.data[0]?.templateId || appliedTemplates?.data[0]?.template?.id || appliedTemplates?.data[0]?.id
+            : appliedTemplates?.data?.StoreTemplate?.id || appliedTemplates?.data?.templateId || appliedTemplates?.data?.template?.id || appliedTemplates?.data?.id
         }}
       />
     </>

@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchHelper } from "@/api/fetch";
 import useFormErrorLang from "@/components/common/Form/hooks/useFormErrorLang";
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
@@ -24,6 +25,9 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
     resolver: zodResolver(StoresSchema(t, isEdit)),
     defaultValues: {
       ...extractFormDefaultInputs(inputs, data),
+      templateId: ((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
+                  ? String((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
+                  : "",
       map: data?.lat && data?.lng ? { lat: data.lat, lng: data.lng } : undefined
     } as StoresType
   });
@@ -69,7 +73,7 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
         }
       }
     }
-    const { map, userEmail, userPass, userPhone, UserName, ...rest } = formData;
+    const { map, userEmail, userPass, userPhone, UserName, templateId, ...rest } = formData as any;
 
     let formattedPhone = userPhone;
     if (formattedPhone && !isEdit) {
@@ -84,6 +88,7 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       ...rest,
       lat: map?.lat,
       lng: map?.lng,
+      ...(!isEdit && templateId ? { templateId: Number(templateId) } : {}),
       ...(!isEdit
         ? {
           User: JSON.stringify({
@@ -101,6 +106,15 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       endpoint: ["stores"],
       t
     });
+
+    const oldTemplateId = ((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) ? String((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) : "";
+    if (isEdit && templateId && String(templateId) !== oldTemplateId) {
+      await fetchHelper({
+        endPoint: ["stores", (data as any)?.id, "applyTemplate"],
+        method: "POST",
+        body: { templateId: Number(templateId) }
+      });
+    }
   };
 
   const formSubmit = handleSubmit(onSubmit);
