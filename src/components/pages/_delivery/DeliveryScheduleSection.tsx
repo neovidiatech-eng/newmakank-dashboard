@@ -262,7 +262,12 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
                                   {toHHMM(closing)}
                                 </span>
                               </div>
-                              <div className="flex items-center justify-end pt-1">
+                              <div className="flex items-center justify-between pt-2">
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
+                                  <MapPin className="h-3 w-3 text-emerald-600" />
+                                  <span>نطاق: </span>
+                                  <span className="font-semibold text-foreground">{entry.requiredRadius || 0}</span>
+                                </div>
                                 <DeleteBtn onDelete={["deliverySchedule"]} id={String(entry.id)} />
                               </div>
                             </div>
