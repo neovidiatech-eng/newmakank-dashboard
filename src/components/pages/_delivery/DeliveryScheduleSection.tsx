@@ -356,7 +356,7 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
               سيتم حفظ الوردية باستخدام (النطاق: <strong>{globalRadius}</strong>) والموقع المحدد في الخريطة الخارجية.
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t mt-4 pt-4">
+            <div className="flex justify-end gap-2 border-t mt-4 pt-4">
               <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>
                 {t("Cancel")}
               </Button>

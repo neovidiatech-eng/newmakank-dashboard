@@ -38,7 +38,7 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
           nameEn: item.nameEn,
           priceBeforeDiscount: hasDiscount ? item.price : "",
           priceAfterDiscount: hasDiscount ? item.priceAfterDiscount : item.price,
-          isDefault: item.isDefault
+          isDefault: item.isDefault !== undefined ? String(item.isDefault) : "false"
         };
       }),
       Addons: data?.Addons?.map((item: any) => {
@@ -103,7 +103,7 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
             },
             price: finalPrice,
             priceAfterDiscount: finalDiscount,
-            isDefault: Boolean(item.isDefault)
+            isDefault: item.isDefault === "true" || item.isDefault === true
           };
         })
       ),
@@ -192,7 +192,7 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
           nameEn: item?.name?.en ?? "",
           priceBeforeDiscount: hasDiscount ? (item?.price ?? "") : "",
           priceAfterDiscount: item?.priceAfterDiscount ?? item?.salePrice ?? item?.offerPrice ?? item?.price ?? "",
-          isDefault: Boolean(item?.isDefault)
+          isDefault: item?.isDefault !== undefined ? String(item.isDefault) : "false"
         };
       }) ?? [],
       Addons: serviceData?.Addons?.map((item: any) => {
