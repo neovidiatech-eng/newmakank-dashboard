@@ -53,7 +53,7 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
             title: "fortuneWheel",
             url: "/banners/fortune-wheel"
           },
-          (permissions?.Banners?.get || permissions?.Coupons?.get || permissions?.campaigns?.get) && {
+          permissions?.campaigns?.get && {
             title: "campaignsCenter",
             url: "/campaigns"
           },
