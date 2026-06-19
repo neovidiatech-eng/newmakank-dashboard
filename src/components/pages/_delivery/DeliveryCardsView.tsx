@@ -127,7 +127,7 @@ export default function DeliveryCardsView({ deliveries }: { deliveries: Delivery
         const details = getDeliveryDetails(delivery);
         const forceAvailable = Boolean(delivery.isAvailable);
         const isOnShift = Boolean(delivery.isOnShift ?? details.availableNow);
-        const isActiveStatus = Boolean(delivery.active ?? details.active ?? true);
+        const isActiveStatus = Boolean(delivery.isActive ?? delivery.active ?? details.active ?? true);
         const activeOrdersCount = getActiveOrdersCount(delivery);
         const hasActiveOrders = activeOrdersCount > 0;
         const avatar = delivery.avatar ?? delivery.image;

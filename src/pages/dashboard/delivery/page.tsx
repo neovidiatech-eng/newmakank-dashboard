@@ -63,7 +63,7 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
         <div className="p-6 border-b border-gray-200/80 dark:border-gray-800">
           <BasicTableHeader
             headers={[
-              {name:"id"},
+              { name: "id" },
               { name: "name" },
               { name: "email" },
               { name: "phone" },

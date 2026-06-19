@@ -15,7 +15,8 @@ export interface DeliveryUser {
   avatar?: string | null;
   verified: boolean;
   isVerified?: boolean;
-  active: boolean;
+  active?: boolean;
+  isActive?: boolean;
   isOnShift?: boolean;
   roleKey?: string;
   allowNotification?: boolean;
@@ -29,6 +30,7 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
   const forceAvailable = Boolean(data.isAvailable);
   const avatar = data.avatar ?? data.image;
   const isVerified = data.isVerified ?? data.verified;
+  const isActiveStatus = Boolean(data.isActive ?? data.active ?? true);
 
   return (
     <div className="bg-card/50 border rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center">
@@ -97,8 +99,8 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
           </div>
           <ToggleStatus
             id={data.id}
-            body={{ active: !data.active }}
-            isActive={!!data.active}
+            body={{ active: !isActiveStatus }}
+            isActive={isActiveStatus}
             endpoint={["delivery"]}
           />
         </div>
