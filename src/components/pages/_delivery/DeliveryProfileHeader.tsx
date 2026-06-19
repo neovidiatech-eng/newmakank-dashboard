@@ -15,7 +15,8 @@ export interface DeliveryUser {
   avatar?: string | null;
   verified: boolean;
   isVerified?: boolean;
-  active: boolean;
+  active?: boolean;
+  isActive?: boolean;
   isOnShift?: boolean;
   roleKey?: string;
   allowNotification?: boolean;
@@ -26,9 +27,10 @@ export interface DeliveryUser {
 
 export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) {
   const t = useTranslations();
-  const forceAvailable = data.isAvailable ?? data.forceAvailable ?? data.DeliveryDetails?.[0]?.forceAvailable;
+  const forceAvailable = Boolean(data.isAvailable);
   const avatar = data.avatar ?? data.image;
   const isVerified = data.isVerified ?? data.verified;
+  const isActiveStatus = Boolean(data.isActive ?? data.active ?? true);
 
   return (
     <div className="bg-card/50 border rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center">
@@ -85,6 +87,23 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
       </div>
 
       <div className="flex flex-col items-end gap-2 pr-2">
+        <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-2xl border border-primary/10">
+          <div className="flex flex-col items-end mr-2">
+            <span className="text-sm font-bold text-primary flex items-center gap-1">
+              <UserIcon className="size-3 fill-primary" />
+              {t("Account Status")}
+            </span>
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+              {t("Active Status")}
+            </span>
+          </div>
+          <ToggleStatus
+            id={data.id}
+            body={{ active: !isActiveStatus }}
+            isActive={isActiveStatus}
+            endpoint={["delivery"]}
+          />
+        </div>
         <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-2xl border border-primary/10">
           <div className="flex flex-col items-end mr-2">
             <span className="text-sm font-bold text-primary flex items-center gap-1">

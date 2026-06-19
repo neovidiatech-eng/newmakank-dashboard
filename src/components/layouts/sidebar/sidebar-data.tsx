@@ -5,9 +5,9 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         title: "Dashboard",
         url: "/dashboard"
       },
-      permissions?.statistics?.get && {
+      permissions?.logs?.get && {
         title: "activityLogs",
-        url: "/dashboard/logs"
+        url: "/logs"
       },
       permissions?.Stores?.get && {
         title: "stores",
@@ -39,18 +39,21 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         permissions?.Rating?.get ||
         permissions?.Coupons?.get ||
         permissions?.["Social Media"]?.get ||
-        permissions?.["store-categories"]?.get) && {
+        permissions?.["store-categories"]?.get ||
+        permissions?.campaigns?.get ||
+        permissions?.["variation-templates"]?.get ||
+        permissions?.["fortune-wheel"]?.get) && {
         title: "content",
         items: [
           permissions?.Banners?.get && {
             title: "banners",
             url: "/banners"
           },
-          permissions?.Banners?.get && {
+          (permissions?.Banners?.get || permissions?.["fortune-wheel"]?.get) && {
             title: "fortuneWheel",
             url: "/banners/fortune-wheel"
           },
-          (permissions?.Banners?.get || permissions?.Coupons?.get) && {
+          permissions?.campaigns?.get && {
             title: "campaignsCenter",
             url: "/campaigns"
           },
@@ -62,7 +65,7 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
             title: "coupons",
             url: "/coupons"
           },
-          {
+          permissions?.["variation-templates"]?.get && {
             title: "variationTemplate",
             url: "/variationTemplate"
           },
@@ -77,6 +80,7 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         permissions?.Permissions?.get ||
         permissions?.Users?.get ||
         permissions?.Customers?.get ||
+        permissions?.delivery?.get ||
         permissions?.specialists?.get) && {
         title: "users & access",
         items: [
@@ -88,7 +92,7 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
             title: "permissions",
             url: "/permissions"
           },
-          {
+          permissions?.delivery?.get && {
             title: "delivery",
             url: "/delivery"
           },
