@@ -38,6 +38,21 @@ const page = async ({ params }: { params: Params }): Promise<JSX.Element> => {
   const ordersData = Array.isArray(ordersResponse?.data) ? ordersResponse?.data : [];
   const branchName = getLocalizedName(branch?.name, locale);
 
+  let isCurrentlyOpen = Boolean(branch?.isOpen);
+  if (scheduleData && scheduleData.length > 0) {
+    const now = new Date();
+    const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+    const currentDay = days[now.getDay()];
+    const currentHours = now.getHours().toString().padStart(2, '0');
+    const currentMinutes = now.getMinutes().toString().padStart(2, '0');
+    const currentTimeStr = `${currentHours}:${currentMinutes}`;
+    
+    isCurrentlyOpen = scheduleData.some((s: any) => {
+      if (s.day !== currentDay) return false;
+      return currentTimeStr >= s.openingTime && currentTimeStr <= s.closingTime;
+    });
+  }
+
   return (
     <div className="container mx-auto py-8 max-w-6xl space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -45,8 +60,8 @@ const page = async ({ params }: { params: Params }): Promise<JSX.Element> => {
           <h1 className="text-3xl font-bold">{branchName}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge variant={branch?.isOpen ? "default" : "outline"}>
-            {t('open')}: {branch?.isOpen ? t("yes") : t("no")}
+          <Badge variant={isCurrentlyOpen ? "default" : "outline"}>
+            {t('open')}: {isCurrentlyOpen ? t("yes") : t("no")}
           </Badge>
           {branch?.bestRated && <Badge variant="secondary">{t("Best Rated")}</Badge>}
           {branch?.temporarilyClosed && <Badge variant="outline">{t("Temporarily Closed")}</Badge>}

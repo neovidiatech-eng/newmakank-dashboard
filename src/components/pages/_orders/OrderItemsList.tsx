@@ -7,9 +7,14 @@ import Image from "@/lib/Image";
 
 const imgUrl = import.meta.env.VITE_API_URL;
 
-export default function OrderItemsList({ items }: { items: ApiResponseOrderItemsItem[] }) {
+export default function OrderItemsList({ items, storeCommission }: { items: ApiResponseOrderItemsItem[], storeCommission?: number }) {
     const t = useTranslations();
     const locale = useLocale();
+
+    const getOriginalPrice = (item: any) => {
+        const commission = storeCommission || 0;
+        return item.price - commission;
+    };
 
     return (
         <div className="flex flex-col gap-4 w-full">
@@ -35,8 +40,10 @@ export default function OrderItemsList({ items }: { items: ApiResponseOrderItems
                             <h4 className="font-semibold text-base truncate">
                                 {item.Service?.name[locale as "en" | "ar"] || item.Service?.name.en}
                             </h4>
-                            <div className="font-semibold">
-                                <PriceAmount value={item.price} />
+                            <div className="flex flex-col items-end">
+                                <div className="font-semibold">
+                                    <PriceAmount value={getOriginalPrice(item)} />
+                                </div>
                             </div>
                         </div>
 

@@ -39,7 +39,27 @@ export default function BranchesColumns(): ColumnDef<Record<string, unknown>>[] 
     {
       accessorKey: "closed",
       header: () => <IconHeader columnKey="Closed" />,
-      cell: ({ getValue }) => <ActiveCol value={getValue() as boolean} />
+      cell: ({ row }) => {
+        const schedule = (row.original as any).storeSchedule as any[];
+        let closed = Boolean(row.original.closed);
+
+        if (schedule && Array.isArray(schedule) && schedule.length > 0) {
+          const now = new Date();
+          const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+          const currentDay = days[now.getDay()];
+          const currentHours = now.getHours().toString().padStart(2, '0');
+          const currentMinutes = now.getMinutes().toString().padStart(2, '0');
+          const currentTimeStr = `${currentHours}:${currentMinutes}`;
+          
+          const isOpen = schedule.some(s => {
+            if (s.day !== currentDay) return false;
+            return currentTimeStr >= s.openingTime && currentTimeStr <= s.closingTime;
+          });
+          closed = !isOpen;
+        }
+        
+        return <ActiveCol value={closed} />;
+      }
     },
     {
       accessorKey: "rating",
@@ -74,7 +94,26 @@ export default function BranchesColumns(): ColumnDef<Record<string, unknown>>[] 
     {
       accessorKey: "isOpen",
       header: () => <IconHeader columnKey="IsOpen" />,
-      cell: ({ getValue }) => <ActiveCol value={getValue() as boolean} />
+      cell: ({ row }) => {
+        const schedule = (row.original as any).storeSchedule as any[];
+        let isOpen = Boolean(row.original.isOpen); // Default fallback
+
+        if (schedule && Array.isArray(schedule) && schedule.length > 0) {
+          const now = new Date();
+          const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+          const currentDay = days[now.getDay()];
+          const currentHours = now.getHours().toString().padStart(2, '0');
+          const currentMinutes = now.getMinutes().toString().padStart(2, '0');
+          const currentTimeStr = `${currentHours}:${currentMinutes}`;
+          
+          isOpen = schedule.some(s => {
+            if (s.day !== currentDay) return false;
+            return currentTimeStr >= s.openingTime && currentTimeStr <= s.closingTime;
+          });
+        }
+        
+        return <ActiveCol value={isOpen} />;
+      }
     }
   ];
 
