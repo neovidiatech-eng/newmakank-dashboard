@@ -344,30 +344,6 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                 </div>
               </>
             )}
-<<<<<<< HEAD
-            {isOffer && (
-              <div className="grid gap-2">
-                <Label>{t("Offer Image")} *</Label>
-                <div className="flex gap-2 items-center">
-                  <Input id="campaign-image-input" type="file" accept="image/*" onChange={event => updateForm("image", event.target.files?.[0] ?? null)} />
-                  {form.image && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => {
-                        updateForm("image", null);
-                        const input = document.getElementById("campaign-image-input") as HTMLInputElement;
-                        if (input) input.value = "";
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      {t("Remove")}
-                    </Button>
-                  )}
-                </div>
-                {existingImageLabel && <p className="text-xs text-muted-foreground">{t("currentImage")}: {existingImageLabel}</p>}
-=======
             <div className="grid gap-2">
               <Label>{isOffer ? `${t("Offer Image")} *` : `${t("Image")} (${t("optional")})`}</Label>
               <div className="flex gap-2 items-center">
@@ -387,7 +363,6 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                     {t("Remove")}
                   </Button>
                 )}
->>>>>>> 4ec3e7f645466040f73e9fd215ee1d5c1cb3dbed
               </div>
               {existingImageLabel && <p className="text-xs text-muted-foreground">{t("currentImage")}: {existingImageLabel}</p>}
             </div>
