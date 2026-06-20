@@ -2527,5 +2527,7 @@
   "unassignStore": "Unassign Store",
   "confirmUnassign": "Are you sure you want to unassign this store?",
   "noAssignedStores": "No stores assigned to this category",
-  "enterValidEgyptianPhone": "Please enter a valid Egyptian phone number (e.g. +201092725145 or +2001092725145)"
+  "enterValidEgyptianPhone": "Please enter a valid Egyptian phone number (e.g. +201092725145 or +2001092725145)",
+  "CUSTOMER_CATEGORY_WISE": "Customer Category Wise",
+  "ALL_CUSTOMER_CATEGORIES": "All Customer Categories"
 }
