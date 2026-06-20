@@ -15,7 +15,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Bell, Gift, ImagePlus, Save, Send } from "lucide-react";
+import { Bell, Gift, ImagePlus, Save, Send, Trash2 } from "lucide-react";
 import type { endpointType } from "@/utils/endpoints";
 import { useLocale, useTranslations } from "@/lib/i18n";
 import { useRouter } from "@/lib/navigation";
@@ -347,7 +347,24 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
             {isOffer && (
               <div className="grid gap-2">
                 <Label>{t("Offer Image")} *</Label>
-                <Input type="file" accept="image/*" onChange={event => updateForm("image", event.target.files?.[0] ?? null)} />
+                <div className="flex gap-2 items-center">
+                  <Input id="campaign-image-input" type="file" accept="image/*" onChange={event => updateForm("image", event.target.files?.[0] ?? null)} />
+                  {form.image && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        updateForm("image", null);
+                        const input = document.getElementById("campaign-image-input") as HTMLInputElement;
+                        if (input) input.value = "";
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      {t("Remove")}
+                    </Button>
+                  )}
+                </div>
                 {existingImageLabel && <p className="text-xs text-muted-foreground">{t("currentImage")}: {existingImageLabel}</p>}
               </div>
             )}

@@ -262,7 +262,12 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
                                   {toHHMM(closing)}
                                 </span>
                               </div>
-                              <div className="flex items-center justify-end pt-1">
+                              <div className="flex items-center justify-between pt-2">
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
+                                  <MapPin className="h-3 w-3 text-emerald-600" />
+                                  <span>نطاق: </span>
+                                  <span className="font-semibold text-foreground">{entry.requiredRadius || 0}</span>
+                                </div>
                                 <DeleteBtn onDelete={["deliverySchedule"]} id={String(entry.id)} />
                               </div>
                             </div>
@@ -351,7 +356,7 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
               سيتم حفظ الوردية باستخدام (النطاق: <strong>{globalRadius}</strong>) والموقع المحدد في الخريطة الخارجية.
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t mt-4 pt-4">
+            <div className="flex justify-end gap-2 border-t mt-4 pt-4">
               <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>
                 {t("Cancel")}
               </Button>

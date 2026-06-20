@@ -1,14 +1,15 @@
 import { ImageIcon } from "@radix-ui/react-icons";
+import { Trash2 } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 const API_IMG_URL = import.meta.env.VITE_API_IMG_URL;
 interface ImgInputProps {
   alt?: string;
   name?: string;
   value?: string;
   className?: string;
-  onChange?: (e: File | undefined) => void;
+  onChange?: (e: File | string | undefined) => void;
   accept?: string;
   ratio?: string;
 }
@@ -24,6 +25,7 @@ export default function ImgInput({
 }: ImgInputProps): JSX.Element {
   const [fileName, setFileName] = useState<string>("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const inputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations();
 
   useEffect(() => {
@@ -123,6 +125,7 @@ export default function ImgInput({
           )}
         </div>
         <input
+          ref={inputRef}
           type="file"
           name={name}
           onChange={handleChange}
@@ -133,16 +136,22 @@ export default function ImgInput({
       </label>
       {fileName && (
         <button
-          onClick={() => {
+          onClick={(e) => {
+            e.preventDefault();
             setFileName("");
             setPreviewUrl("");
             if (previewUrl && previewUrl.startsWith("blob:")) {
               URL.revokeObjectURL(previewUrl);
             }
+            if (inputRef.current) {
+              inputRef.current.value = "";
+            }
+            onChange?.("");
           }}
-          className="text-xs text-orange-500 hover:text-orange-600 transition-colors"
+          className="text-xs text-red-500 hover:text-red-600 transition-colors flex items-center justify-center gap-1 mt-1"
           type="button"
         >
+          <Trash2 className="w-4 h-4" />
           {t("Remove file")}
         </button>
       )}

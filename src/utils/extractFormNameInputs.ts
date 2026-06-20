@@ -46,6 +46,9 @@ export function extractFormNameInputs({
             // formdata.append(item, file);
           }
         });
+      } else if (data[item] === "") {
+        // Append "null" string to signify removal of file when using FormData
+        formdata.append(item, "null");
       } else formdata.append(item, data[item]);
     });
     return formdata;

@@ -20,9 +20,10 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
   const allSettings = (response?.data ?? []) as SettingsItem[];
   const ALLOWED_SETTINGS = ["StoreTaxRate", "businessOrderCommissionType"];
   const settings =
-    domain.toLowerCase() === "store"
-      ? allSettings.filter(item => ALLOWED_SETTINGS.includes(item.setting))
-      : allSettings;
+    // domain.toLowerCase() === "store"
+    //   ? allSettings.filter(item => ALLOWED_SETTINGS.includes(item.setting))
+    //   :
+    allSettings;
 
   return (
     <div className="flex flex-col gap-4">
