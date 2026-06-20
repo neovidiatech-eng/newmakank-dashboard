@@ -182,6 +182,19 @@ export default function DeliveryCardsView({ deliveries }: { deliveries: Delivery
                 <div className="grid gap-3 rounded-2xl border bg-muted/20 p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
+                      <p className="text-sm font-semibold">{t("Account Status")}</p>
+                      <p className="text-xs text-muted-foreground">{t("Active Status")}</p>
+                    </div>
+                    <ToggleStatus
+                      id={delivery.id as string | number}
+                      body={{ active: !isActiveStatus }}
+                      isActive={isActiveStatus}
+                      endpoint={["delivery"]}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
                       <p className="text-sm font-semibold">{t("Forced Availability")}</p>
                       <p className="text-xs text-muted-foreground">{t("Always Available")}</p>
                     </div>
@@ -191,24 +204,8 @@ export default function DeliveryCardsView({ deliveries }: { deliveries: Delivery
                       isActive={forceAvailable}
                       endpoint={["delivery"]}
                     />
-              <div className="grid gap-3 rounded-2xl border bg-muted/20 p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold">{t("Account Status")}</p>
-                    <p className="text-xs text-muted-foreground">{t("Active Status")}</p>
                   </div>
-                  <ToggleStatus
-                    id={delivery.id as string | number}
-                    body={{ active: !isActiveStatus }}
-                    isActive={isActiveStatus}
-                    endpoint={["delivery"]}
-                  />
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold">{t("Forced Availability")}</p>
-                    <p className="text-xs text-muted-foreground">{t("Always Available")}</p>
-                  </div>
+
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <p className="text-sm font-semibold">{t("Has Active Orders")}</p>

@@ -77,7 +77,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
               {t("Order Items")}
             </h2>
             {data?.OrderItems && data?.OrderItems.length > 0 ? (
-              <OrderItemsList items={data?.OrderItems} />
+              <OrderItemsList items={data?.OrderItems} storeCommission={data?.storeCommission} />
             ) : (
               <div className="text-center text-muted-foreground py-6 border border-dashed rounded-lg bg-muted/10">
                 {t("No items in this order")}
@@ -94,7 +94,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("Price")}</span>
                 <span className="font-medium">
-                  <PriceAmount value={data?.price} />
+                  <PriceAmount value={Math.max(0, (data?.price || 0) - (data?.storeCommission || 0))} />
                 </span>
               </div>
               {priceAfterDiscount !== undefined && (
@@ -170,7 +170,12 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
               )}
               {data?.adminCommission > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("Admin Commission")}</span>
+                  <div>
+                    <span className="text-muted-foreground block">{t("Admin Commission")}</span>
+                    <span className="text-[11px] text-muted-foreground/70">
+                      ({t("Platform Fee")} + {t("Store Commission")})
+                    </span>
+                  </div>
                   <span className="font-medium">
                     <PriceAmount value={data?.adminCommission} />
                   </span>
