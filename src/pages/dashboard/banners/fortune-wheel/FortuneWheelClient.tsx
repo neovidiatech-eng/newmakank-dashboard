@@ -223,9 +223,9 @@ export default function FortuneWheelClient() {
     }
 
     if (!form.displayNameAr.trim() || !form.displayNameEn.trim()) {
-        toast.error(t("fortuneNameRequired"));
-        return;
-      }
+      toast.error(t("fortuneNameRequired"));
+      return;
+    }
 
     setIsSubmitting(true);
     const response = await fetchHelper({
@@ -260,9 +260,9 @@ export default function FortuneWheelClient() {
       typeof displayName === "string"
         ? { ar: displayName, en: displayName }
         : {
-            ar: displayName?.ar || "",
-            en: displayName?.en || "",
-          };
+          ar: displayName?.ar || "",
+          en: displayName?.en || "",
+        };
     setEditingItemId(item.id);
     setForm({
       displayNameAr: localizedName.ar,
@@ -289,19 +289,19 @@ export default function FortuneWheelClient() {
           : String(item.rewardExpiryHours),
     });
   };
-// const handleDeleteItem = async (id: number) => {
-//   const response = await fetchHelper({
-//     endPoint: ["fortuneWheel", id],
-//     method: "DELETE"
-//   });
+  // const handleDeleteItem = async (id: number) => {
+  //   const response = await fetchHelper({
+  //     endPoint: ["fortuneWheel", id],
+  //     method: "DELETE"
+  //   });
 
-//   if (response?.success) {
-//     toast.success(t("Deleted"));
-//     router.refresh();
-//   } else {
-//     toast.error(response?.message || t("Something went wrong"));
-//   }
-// };
+  //   if (response?.success) {
+  //     toast.success(t("Deleted"));
+  //     router.refresh();
+  //   } else {
+  //     toast.error(response?.message || t("Something went wrong"));
+  //   }
+  // };
   const handleDeleteItem = async (id: number) => {
     const response = await fetchHelper({
       endPoint: ["fortuneWheel", id],
@@ -406,14 +406,14 @@ export default function FortuneWheelClient() {
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("rewardValue")}</label>
                 <Input value={currentRewardValue} onChange={event => updateForm("rewardValue", event.target.value)} placeholder={t("rewardValuePlaceholder")} disabled={isFixedRewardValue} />
               </div>
-              <div className="lg:col-span-1">
+              {/* <div className="lg:col-span-1">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("weight")}</label>
                 <Input type="number" min="1" value={form.weight} onChange={event => updateForm("weight", event.target.value)} />
-              </div>
+              </div> */}
               <div className="flex items-end lg:col-span-1">
-                    <Button type="button" className="h-10 w-full rounded-xl" onClick={handleAddItem} disabled={isSubmitting || !form.displayNameAr.trim() || !form.displayNameEn.trim()}>
-                      {editingItemId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                    </Button>
+                <Button type="button" className="h-10 w-full rounded-xl" onClick={handleAddItem} disabled={isSubmitting || !form.displayNameAr.trim() || !form.displayNameEn.trim()}>
+                  {editingItemId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                </Button>
               </div>
               <div className="lg:col-span-3">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("maxDiscount")} ({t("optional")})</label>
