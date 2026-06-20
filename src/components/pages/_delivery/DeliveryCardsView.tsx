@@ -192,7 +192,10 @@ export default function DeliveryCardsView({ deliveries }: { deliveries: Delivery
                       endpoint={["delivery"]}
                     />
                   </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4ec3e7f645466040f73e9fd215ee1d5c1cb3dbed
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <p className="text-sm font-semibold">{t("Forced Availability")}</p>
