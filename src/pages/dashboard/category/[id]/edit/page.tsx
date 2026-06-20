@@ -9,6 +9,7 @@ const page = async ({ params }: { params: Params }) => {
   const response = await fetchHelper({
     endPoint: ['storeTemplatesCategories'],
     method: "GET",
+    params: { limit: 1000 }
   });
 
   const categoryItem = response?.data?.find((cat: any) => cat.id === targetId);
