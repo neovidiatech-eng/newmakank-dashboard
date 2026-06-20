@@ -12,8 +12,8 @@ export const CategoryInputs = (
       type: "selectPaginated",
       apiUrl: ["storeTemplates"],
       cardId: "lang",
-      required: !hasStoreId && !isEdit,
-      isHidden: hasStoreId || isEdit
+      required: !hasStoreId,
+      isHidden: hasStoreId
     },
     { name: "order", type: "number", required: true }
   ];

@@ -47,6 +47,12 @@ export function StoreStatusSelect({ storeId, initialStatus }: StoreStatusSelectP
         <SelectValue placeholder={t("Select status")} />
       </SelectTrigger>
       <SelectContent>
+        <SelectItem value="NORMAL">
+          <span className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-green-500 flex-shrink-0" />
+            <span className="text-green-600 font-medium">{t("normal")}</span>
+          </span>
+        </SelectItem>
         <SelectItem value="OPEN">
           <span className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-green-500 flex-shrink-0" />
