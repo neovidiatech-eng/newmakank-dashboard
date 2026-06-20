@@ -18,6 +18,7 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
   });
 
   const allSettings = (response?.data ?? []) as SettingsItem[];
+
   const HIDDEN_SETTINGS = ["filterByZone", "storeNearestByKM"];
   const settings = allSettings.filter((item) => !HIDDEN_SETTINGS.includes(item.setting));
 
