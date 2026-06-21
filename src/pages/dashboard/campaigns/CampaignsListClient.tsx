@@ -11,10 +11,11 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Link } from "@/lib/navigation";
-import { Bell, Gift, Pencil, Plus, Power, Trash2 } from "lucide-react";
+import { Bell, Gift, Pencil, Plus, Power, Trash2, Megaphone } from "lucide-react";
 import { useLocale, useTranslations } from "@/lib/i18n";
 import { useRouter } from "@/lib/navigation";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type CampaignApiType = "NOTIFICATION" | "OFFER";
 type CampaignStatus = "active" | "scheduled" | "expired" | "inactive";
@@ -51,7 +52,17 @@ const statusVariant: Record<CampaignStatus, "success" | "warning" | "muted" | "d
 
 function getLocalizedText(value: LocalizedText, locale: string) {
   if (!value) return "—";
-  if (typeof value === "string") return value;
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (typeof parsed === "object" && parsed !== null) {
+        return parsed[locale as "ar" | "en"] || parsed.ar || parsed.en || value;
+      }
+    } catch (e) {
+      // not json
+    }
+    return value;
+  }
   return value[locale as "ar" | "en"] || value.ar || value.en || "—";
 }
 
@@ -85,19 +96,23 @@ function getScheduleLabel(campaign: CampaignItem, t: ReturnType<typeof useTransl
 }
 
 export default function CampaignsListClient({
-  data,
-  total
+  offersData,
+  offersTotal,
+  notificationsData,
+  notificationsTotal
 }: {
-  data: CampaignItem[];
-  total: number;
+  offersData: CampaignItem[];
+  offersTotal: number;
+  notificationsData: any[];
+  notificationsTotal: number;
 }) {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, isOffer: boolean) => {
     const response = await fetchHelper({
-      endPoint: ["campaigns", id],
+      endPoint: isOffer ? ["campaigns", id] : ["adminNotifications", id],
       method: "DELETE",
       redirectOnUnauthorized: false
     });
@@ -134,7 +149,6 @@ export default function CampaignsListClient({
           <div>
             <CardTitle className="text-xl">{t("campaignsCenter")}</CardTitle>
             <CardDescription className="mt-2">{t("campaignsCenterDescription")}</CardDescription>
-            <p className="mt-2 text-xs text-muted-foreground">{t("total")}: {total || data.length}</p>
           </div>
           <Button asChild>
             <Link href="/campaigns/create">
@@ -145,88 +159,149 @@ export default function CampaignsListClient({
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <Table>
-          <TableHeader className="bg-gray-50 dark:bg-slate-900">
-            <TableRow>
-              <TableHead className="text-center">{t("campaignName")}</TableHead>
-              <TableHead className="text-center">{t("campaignType")}</TableHead>
-              <TableHead className="text-center">{t("targeting")}</TableHead>
-              <TableHead className="text-center">{t("campaignIncentive")}</TableHead>
-              <TableHead className="text-center">{t("appearanceSchedule")}</TableHead>
-              <TableHead className="text-center">{t("sentAt")}</TableHead>
-              <TableHead className="text-center">{t("status")}</TableHead>
-              <TableHead className="text-center">{t("Actions")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
-                  {t("No Data")}
-                </TableCell>
-              </TableRow>
-            ) : data.map(campaign => {
-              const type = campaign.type === "OFFER" ? "offer" : "notification";
-              const TypeIcon = type === "notification" ? Bell : Gift;
-              const status = getCampaignStatus(campaign);
+        <Tabs defaultValue="offers" className="w-full" dir={locale === "ar" ? "rtl" : "ltr"}>
+          <div className="border-b px-6 pt-2">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="offers" className="gap-2">
+                <Gift className="h-4 w-4" />
+                {t("campaignTypeValue.offer")}
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{offersTotal}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="gap-2">
+                <Megaphone className="h-4 w-4" />
+                {t("campaignTypeValue.notification")}
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{notificationsTotal}</Badge>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          
+          <TabsContent value="offers" className="m-0 border-none outline-none">
+            <Table>
+              <TableHeader className="bg-gray-50 dark:bg-slate-900">
+                <TableRow>
+                  <TableHead className="text-center">{t("campaignName")}</TableHead>
+                  <TableHead className="text-center">{t("targeting")}</TableHead>
+                  <TableHead className="text-center">{t("campaignIncentive")}</TableHead>
+                  <TableHead className="text-center">{t("appearanceSchedule")}</TableHead>
+                  <TableHead className="text-center">{t("sentAt")}</TableHead>
+                  <TableHead className="text-center">{t("status")}</TableHead>
+                                    <TableHead className="text-center">{t("Actions")}</TableHead>
 
-              return (
-                <TableRow key={campaign.id} className="hover:bg-gray-50 dark:hover:bg-slate-900/50">
-                  <TableCell className="text-center font-semibold">
-                    {getLocalizedText(campaign.title || campaign.name, locale)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant="outline" className="gap-1.5">
-                      <TypeIcon className="h-3.5 w-3.5" />
-                      {t(`campaignTypeValue.${type}`)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center text-muted-foreground">
-                    {getTargetLabel(campaign, t, locale)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {getLocalizedText(campaign.valueText || campaign.featureText, locale)}
-                  </TableCell>
-                  <TableCell className="text-center text-muted-foreground">
-                    {getScheduleLabel(campaign, t)}
-                  </TableCell>
-                  <TableCell className="text-center text-muted-foreground">
-                    {campaign.sentAt ? new Date(campaign.sentAt).toLocaleString() : "—"}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant={statusVariant[status]}>
-                      {t(`campaignStatus.${status}`)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex flex-wrap justify-center gap-2">
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/campaigns/create?mode=edit&id=${campaign.id}`}>
-                          <Pencil className="h-4 w-4" />
-                          {t("Edit")}
-                        </Link>
-                      </Button>
-                      <Button type="button" variant="outline" size="sm" onClick={() => handleToggleStatus(campaign)}>
-                        <Power className="h-4 w-4" />
-                        {campaign.manualStatus === "INACTIVE" ? t("Activate") : t("Deactivate")}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                        onClick={() => handleDelete(campaign.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {t("Delete")}
-                      </Button>
-                    </div>
-                  </TableCell>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+              </TableHeader>
+              <TableBody>
+                {offersData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                      {t("No Data")}
+                    </TableCell>
+                  </TableRow>
+                ) : offersData.map(campaign => {
+                  const status = getCampaignStatus(campaign);
+
+                  return (
+                    <TableRow key={campaign.id} className="hover:bg-gray-50 dark:hover:bg-slate-900/50">
+                      <TableCell className="text-center font-semibold">
+                        {getLocalizedText(campaign.title || campaign.name, locale)}
+                      </TableCell>
+                      <TableCell className="text-center text-muted-foreground">
+                        {getTargetLabel(campaign, t, locale)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {getLocalizedText(campaign.valueText || campaign.featureText, locale)}
+                      </TableCell>
+                      <TableCell className="text-center text-muted-foreground">
+                        {getScheduleLabel(campaign, t)}
+                      </TableCell>
+                      <TableCell className="text-center text-muted-foreground">
+                        {campaign.sentAt ? new Date(campaign.sentAt).toLocaleString() : "—"}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant={statusVariant[status]}>
+                          {t(`campaignStatus.${status}`)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex flex-wrap justify-center gap-2">
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={`/campaigns/create?mode=edit&id=${campaign.id}`}>
+                              <Pencil className="h-4 w-4" />
+                              {t("Edit")}
+                            </Link>
+                          </Button>
+                          <Button type="button" variant="outline" size="sm" onClick={() => handleToggleStatus(campaign)}>
+                            <Power className="h-4 w-4" />
+                            {campaign.manualStatus === "INACTIVE" ? t("Activate") : t("Deactivate")}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                            onClick={() => handleDelete(campaign.id, true)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            {t("Delete")}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TabsContent>
+
+          <TabsContent value="notifications" className="m-0 border-none outline-none">
+            <Table>
+              <TableHeader className="bg-gray-50 dark:bg-slate-900">
+                <TableRow>
+                  <TableHead className="text-center">{t("Title")}</TableHead>
+                  <TableHead className="text-center">{t("Body")}</TableHead>
+                  <TableHead className="text-center">{t("targeting")}</TableHead>
+                  <TableHead className="text-center">{t("Actions")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {notificationsData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
+                      {t("No Data")}
+                    </TableCell>
+                  </TableRow>
+                ) : notificationsData.map(notification => (
+                  <TableRow key={notification.id} className="hover:bg-gray-50 dark:hover:bg-slate-900/50">
+                    <TableCell className="text-center font-semibold">
+                      {getLocalizedText(notification.title, locale)}
+                    </TableCell>
+                    <TableCell className="text-center text-muted-foreground max-w-xs truncate" title={getLocalizedText(notification.body, locale)}>
+                      {getLocalizedText(notification.body, locale)}
+                    </TableCell>
+                    <TableCell className="text-center text-muted-foreground">
+                      {notification.targetType === "SELECTED_USERS" ? t("selectedCustomers") :
+                       notification.targetType === "ALL" ? t("allCustomers") :
+                       t("customers")}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex flex-wrap justify-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                          onClick={() => handleDelete(notification.id, false)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          {t("Delete")}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

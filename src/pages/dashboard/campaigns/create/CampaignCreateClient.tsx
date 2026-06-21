@@ -163,6 +163,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
   const servicesApiUrl = useMemo<endpointType>(() => ["services"], []);
   const customersApiUrl = useMemo<endpointType>(() => ["customers"], []);
   const serviceSearchFilters = useMemo(() => form.storeId ? [{ key: "storeId", value: form.storeId }] : [], [form.storeId]);
+  const clickServiceSearchFilters = useMemo(() => form.clickStoreId ? [{ key: "storeId", value: form.clickStoreId }] : [], [form.clickStoreId]);
 
   const existingImageLabel = useMemo(() => data?.image ? String(data.image).split("/").pop() : "", [data?.image]);
 
@@ -406,8 +407,9 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                 </div>
               </>
             )}
+            {isOffer && (
             <div className="grid gap-2">
-              <Label>{isOffer ? `${t("Offer Image")} *` : `${t("Image")} (${t("optional")})`}</Label>
+              <Label>{`${t("Offer Image")} *`}</Label>
               <div className="flex gap-2 items-center">
                 <Input id="campaign-image-input" type="file" accept="image/*" onChange={event => updateForm("image", event.target.files?.[0] ?? null)} />
                 {form.image && (
@@ -428,6 +430,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
               </div>
               {existingImageLabel && <p className="text-xs text-muted-foreground">{t("currentImage")}: {existingImageLabel}</p>}
             </div>
+            )}
           </div>
         </div>
 
@@ -544,16 +547,37 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
               )}
 
               {form.clickTargetType === "SERVICE" && (
-                <div className="grid gap-2">
-                  <Label>{t("products")} *</Label>
-                  <SelectPaginated
-                    name="clickServiceId"
-                    apiUrl={servicesApiUrl}
-                    value={form.clickServiceId}
-                    onChange={value => updateForm("clickServiceId", value ? String(value) : "")}
-                    placeholder={t("products")}
-                  />
-                </div>
+                <>
+                  <div className="grid gap-2">
+                    <Label>{t("store")} *</Label>
+                    <SelectPaginated
+                      name="clickStoreId"
+                      apiUrl={storesApiUrl}
+                      value={form.clickStoreId}
+                      onChange={value => {
+                        setForm(prev => ({
+                          ...prev,
+                          clickStoreId: value ? String(value) : "",
+                          clickServiceId: ""
+                        }));
+                      }}
+                      placeholder={t("store")}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>{t("products")} *</Label>
+                    <SelectPaginated
+                      name="clickServiceId"
+                      apiUrl={servicesApiUrl}
+                      value={form.clickServiceId}
+                      disabled={!form.clickStoreId}
+                      searchFilters={clickServiceSearchFilters}
+                      labelFormat="serviceStore"
+                      onChange={value => updateForm("clickServiceId", value ? String(value) : "")}
+                      placeholder={t("products")}
+                    />
+                  </div>
+                </>
               )}
 
               {form.clickTargetType === "URL" && (

@@ -59,7 +59,7 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
             data={storeRatings}
             columns={RatingColumns}
             pagination={{ total: storeRatings.length }}
-            tableActions={{ onDelete: ["rating"] }}
+            tableActions={{}}
             cardHeader={t("Store Ratings")}
             filters={[{ name: "orderId", type: "text", width: 3 }]}
           />
@@ -75,7 +75,7 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
             data={deliveryRatings}
             columns={RatingColumns}
             pagination={{ total: deliveryRatings.length }}
-            tableActions={{ onDelete: ["rating"] }}
+            tableActions={{}}
             cardHeader={t("Delivery Ratings")}
             filters={[{ name: "orderId", type: "text", width: 3 }]}
           />
