@@ -2544,5 +2544,7 @@
   "unassignStore": "إلغاء تعيين المتجر",
   "confirmUnassign": "هل أنت متأكد أنك تريد إلغاء تعيين هذا المتجر؟",
   "noAssignedStores": "لا توجد متاجر معينة لهذه الفئة",
-  "enterValidEgyptianPhone": "الرجاء إدخال رقم هاتف مصري صالح (مثال: +201092725145 أو +2001092725145)"
+  "enterValidEgyptianPhone": "الرجاء إدخال رقم هاتف مصري صالح (مثال: +201092725145 أو +2001092725145)",
+  "CUSTOMER_CATEGORY_WISE": "حسب فئة العميل",
+  "ALL_CUSTOMER_CATEGORIES": "جميع فئات العملاء"
 }
