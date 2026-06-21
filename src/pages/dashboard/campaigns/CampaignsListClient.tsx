@@ -25,7 +25,9 @@ type CampaignItem = {
   id: number;
   type?: CampaignApiType;
   title?: LocalizedText;
+  name?: LocalizedText;
   description?: LocalizedText;
+  body?: LocalizedText;
   featureText?: LocalizedText;
   valueText?: LocalizedText;
   targetType?: string;
@@ -171,7 +173,7 @@ export default function CampaignsListClient({
               return (
                 <TableRow key={campaign.id} className="hover:bg-gray-50 dark:hover:bg-slate-900/50">
                   <TableCell className="text-center font-semibold">
-                    {getLocalizedText(campaign.title, locale)}
+                    {getLocalizedText(campaign.title || campaign.name, locale)}
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge variant="outline" className="gap-1.5">

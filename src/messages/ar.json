@@ -2433,8 +2433,19 @@
     "CUSTOMER": "كل العملاء المسجلين",
     "STORE": "رابط لمحل",
     "SERVICE": "رابط لمنتج",
-    "SELECTED_USERS": "عملاء محددين"
+    "SELECTED_USERS": "عملاء محددين",
+    "DELIVERY": "مندوب توصيل"
   },
+  "clickAction": "الإجراء عند النقر",
+  "clickTargetTypeLabel": "نوع الاستهداف عند النقر",
+  "clickTargetType": {
+    "GENERAL": "إشعار عام",
+    "STORE": "رابط لمتجر",
+    "CATEGORY": "رابط لتصنيف",
+    "SERVICE": "رابط لمنتج",
+    "URL": "رابط خارجي"
+  },
+  "url": "الرابط الخارجي (URL)",
   "enabled": "مفعلة",
   "maxOrderAmount": "أقصى قيمة طلب",
   "rewardExpiryHours": "صلاحية الجائزة",

@@ -2427,8 +2427,19 @@
     "CUSTOMER": "Registered customers",
     "STORE": "Store link",
     "SERVICE": "Product link",
-    "SELECTED_USERS": "Selected customers"
+    "SELECTED_USERS": "Selected customers",
+    "DELIVERY": "Delivery Driver"
   },
+  "clickAction": "Click Action",
+  "clickTargetTypeLabel": "Click Target Type",
+  "clickTargetType": {
+    "GENERAL": "General",
+    "STORE": "Store",
+    "CATEGORY": "Category",
+    "SERVICE": "Product",
+    "URL": "External URL"
+  },
+  "url": "External URL",
   "enabled": "Enabled",
   "maxOrderAmount": "Max order amount",
   "rewardExpiryHours": "Reward expiry",

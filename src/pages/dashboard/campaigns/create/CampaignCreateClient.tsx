@@ -24,7 +24,7 @@ import { toast } from "sonner";
 
 type CampaignFormType = "NOTIFICATION" | "OFFER";
 type IncentiveType = "none" | "freeDelivery" | "discount";
-type CampaignTargetType = "ALL" | "CUSTOMER" | "STORE" | "SERVICE" | "SELECTED_USERS";
+type CampaignTargetType = "ALL" | "CUSTOMER" | "STORE" | "SERVICE" | "SELECTED_USERS" | "DELIVERY";
 
 type LocalizedText = string | { ar?: string; en?: string } | null | undefined;
 
@@ -43,6 +43,11 @@ type CampaignData = {
   startAt?: string | null;
   endAt?: string | null;
   displayIntervalHours?: number | null;
+  clickTargetType?: string;
+  clickStoreId?: string | number | null;
+  clickCategoryId?: string | number | null;
+  clickServiceId?: string | number | null;
+  clickUrl?: string;
 };
 
 type CampaignFormState = {
@@ -62,6 +67,11 @@ type CampaignFormState = {
   startAt: string;
   endAt: string;
   displayIntervalHours: string;
+  clickTargetType: string;
+  clickStoreId: string;
+  clickCategoryId: string;
+  clickServiceId: string;
+  clickUrl: string;
 };
 
 const incentiveTypes: IncentiveType[] = ["none", "freeDelivery", "discount"];
@@ -126,7 +136,12 @@ function getInitialForm(data?: CampaignData | null, locale = "ar"): CampaignForm
     serviceId: data?.serviceId ? String(data.serviceId) : "",
     startAt: toDatetimeLocal(data?.startAt),
     endAt: toDatetimeLocal(data?.endAt),
-    displayIntervalHours: data?.displayIntervalHours === null || data?.displayIntervalHours === undefined ? "24" : String(data.displayIntervalHours)
+    displayIntervalHours: data?.displayIntervalHours === null || data?.displayIntervalHours === undefined ? "24" : String(data.displayIntervalHours),
+    clickTargetType: data?.clickTargetType ?? "GENERAL",
+    clickStoreId: data?.clickStoreId ? String(data.clickStoreId) : "",
+    clickCategoryId: data?.clickCategoryId ? String(data.clickCategoryId) : "",
+    clickServiceId: data?.clickServiceId ? String(data.clickServiceId) : "",
+    clickUrl: data?.clickUrl ?? ""
   };
 }
 
@@ -156,11 +171,16 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
   };
 
   const handleTypeChange = (type: CampaignFormType) => {
-    setForm(prev => ({
-      ...prev,
-      type,
-      targetType: type === "NOTIFICATION" && prev.targetType === "SERVICE" ? "ALL" : prev.targetType
-    }));
+    setForm(prev => {
+      const isServiceToNotif = type === "NOTIFICATION" && prev.targetType === "SERVICE";
+      const isDeliveryToOffer = type === "OFFER" && prev.targetType === "DELIVERY";
+      
+      return {
+        ...prev,
+        type,
+        targetType: (isServiceToNotif || isDeliveryToOffer) ? "ALL" : prev.targetType
+      };
+    });
   };
 
   const handleTargetChange = (targetType: CampaignTargetType) => {
@@ -170,6 +190,17 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
       storeId: targetType === "STORE" || targetType === "SERVICE" ? prev.storeId : "",
       serviceId: targetType === "SERVICE" ? prev.serviceId : "",
       targetUserIds: targetType === "SELECTED_USERS" ? prev.targetUserIds : []
+    }));
+  };
+
+  const handleClickTargetChange = (type: string) => {
+    setForm(prev => ({
+      ...prev,
+      clickTargetType: type,
+      clickStoreId: "",
+      clickCategoryId: "",
+      clickServiceId: "",
+      clickUrl: ""
     }));
   };
 
@@ -238,12 +269,43 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
     }
 
     setIsSubmitting(true);
-    const response = await fetchHelper({
-      endPoint: isEdit && data?.id ? ["campaigns", data.id] : ["campaigns"],
-      method: isEdit ? "PATCH" : "POST",
-      body: buildPayload(),
-      redirectOnUnauthorized: false
-    });
+    let response;
+
+    if (form.type === "NOTIFICATION") {
+      const payload: any = {
+        title: { ar: form.titleAr, en: form.titleEn },
+        body: { ar: form.descriptionAr, en: form.descriptionEn },
+        targetType: form.targetType,
+        targetUserIds: form.targetUserIds.map(Number).filter(Boolean),
+        storeId: Number(form.storeId) || 0,
+        clickTargetType: form.clickTargetType,
+        clickStoreId: Number(form.clickStoreId) || 0,
+        clickCategoryId: Number(form.clickCategoryId) || 0,
+        clickServiceId: Number(form.clickServiceId) || 0,
+        clickZoneId: 0,
+        clickOrderId: 0,
+        clickCouponId: 0
+      };
+
+      if (form.clickTargetType === "URL" && form.clickUrl) {
+        payload.clickUrl = form.clickUrl;
+      }
+
+      response = await fetchHelper({
+        endPoint: isEdit && data?.id ? ["adminNotifications", data.id] : ["adminNotifications"],
+        method: isEdit ? "PATCH" : "POST",
+        body: payload,
+        redirectOnUnauthorized: false
+      });
+    } else {
+      response = await fetchHelper({
+        endPoint: isEdit && data?.id ? ["campaigns", data.id] : ["campaigns"],
+        method: isEdit ? "PATCH" : "POST",
+        body: buildPayload(),
+        redirectOnUnauthorized: false
+      });
+    }
+    
     setIsSubmitting(false);
 
     if (response?.success) {
@@ -383,7 +445,14 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
               >
                 <SelectTrigger><SelectValue placeholder={t("targetType")} /></SelectTrigger>
                 <SelectContent>
-                  {targetTypes.map(type => <SelectItem key={type} value={type}>{t(`campaignTargetType.${type}`)}</SelectItem>)}
+                  {(form.type === "NOTIFICATION" 
+                    ? ["ALL", "CUSTOMER", "STORE", "DELIVERY", "SELECTED_USERS"] 
+                    : ["ALL", "CUSTOMER", "STORE", "SERVICE", "SELECTED_USERS"]
+                  ).map(type => (
+                    <SelectItem key={type} value={type}>
+                      {t(`campaignTargetType.${type}`) || t(type) || type}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -426,6 +495,80 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
             )}
           </div>
         </div>
+
+        {form.type === "NOTIFICATION" && (
+          <div className="grid gap-5 rounded-2xl border bg-muted/20 p-5">
+            <h3 className="font-semibold">{t("clickAction") || "Click Action"}</h3>
+            <div className="grid gap-4 md:grid-cols-3 items-end">
+              <div className="grid gap-2">
+                <Label>{t("clickTargetTypeLabel")}</Label>
+                <Select 
+                  value={form.clickTargetType} 
+                  onValueChange={value => handleClickTargetChange(value)}
+                >
+                  <SelectTrigger><SelectValue placeholder={t("clickTargetType") || "Select Type"} /></SelectTrigger>
+                  <SelectContent>
+                    {["GENERAL", "STORE", "CATEGORY", "SERVICE", "URL"].map(type => (
+                      <SelectItem key={type} value={type}>
+                        {t(`clickTargetType.${type}`) || type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {form.clickTargetType === "STORE" && (
+                <div className="grid gap-2">
+                  <Label>{t("store")} *</Label>
+                  <SelectPaginated
+                    name="clickStoreId"
+                    apiUrl={storesApiUrl}
+                    value={form.clickStoreId}
+                    onChange={value => updateForm("clickStoreId", value ? String(value) : "")}
+                    placeholder={t("store")}
+                  />
+                </div>
+              )}
+
+              {form.clickTargetType === "CATEGORY" && (
+                <div className="grid gap-2">
+                  <Label>{t("category")} *</Label>
+                  <SelectPaginated
+                    name="clickCategoryId"
+                    apiUrl={["categories"]}
+                    value={form.clickCategoryId}
+                    onChange={value => updateForm("clickCategoryId", value ? String(value) : "")}
+                    placeholder={t("category")}
+                  />
+                </div>
+              )}
+
+              {form.clickTargetType === "SERVICE" && (
+                <div className="grid gap-2">
+                  <Label>{t("products")} *</Label>
+                  <SelectPaginated
+                    name="clickServiceId"
+                    apiUrl={servicesApiUrl}
+                    value={form.clickServiceId}
+                    onChange={value => updateForm("clickServiceId", value ? String(value) : "")}
+                    placeholder={t("products")}
+                  />
+                </div>
+              )}
+
+              {form.clickTargetType === "URL" && (
+                <div className="grid gap-2 md:col-span-2">
+                  <Label>{t("url")} *</Label>
+                  <Input 
+                    value={form.clickUrl} 
+                    onChange={event => updateForm("clickUrl", event.target.value)} 
+                    placeholder="https://..." 
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {isOffer && (
           <div className="grid gap-5 rounded-2xl border bg-muted/20 p-5">
