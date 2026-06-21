@@ -1,7 +1,22 @@
 import { FormInput } from "@/components/common/Form/CustomFormTypes.types";
 
 export function extractFormDefaultInputs(inputs: FormInput[], data?: unknown): object | undefined {
-  if (!data) return {};
+  if (!data) {
+    return inputs
+      ?.map(item => {
+        if (!item) return {};
+        if (item.multiLang) {
+          return {
+            [`${item.name}Ar`]: "",
+            [`${item.name}En`]: ""
+          };
+        }
+        return {
+          [item.name]: ""
+        };
+      })
+      .reduce((acc, curr) => ({ ...acc, ...curr }), {});
+  }
   return inputs
     ?.map(item => {
       if (item == undefined) {

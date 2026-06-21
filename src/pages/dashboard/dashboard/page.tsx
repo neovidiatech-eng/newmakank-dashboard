@@ -1,205 +1,313 @@
-import { StatisticsCard } from "@/components/statistics/StatisticsCard";
-import { StatisticsMotionGrid } from "@/components/statistics/StatisticsMotionGrid";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DASHBOARD_CARD_MOTION,
-  getFundStatCards,
-  getOrderStatCards,
-  getOverviewStatCards,
-  TRANSACTION_TOTAL_CARDS
-} from "@/features/dashboard/config/stats";
 import { useApiQuery } from "@/hooks/useApiQuery";
-import { Banknote, Clock, DollarSign, ShoppingBag, Store, TrendingUp, Users, Wallet } from "lucide-react";
-import { useTranslations } from "@/lib/i18n";
+import { Link, useSearchParams } from "react-router-dom";
+import { Banknote, Users, Store, Bike, Receipt, BadgePercent, Coins, HandCoins, Truck, Info } from "lucide-react";
+import { useTranslations, useLocale } from "@/lib/i18n";
+import { TablePagination } from "@/components/common/table/tableHelperComponents/TablePagination";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+
+function formatMoney(value: number | string | null | undefined, locale: string) {
+  const numberValue = Number(value ?? 0);
+  return new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-US", {
+    maximumFractionDigits: 2
+  }).format(Number.isFinite(numberValue) ? numberValue : 0);
+}
 
 export default function DashboardPage() {
   const t = useTranslations();
-  const { data: userWallet } = useApiQuery({
-    queryKey: ["userWallet"],
-    endPoint: ["userWallet"]
-  });
+  const locale = useLocale();
+  const [searchParams] = useSearchParams();
+  const page = Number(searchParams.get("page")) || 1;
+  const limit = Number(searchParams.get("limit")) || 10;
+  
   const { data: statsResponse } = useApiQuery({
     queryKey: ["statistics"],
     endPoint: ["statistics"]
   });
-  const { data: transactionsResponse } = useApiQuery({
-    queryKey: ["transactionsStatistics"],
-    endPoint: ["transactionsStatistics"]
-  });
+
+
   const { data: ordersResponse } = useApiQuery({
-    queryKey: ["ordersStatistics"],
-    endPoint: ["ordersStatistics"]
+    queryKey: ["orders", { limit, page }],
+    endPoint: ["orders"],
+    params: { limit, page }
+  });
+
+  const { data: allOrdersResponse } = useApiQuery({
+    queryKey: ["orders_all_for_stats"],
+    endPoint: ["orders"],
+    params: { limit: 100000, page: 1 }
+  });
+
+  const { data: deliveryResponse } = useApiQuery({
+    queryKey: ["delivery", { limit: 1 }],
+    endPoint: ["delivery"],
+    params: { limit: 1 }
+  });
+
+  const { data: openStoresResponse } = useApiQuery({
+    queryKey: ["stores", { limit: 1 }],
+    endPoint: ["stores"],
+    params: { limit: 1 }
   });
 
   const stats = (statsResponse?.data ?? {}) as any;
-  const fundStats = (transactionsResponse?.data?.FundStatistics ?? []) as any[];
-  const allTransactionSums = (transactionsResponse?.data?.AllStatistic?._sum ?? {}) as Record<string, number>;
-  const ordersStats = (ordersResponse?.data ?? {}) as any;
-  const walletData = userWallet?.data || {};
-  const hasStats = Boolean(statsResponse?.data);
-  const hasTransactions = Boolean(transactionsResponse?.data);
-  const hasOrders = Boolean(ordersResponse?.data);
-  const walletCards = [
-    { title: "Total", value: walletData.total || '-', icon: DollarSign, className: "bg-blue-500/10 text-blue-700 dark:text-blue-300" },
-    { title: "Total Earning", value: walletData.totalEarning || '-', icon: TrendingUp, className: "bg-green-500/10 text-green-700 dark:text-green-300" },
-    { title: "Total Withdrawn", value: walletData.totalWithdrawn || '-', icon: Banknote, className: "bg-red-500/10 text-red-700 dark:text-red-300" },
-    { title: "Pending Withdraw", value: walletData.pendingWithdraw || '-', icon: Clock, className: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300" },
-    { title: "Collected Cash", value: walletData.collectedCash || '-', icon: Wallet, className: "bg-purple-500/10 text-purple-700 dark:text-purple-300" },
-    { title: "Current Balance", value: walletData.currentBalance || '-', icon: DollarSign, className: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300" },
-  ];
+
+  const orders = (ordersResponse?.data?.data ?? ordersResponse?.data ?? []) as any[];
+  const allOrdersForStats = (allOrdersResponse?.data?.data ?? allOrdersResponse?.data ?? []) as any[];
+
+  // Data aggregations (defensive fallback)
+  const totalCustomers = stats.totalCustomers ?? 0;
+  const totalStores = stats.totalStores ?? 0;
+  
+  // Directly fetching correct counts
+  const totalDelivery = deliveryResponse?.total ?? deliveryResponse?.data?.length ?? deliveryResponse?.data?.data?.length ?? stats.totalDelivery ?? 0;
+  const openStores = openStoresResponse?.total ?? openStoresResponse?.data?.length ?? openStoresResponse?.data?.data?.length ?? 0;
+
+  // Financials calculated from ALL orders
+  const financialData = {
+    totalAmount: allOrdersForStats.reduce((sum, order) => sum + Number(order?.invoice?.summary?.total ?? order?.price ?? 0), 0),
+    productPrice: allOrdersForStats.reduce((sum, order) => sum + Number(order?.price ?? 0), 0),
+    storeCommission: allOrdersForStats.reduce((sum, order) => sum + Number(order?.storeCommission ?? 0), 0),
+    globalCommission: allOrdersForStats.reduce((sum, order) => sum + Number(order?.globalCommission ?? 0), 0),
+    taxes: allOrdersForStats.reduce((sum, order) => sum + Number(order?.tax ?? 0), 0),
+    deliveryPrice: allOrdersForStats.reduce((sum, order) => sum + Number(order?.shipping ?? 0), 0),
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-10 max-w-7xl w-full mx-auto px-4 py-6 defer-paint">
-      <div className="relative w-full overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-white via-white to-slate-50/80 px-6 py-8 shadow-sm dark:from-slate-950 dark:via-slate-950 dark:to-slate-900/70">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-sky-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-violet-500/10 blur-3xl" />
-        <div className="relative text-center space-y-3">
-          <p className="text-sm uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
-            {t("dashboard.liveInsights")}
+    <div className="flex flex-col gap-8 w-full mx-auto px-4 py-6 defer-paint">
+      
+      {/* 1. First Row: Overview Links */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Link to={`/${locale}/customers`} className="block transition-transform hover:scale-[1.02]">
+          <Card className="border-border/60 shadow-sm bg-sky-50 dark:bg-sky-950/20 hover:border-sky-300">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-sky-600 dark:text-sky-400">إجمالي العملاء</p>
+                <h3 className="text-3xl font-bold text-sky-900 dark:text-sky-100 mt-2">{totalCustomers}</h3>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center">
+                <Users className="h-6 w-6 text-sky-600 dark:text-sky-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link to={`/${locale}/delivery`} className="block transition-transform hover:scale-[1.02]">
+          <Card className="border-border/60 shadow-sm bg-violet-50 dark:bg-violet-950/20 hover:border-violet-300">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-violet-600 dark:text-violet-400">إجمالي المناديب</p>
+                <h3 className="text-3xl font-bold text-violet-900 dark:text-violet-100 mt-2">{totalDelivery}</h3>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center">
+                <Bike className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link to={`/${locale}/stores`} className="block transition-transform hover:scale-[1.02]">
+          <Card className="border-border/60 shadow-sm bg-amber-50 dark:bg-amber-950/20 hover:border-amber-300">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">إجمالي المتاجر</p>
+                <h3 className="text-3xl font-bold text-amber-900 dark:text-amber-100 mt-2">{openStores}</h3>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+                <Store className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {/* 2. Second Row: Financials */}
+      <div className="space-y-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Banknote className="h-6 w-6 text-primary" />
+            الماليات
+          </h2>
+          <p className="text-sm text-muted-foreground pr-8">
+            إجمالي الحسابات لجميع الطلبات في النظام
           </p>
-          <h1 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-[hsl(var(--brand-1))] to-[hsl(var(--brand-2))]">
-            {t("dashboard.overview")}
-          </h1>
-          <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-slate-700 dark:text-slate-200">
-            <span className="inline-flex items-center gap-2 rounded-full bg-sky-100/80 px-3 py-1 text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">
-              <Users className="h-4 w-4" />
-              {t("dashboard.totalCustomers")}: {stats.totalCustomers ?? 0}
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-violet-100/80 px-3 py-1 text-violet-700 dark:bg-violet-500/10 dark:text-violet-200">
-              <Store className="h-4 w-4" />
-              {t("dashboard.totalStores")}: {stats.totalStores ?? 0}
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-amber-100/80 px-3 py-1 text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
-              <ShoppingBag className="h-4 w-4" />
-              {t("dashboard.totalOrders")}: {stats.totalOrders ?? 0}
-            </span>
-          </div>
+        </div>
+        
+        {/* Main Total Amount Card */}
+        <Card className="border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 shadow-sm mb-4">
+          <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <p className="text-lg font-medium text-emerald-800 dark:text-emerald-300">إجمالي مبالغ الطلبات</p>
+              <p className="text-sm text-emerald-600 dark:text-emerald-400 mb-2">يشمل (سعر المنتجات + عمولة المتجر + عمولة المنصة + الضرائب + التوصيل)</p>
+              <h3 className="text-4xl font-bold text-emerald-900 dark:text-emerald-100">
+                {formatMoney(financialData.totalAmount, locale)}
+              </h3>
+            </div>
+            <div className="h-20 w-20 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+              <Banknote className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Detailed Breakdown Boxes */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card className="border-border/60 bg-card shadow-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/50">
+                <Receipt className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">سعر المنتجات الأصلي</p>
+                <p className="font-bold">{formatMoney(financialData.productPrice, locale)}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60 bg-card shadow-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/50">
+                <Store className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">عمولة المتجر</p>
+                <p className="font-bold">{formatMoney(financialData.storeCommission, locale)}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60 bg-card shadow-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50">
+                <HandCoins className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">العمولة العامة</p>
+                <p className="font-bold">{formatMoney(financialData.globalCommission, locale)}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60 bg-card shadow-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-rose-100 text-rose-600 dark:bg-rose-900/50">
+                <BadgePercent className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">الضرائب</p>
+                <p className="font-bold">{formatMoney(financialData.taxes, locale)}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60 bg-card shadow-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-teal-100 text-teal-600 dark:bg-teal-900/50">
+                <Truck className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">التوصيل</p>
+                <p className="font-bold">{formatMoney(financialData.deliveryPrice, locale)}</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      <div className="grid gap-6 w-full">
-        <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">{t("dashboard.statistics")}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-2">
-            {!hasStats && (
-              <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-                {t("StatisticsUnavailable")}
-              </p>
-            )}
-            <StatisticsMotionGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {getOverviewStatCards(stats).map(card => {
-                const Icon = card.icon;
-                return (
-                  <StatisticsCard
-                    key={card.title}
-                    title={card.title}
-                    value={card.value}
-                    icon={<Icon className="size-6" />}
-                    // className={card.className}
-                    motionProps={{ variants: DASHBOARD_CARD_MOTION }}
-                  />
-                );
-              })}
-            </StatisticsMotionGrid>
-          </CardContent>
-        </Card>
+      {/* 3. Table: Recent Orders */}
+      <Card className="border-border/60 bg-card shadow-sm">
+        <CardHeader>
+          <CardTitle>الطلبات الحديثة</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow>
+                <TableHead className="text-center font-bold">رقم الطلب</TableHead>
+                <TableHead className="text-center font-bold">المندوب</TableHead>
+                <TableHead className="text-center font-bold">السعر الإجمالي</TableHead>
+                <TableHead className="text-center font-bold text-muted-foreground">سعر المنتج الأصلي</TableHead>
+                <TableHead className="text-center font-bold text-muted-foreground">عمولة المتجر</TableHead>
+                <TableHead className="text-center font-bold text-muted-foreground">العمولة العامة</TableHead>
+                <TableHead className="text-center font-bold text-muted-foreground">الضريبة</TableHead>
+                <TableHead className="text-center font-bold text-muted-foreground">سعر التوصيل</TableHead>
+                <TableHead className="text-center font-bold text-muted-foreground">التفاصيل</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {orders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+                    لا توجد طلبات متاحة حالياً
+                  </TableCell>
+                </TableRow>
+              ) : (
+                orders.map((order) => {
+                  const deliveryName = order?.Delivery?.User?.name || order?.Delivery?.name || order?.delivery?.name || "—";
+                  const productPrice = order?.price || 0;
+                  const storeCommission = order?.storeCommission || 0;
+                  const globalCommission = order?.globalCommission || 0;
+                  const tax = order?.tax || 0;
+                  const deliveryPrice = order?.shipping || 0;
+                  const total = order?.invoice?.summary?.total ?? order?.price ?? 0;
 
-        <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">
-              {t("dashboard.transactionsStatistics")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-2">
-            {!hasTransactions && (
-              <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-                {t("TransactionsUnavailable")}
-              </p>
-            )}
-            <StatisticsMotionGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {getFundStatCards(fundStats).map(card => {
-                const Icon = card.icon;
-                return (
-                  <StatisticsCard
-                    key={`${card.title}-${card.value}`}
-                    title={card.title}
-                    value={card.value}
-                    icon={<Icon className="size-6" />}
-                    className={card.className}
-                    motionProps={{ variants: DASHBOARD_CARD_MOTION }}
-                  />
-                );
-              })}
-              {TRANSACTION_TOTAL_CARDS.map(card => {
-                const Icon = card.icon;
-                return (
-                  <StatisticsCard
-                    key={card.title}
-                    title={card.title}
-                    value={allTransactionSums[card.sumKey] ?? 0}
-                    icon={<Icon className="size-6" />}
-                    className={card.className}
-                    motionProps={{ variants: DASHBOARD_CARD_MOTION }}
-                  />
-                );
-              })}
-            </StatisticsMotionGrid>
-          </CardContent>
-        </Card>
+                  return (
+                    <TableRow key={order.id} className="hover:bg-muted/30">
+                      <TableCell className="text-center font-medium">
+                        <Link to={`/${locale}/orders/${order.id}`} className="text-primary hover:underline">
+                          #{order.id}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {deliveryName !== "—" ? (
+                          <Badge variant="outline" className="bg-violet-50 text-violet-700">{deliveryName}</Badge>
+                        ) : "—"}
+                      </TableCell>
+                      <TableCell className="text-center font-bold text-emerald-600">
+                        {formatMoney(total, locale)}
+                      </TableCell>
+                      <TableCell className="text-center text-muted-foreground">
+                        {formatMoney(productPrice, locale)}
+                      </TableCell>
+                      <TableCell className="text-center text-muted-foreground">
+                        {formatMoney(storeCommission, locale)}
+                      </TableCell>
+                      <TableCell className="text-center text-muted-foreground">
+                        {formatMoney(globalCommission, locale)}
+                      </TableCell>
+                      <TableCell className="text-center text-muted-foreground">
+                        {formatMoney(tax, locale)}
+                      </TableCell>
+                      <TableCell className="text-center text-muted-foreground">
+                        {formatMoney(deliveryPrice, locale)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Link to={`/${locale}/orders/${order.id}`} className="text-muted-foreground hover:text-primary transition-colors flex justify-center">
+                          <Info className="h-5 w-5" />
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
+            </TableBody>
+          </Table>
 
-        <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">{t("dashboard.ordersStatistics")}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-2">
-            {!hasOrders && (
-              <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-                {t("OrdersUnavailable")}
-              </p>
-            )}
-            <StatisticsMotionGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {getOrderStatCards(ordersStats).map(card => {
-                const Icon = card.icon;
-                return (
-                  <StatisticsCard
-                    key={card.title}
-                    title={card.title}
-                    value={card.value}
-                    icon={<Icon className="size-6" />}
-                    className={card.className}
-                    motionProps={{ variants: DASHBOARD_CARD_MOTION }}
-                  />
-                );
-              })}
-            </StatisticsMotionGrid>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">{t("Wallet")}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-2">
-            <StatisticsMotionGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-              {walletCards.map(card => {
-                const Icon = card.icon;
-                return (
-                  <StatisticsCard
-                    key={card.title}
-                    title={card.title}
-                    value={card.value}
-                    icon={<Icon className="size-6" />}
-                    className={card.className}
-                    motionProps={{ variants: DASHBOARD_CARD_MOTION }}
-                  />
-                );
-              })}
-            </StatisticsMotionGrid>
-          </CardContent>
-        </Card>
-      </div>
+          {ordersResponse?.total !== undefined && orders.length > 0 && (
+            <div className="mt-4 pb-2">
+              <TablePagination pagination={{ total: ordersResponse.total }} />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
     </div>
   );
 }

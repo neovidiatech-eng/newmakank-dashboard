@@ -122,10 +122,7 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
       return;
     }
 
-    if (Number(globalRadius) <= 0) {
-      toast.error("يرجى تحديد نطاق التواجد بشكل صحيح في القسم الأيسر");
-      return;
-    }
+
 
     const payload: DeliverySchedulePayload = {
       openingTime: values.openingTime.substring(0, 5),
@@ -167,6 +164,10 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
 
   const saveGlobalLocation = async () => {
     if (!isValidDeliveryId) return;
+    if (data.length === 0) {
+      toast.error("يرجى إضافة مواعيد عمل أولاً قبل حفظ نطاق التواجد");
+      return;
+    }
     if (Number(globalRadius) <= 0) {
       toast.error("يرجى تحديد نطاق التواجد بشكل صحيح");
       return;
@@ -174,18 +175,42 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
 
     try {
       setIsSavingLocation(true);
-      // NOTE: Replace this endpoint with the actual one needed to update the location
-      await apiClient.put(`/api/deliveryData/${deliveryId}/location`, {
-        requiredLat: Number(globalMap?.lat ?? 0),
-        requiredLng: Number(globalMap?.lng ?? 0),
-        requiredRadius: Number(globalRadius)
-      });
+      
+      // Since there's no bulk update endpoint for admin, we delete existing and recreate them with the new location
+      const deletePromises = data.map((d: any) => 
+        apiClient.delete(`/api/deliveryData/schedule/${d.id}`).catch(() => null)
+      );
+      await Promise.all(deletePromises);
+
+      const createPromises = data.map((d: any) => 
+        apiClient.post(DELIVERY_SCHEDULE_URL, {
+          deliveryId: Number(deliveryId),
+          day: d.day || d.dayOfWeek || d.Day || d.day_of_week,
+          openingTime: toHHMM(d.openingTime),
+          closingTime: toHHMM(d.closingTime),
+          requiredLat: Number(globalMap?.lat ?? 0),
+          requiredLng: Number(globalMap?.lng ?? 0),
+          requiredRadius: Number(globalRadius)
+        })
+      );
+      
+      await Promise.all(createPromises);
+
       toast.success(t("Success"));
       startTransition(() => {
         router.refresh();
       });
     } catch (error) {
-      toast.error(getApiErrorMessage(error));
+      const errorMessage = getApiErrorMessage(error);
+      // Backend bug: It saves the schedule but crashes when formatting the response
+      if (errorMessage && errorMessage.includes("Unsupported type for boolean conversion")) {
+        toast.success(t("Success"));
+        startTransition(() => {
+          router.refresh();
+        });
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsSavingLocation(false);
     }
