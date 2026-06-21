@@ -81,6 +81,7 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
 
   const [globalRadius, setGlobalRadius] = useState<string>("0");
   const [globalMap, setGlobalMap] = useState<MapPointer | null>({ lat: 24.7136, lng: 46.6753 });
+  const [isSavingLocation, setIsSavingLocation] = useState(false);
   // Initialize map and radius from existing data if available
   useEffect(() => {
     if (data && data.length > 0) {
@@ -161,6 +162,32 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
       } else {
         toast.error(errorMessage);
       }
+    }
+  };
+
+  const saveGlobalLocation = async () => {
+    if (!isValidDeliveryId) return;
+    if (Number(globalRadius) <= 0) {
+      toast.error("يرجى تحديد نطاق التواجد بشكل صحيح");
+      return;
+    }
+
+    try {
+      setIsSavingLocation(true);
+      // NOTE: Replace this endpoint with the actual one needed to update the location
+      await apiClient.put(`/api/deliveryData/${deliveryId}/location`, {
+        requiredLat: Number(globalMap?.lat ?? 0),
+        requiredLng: Number(globalMap?.lng ?? 0),
+        requiredRadius: Number(globalRadius)
+      });
+      toast.success(t("Success"));
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (error) {
+      toast.error(getApiErrorMessage(error));
+    } finally {
+      setIsSavingLocation(false);
     }
   };
 
@@ -321,6 +348,14 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
                     placeholder="ابحث عن الموقع"
                   />
                 </div>
+                <Button 
+                  className="w-full" 
+                  onClick={saveGlobalLocation} 
+                  disabled={isSavingLocation}
+                  isLoading={isSavingLocation}
+                >
+                  حفظ إعدادات الموقع
+                </Button>
               </div>
             </CardContent>
           </Card>
