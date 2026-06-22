@@ -94,7 +94,7 @@ export default function useStoreTemplatesLogic({
       data,
       formData: finalPayload,
       endpoint: ["storeTemplates"],
-      reset: reset,
+      customReset: () => reset(extractFormDefaultInputs(inputs, undefined) as any),
       t
     });
   };

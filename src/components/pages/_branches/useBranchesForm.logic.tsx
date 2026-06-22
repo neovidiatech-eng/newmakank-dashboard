@@ -36,7 +36,7 @@ export default function useBranchesLogic({
       data,
       formData: extractFormNameInputs({ inputs, data: formattedData }),
       endpoint: ["branches"],
-      reset: reset,
+      customReset: () => reset(extractFormDefaultInputs(inputs, undefined) as any),
 
       t
     });

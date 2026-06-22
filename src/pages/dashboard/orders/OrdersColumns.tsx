@@ -198,29 +198,7 @@ export default function OrdersColumns(): any {
         return arrivalDate ? <DateCol date={arrivalDate.toISOString()} /> : <span>-</span>;
       }
     },
-    {
-      id: "deliveryPickup",
-      header: () => <IconHeader columnKey="Delivery Pickup" />,
-      cell: ({ row }) => {
-        const pickupDate = getDeliveryPickupDate(row.original);
-        return pickupDate ? <DateCol date={pickupDate.toISOString()} /> : <span>-</span>;
-      }
-    },
-    {
-      id: "deliveredAt",
-      header: () => <IconHeader columnKey="Delivery Time" />,
-      cell: ({ row }) => {
-        const deliveredDate = getDeliveredDate(row.original);
-        return deliveredDate ? <DateCol date={deliveredDate.toISOString()} /> : <span>-</span>;
-      }
-    },
-    {
-      id: "deliveryPerformance",
-      header: () => <IconHeader columnKey="Delivery Performance" />,
-      cell: ({ row }) => (
-        <DeliveryPerformanceBadge status={getDeliveryPerformance(row.original)} />
-      )
-    },
+
     {
       accessorKey: "totalPriceAfterDiscount",
       header: () => <IconHeader columnKey="TotalPriceAfterDiscount" />,

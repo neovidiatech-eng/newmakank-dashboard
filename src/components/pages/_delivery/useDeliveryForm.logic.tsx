@@ -30,7 +30,7 @@ export default function useDeliveryLogic({ data }: { data?: DeliveryType }) {
       data,
       formData: extractFormNameInputs({ inputs, data: formData }),
       endpoint: ["deliveryRegister"],
-      reset: reset,
+      customReset: () => reset(extractFormDefaultInputs(inputs, undefined) as any),
 
       t
     });

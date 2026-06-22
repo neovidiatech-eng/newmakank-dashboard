@@ -32,6 +32,9 @@ export default function ImgInput({
     if (value && typeof value === "string") {
       setPreviewUrl(API_IMG_URL + value);
       setFileName(value.split("/").pop() || "");
+    } else if (!value) {
+      setPreviewUrl("");
+      setFileName("");
     }
 
     return () => {

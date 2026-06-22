@@ -18,6 +18,7 @@ export default function useCouponsLogic({ data }: { data?: CouponsType }) {
 		control,
 		formState: { errors },
 		handleSubmit,
+		reset,
 	} = useForm<CouponsType>({
 		mode: "onSubmit",
 		resolver: zodResolver(CouponsSchema(t)),
@@ -69,6 +70,7 @@ export default function useCouponsLogic({ data }: { data?: CouponsType }) {
 			data,
 			formData: extractFormNameInputs({ inputs, data: normalizedData }),
 			endpoint: ['coupons'],
+			customReset: () => reset(extractFormDefaultInputs(inputs, undefined) as any),
 			t,
 		});
 	};

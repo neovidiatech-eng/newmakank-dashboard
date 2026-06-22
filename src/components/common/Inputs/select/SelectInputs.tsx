@@ -48,7 +48,7 @@ export default function SelectInput({
           }
         }}
         options={displayedOptions}
-        value={displayedOptions?.find(opt => opt.value == value)}
+        value={displayedOptions?.find(opt => opt.value == value) || null}
         placeholder={placeholder ? t(placeholder) : t("select")}
         name={name}
         data-testid={name}

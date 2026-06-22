@@ -36,7 +36,7 @@ export default function useCategoriesLogic({
       data,
       formData: extractFormNameInputs({ inputs, data: formData }),
       endpoint: endpoint ?? ["categories"],
-      reset: reset,
+      customReset: () => reset(extractFormDefaultInputs(inputs, undefined) as any),
 
       t
     });

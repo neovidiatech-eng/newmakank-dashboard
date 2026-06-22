@@ -275,7 +275,7 @@ export default function SelectPaginated({
 
   // Find the selected value in the combined options list
   const selectedValue = (() => {
-    if (!value) return undefined;
+    if (!value) return null;
 
     // For single select
     if (!isMulti) {
@@ -288,7 +288,7 @@ export default function SelectPaginated({
       return value.map(v => allOptions.find((opt: Option) => String(opt.value) === String(v))).filter(Boolean);
     }
 
-    return undefined;
+    return null;
   })();
 
   // Fetch missing selected value only on first mount

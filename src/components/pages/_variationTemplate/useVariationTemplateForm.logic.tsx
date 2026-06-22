@@ -13,7 +13,8 @@ export default function useVariationTemplateLogic({ data }: { data?: VariationTe
   const formAction = useFormAction();
   const {
     control,
-    handleSubmit
+    handleSubmit,
+    reset
   } = useForm<VariationTemplateType>({
     mode: "onSubmit",
     resolver: zodResolver(VariationTemplateSchema(t)),
@@ -27,6 +28,7 @@ export default function useVariationTemplateLogic({ data }: { data?: VariationTe
       data,
       formData: extractFormNameInputs({ inputs, data: formData }),
       endpoint: ["variationTemplate"],
+      customReset: () => reset(extractFormDefaultInputs(inputs, undefined) as any),
       t
     });
   };

@@ -106,7 +106,7 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       formData: extractFormNameInputs({ inputs, data: formattedData }),
       endpoint: ["stores"],
       t,
-      reset
+      customReset: () => reset(extractFormDefaultInputs(inputs, undefined) as any)
     });
 
     const oldTemplateId = ((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) ? String((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) : "";

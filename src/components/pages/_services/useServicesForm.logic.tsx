@@ -129,7 +129,27 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
       data,
       formData: extractFormNameInputs({ inputs, data: formattedData }),
       endpoint: ["services"],
-      t
+      t,
+      customReset: () => {
+        reset({
+          nameAr: "",
+          nameEn: "",
+          descriptionAr: "",
+          descriptionEn: "",
+          image: undefined,
+          durationMinutes: "",
+          priceBeforeDiscount: "",
+          priceAfterDiscount: "",
+          status: "",
+          available: "true",
+          storeId: hideStoreInput ? data?.storeId : undefined,
+          categoryId: undefined,
+          Sizes: [],
+          Addons: []
+        } as any);
+        sizesReplace([]);
+        addonsReplace([]);
+      }
     });
   };
 

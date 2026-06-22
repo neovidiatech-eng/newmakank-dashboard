@@ -3,15 +3,26 @@ import type { FormInput } from "@/components/common/Form/CustomFormTypes.types";
 
 export const BannersInputs = ({
   selectedStore,
+  selectedCategory,
   selectedTargetType,
   isSpecialDelivery,
-  onStoreChange
+  onStoreChange,
+  onCategoryChange,
+  t
 }: {
   selectedStore?: string | number | null;
+  selectedCategory?: string | number | null;
   selectedTargetType?: string | null;
   isSpecialDelivery?: boolean;
   onStoreChange?: () => void;
+  onCategoryChange?: () => void;
+  t?: any;
 } = {}) => {
+  const tr = (key: string, fallback: string) => {
+    if (!t) return fallback;
+    const res = t(key);
+    return res === key || !res ? fallback : res;
+  };
   const targetType = isSpecialDelivery ? "SPECIAL_DRIVER" : selectedTargetType || "GENERAL";
   const needsStore = ["STORE", "CATEGORY", "SERVICE", "ZONE"].includes(targetType);
   const needsCategory = ["CATEGORY", "SERVICE"].includes(targetType);
@@ -28,12 +39,12 @@ export const BannersInputs = ({
       defaultValue: "GENERAL",
       disabled: isSpecialDelivery,
       options: [
-        { label: "GENERAL", value: "GENERAL" },
-        { label: "CUSTOMER_CATEGORY", value: "CUSTOMER_CATEGORY" },
-        { label: "STORE", value: "STORE" },
-        { label: "CATEGORY", value: "CATEGORY" },
-        { label: "SERVICE", value: "SERVICE" },
-        { label: "ZONE", value: "ZONE" }
+        { label: tr("GENERAL", "عام"), value: "GENERAL" },
+        { label: tr("CUSTOMER_CATEGORY", "فئة عملاء"), value: "CUSTOMER_CATEGORY" },
+        { label: tr("STORE", "محل"), value: "STORE" },
+        { label: tr("CATEGORY", "فئة"), value: "CATEGORY" },
+        { label: tr("SERVICE", "منتج"), value: "SERVICE" },
+        { label: tr("ZONE", "منطقة"), value: "ZONE" }
       ]
     },
     {
@@ -60,7 +71,8 @@ export const BannersInputs = ({
       searchFilters: selectedStore ? [{ key: "storeId", value: Number(selectedStore) }] : [],
       cardId: 'targeting',
       width: 3,
-      disabled: isSpecialDelivery || !needsCategory || !selectedStore
+      disabled: isSpecialDelivery || !needsCategory || !selectedStore,
+      onChange: onCategoryChange
     },
     {
       name: "serviceId",
@@ -68,8 +80,8 @@ export const BannersInputs = ({
       apiUrl: ['services'],
       cardId: 'targeting',
       width: 3,
-      disabled: isSpecialDelivery || !needsService || !selectedStore,
-      searchFilters: selectedStore ? [{ key: "storeId", value: selectedStore }] : []
+      disabled: isSpecialDelivery || !needsService || !selectedStore || !selectedCategory,
+      searchFilters: selectedCategory ? [{ key: "categoryId", value: selectedCategory }] : []
     },
     {
       name: "zoneIds",
@@ -87,7 +99,7 @@ export const BannersInputs = ({
       width: 3,
       label: "",
       inputClassName: "button-checkbox",
-      options: [{ label: "Special Delivery", value: "true" }]
+      options: [{ label: tr("Special Delivery", "مندوب خاص"), value: "true" }]
     },
     { name: "image", type: "img", required: true, cardId: 'media', width: 3 },
     { name: "order", type: "number", cardId: 'media', width: 3 },

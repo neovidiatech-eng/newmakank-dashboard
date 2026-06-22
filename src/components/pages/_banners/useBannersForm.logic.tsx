@@ -16,7 +16,8 @@ export default function useBannersLogic({ data }: { data?: BannersType }) {
   const formAction = useFormAction();
   const initialInputs = BannersInputs({
     selectedStore: data?.storeId,
-    selectedTargetType: typeof data?.targetType === "string" ? data.targetType : "GENERAL"
+    selectedTargetType: typeof data?.targetType === "string" ? data.targetType : "GENERAL",
+    t
   });
   const {
     control,
@@ -31,6 +32,7 @@ export default function useBannersLogic({ data }: { data?: BannersType }) {
     defaultValues: extractFormDefaultInputs(initialInputs, data) as BannersType
   });
   const selectedStore = watch("storeId") ?? data?.storeId;
+  const selectedCategory = watch("categoryId") ?? data?.categoryId;
   const selectedTargetType = (watch("targetType") as string | undefined) || "GENERAL";
   const specialDeliveryValue = watch("specialDelivery");
   const isSpecialDelivery = Array.isArray(specialDeliveryValue)
@@ -44,6 +46,7 @@ export default function useBannersLogic({ data }: { data?: BannersType }) {
       setValue("categoryId", "");
       setValue("serviceId", "");
       setValue("zoneIds", []);
+      setValue("customerCategoryId", "");
     }
   }, [isSpecialDelivery, setValue]);
 
@@ -55,7 +58,12 @@ export default function useBannersLogic({ data }: { data?: BannersType }) {
       setValue("categoryId", "");
       setValue("serviceId", "");
       setValue("zoneIds", []);
+      setValue("customerCategoryId", "");
       return;
+    }
+
+    if (selectedTargetType !== "CUSTOMER_CATEGORY") {
+      setValue("customerCategoryId", "");
     }
 
     if (!["CATEGORY", "SERVICE"].includes(selectedTargetType)) {
@@ -73,12 +81,17 @@ export default function useBannersLogic({ data }: { data?: BannersType }) {
 
   const inputs = BannersInputs({
     selectedStore: isSpecialDelivery ? null : selectedStore,
+    selectedCategory: isSpecialDelivery ? null : selectedCategory,
     selectedTargetType,
     isSpecialDelivery,
+    t,
     onStoreChange: () => {
       setValue("categoryId", "");
       setValue("serviceId", "");
       setValue("zoneIds", []);
+    },
+    onCategoryChange: () => {
+      setValue("serviceId", "");
     }
   });
 
@@ -89,26 +102,35 @@ export default function useBannersLogic({ data }: { data?: BannersType }) {
         ? formData.targetType
         : "GENERAL";
 
-    const normalizedFormData = {
+    const normalizedFormData: any = {
       ...formData,
       targetType,
-      specialDelivery: undefined,
-      storeId: ["STORE", "CATEGORY", "SERVICE", "ZONE"].includes(targetType) ? formData.storeId : undefined,
-      categoryId: ["CATEGORY", "SERVICE"].includes(targetType) ? formData.categoryId : undefined,
-      serviceId: targetType === "SERVICE" ? formData.serviceId : undefined,
-      zoneIds:
-        targetType === "ZONE" && Array.isArray(formData.zoneIds)
-          ? formData.zoneIds.join(",")
-          : targetType === "ZONE"
-            ? formData.zoneIds
-            : undefined
     };
+    delete normalizedFormData.specialDelivery;
+
+    if (targetType !== "CUSTOMER_CATEGORY") {
+      delete normalizedFormData.customerCategoryId;
+    }
+    if (!["STORE", "CATEGORY", "SERVICE", "ZONE"].includes(targetType)) {
+      delete normalizedFormData.storeId;
+    }
+    if (!["CATEGORY", "SERVICE"].includes(targetType)) {
+      delete normalizedFormData.categoryId;
+    }
+    if (targetType !== "SERVICE") {
+      delete normalizedFormData.serviceId;
+    }
+    if (targetType !== "ZONE") {
+      delete normalizedFormData.zoneIds;
+    } else if (Array.isArray(formData.zoneIds)) {
+      normalizedFormData.zoneIds = formData.zoneIds.join(",");
+    }
 
     await formAction({
       data,
       formData: extractFormNameInputs({ inputs, data: normalizedFormData }),
       endpoint: ["banners"],
-      reset: reset,
+      customReset: () => reset(extractFormDefaultInputs(inputs, undefined) as any),
       t
     });
   };
