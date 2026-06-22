@@ -19,7 +19,8 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
   const {
     control,
     formState: { errors },
-    handleSubmit
+    handleSubmit,
+    reset
   } = useForm<StoresType>({
     mode: "onSubmit",
     resolver: zodResolver(StoresSchema(t, isEdit)),
@@ -104,7 +105,8 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       data,
       formData: extractFormNameInputs({ inputs, data: formattedData }),
       endpoint: ["stores"],
-      t
+      t,
+      reset
     });
 
     const oldTemplateId = ((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) ? String((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) : "";
