@@ -7,6 +7,7 @@ import TableBasic from "@/components/common/table/TableBasic";
 import { Layers, MapPin, Package, ShoppingBag, FileCode2 } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { useMemo } from "react";
+import { useSearchParams, useRouter, usePathname } from "@/lib/navigation";
 
 interface StoreTabsProps {
   branches: ApiResponse<any[]>;
@@ -19,6 +20,18 @@ interface StoreTabsProps {
 
 export function StoreTabs({ branches, categories, orders, services, appliedTemplates, storeId }: StoreTabsProps) {
   const t = useTranslations();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  const currentTab = searchParams.get("tab") || "products";
+
+  const handleTabChange = (value: string) => {
+    const params = new URLSearchParams(); // Clear other params when changing tab, like page and limit
+    params.set("tab", value);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
   const ordersColumns = OrdersColumns();
   const formattedBranches = useMemo(() => {
     const arabicNumberFormatter = new Intl.NumberFormat("ar-EG", {
@@ -170,10 +183,12 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
       content: (
         <TableBasic
           data={appliedTemplates?.data}
-          columns={[{ accessorKey: "template.name", header: t("Template Name"), cell: ({ row }: any) => {
-            const tpl = row.original.template?.name;
-            return tpl ? (tpl.ar || tpl.en || tpl) : "-";
-          }}, { accessorKey: "appliedAt", header: t("Applied At"), cell: ({ getValue }: any) => new Date(getValue() as string).toLocaleString() }]}
+          columns={[{
+            accessorKey: "template.name", header: t("Template Name"), cell: ({ row }: any) => {
+              const tpl = row.original.template?.name;
+              return tpl ? (tpl.ar || tpl.en || tpl) : "-";
+            }
+          }, { accessorKey: "appliedAt", header: t("Applied At"), cell: ({ getValue }: any) => new Date(getValue() as string).toLocaleString() }]}
           cardHeader={t("appliedTemplates")}
           hideCreateNew
           isInnerTable={false}
@@ -185,5 +200,12 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
     }
   ];
 
-  return <CustomTabs tabs={tabs} defaultValue="products" clearSearchParams className="mt-6" />;
+  return (
+    <CustomTabs
+      tabs={tabs}
+      value={currentTab}
+      onValueChange={handleTabChange}
+      className="mt-6"
+    />
+  );
 }

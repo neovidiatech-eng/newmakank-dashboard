@@ -16,36 +16,41 @@ async function page({
   params: Params;
   searchParams: SearchParams;
 }): Promise<JSX.Element> {
-  const { id } = await params;
-  const storeId = Number(id);
+  const resolvedParams = await params;
+  const storeId = Number(resolvedParams.id);
+  const resolvedSearchParams = await searchParams;
+  const activeTab = resolvedSearchParams.tab || "products";
+  
+  // Remove tab from the parameters sent to the API
+  const { tab, ...apiSearchParams } = resolvedSearchParams;
 
   const [data, branchesData, categoriesData, ordersData, servicesData, appliedTemplatesData] = await Promise.all([
     fetchData(["stores", storeId]),
-    fetchData(["branches"], {
-      ...(await searchParams),
+    activeTab === "branches" ? fetchData(["branches"], {
+      ...apiSearchParams,
       storeId
-    }),
-    fetchData(["storeCategories"], {
-      ...(await searchParams),
+    }) : Promise.resolve(null),
+    activeTab === "categories" ? fetchData(["storeCategories"], {
+      ...apiSearchParams,
       storeId
-    }),
-    fetchData(["orders"], {
-      ...(await searchParams),
+    }) : Promise.resolve(null),
+    activeTab === "orders" ? fetchData(["orders"], {
+      ...apiSearchParams,
       storeId
-    }),
-    fetchData(["services"], {
-      ...(await searchParams),
+    }) : Promise.resolve(null),
+    activeTab === "products" ? fetchData(["services"], {
+      ...apiSearchParams,
       storeId
-    }),
-    fetchData(["stores", storeId, "appliedTemplates"], {
-      ...(await searchParams)
-    })
+    }) : Promise.resolve(null),
+    activeTab === "appliedTemplates" ? fetchData(["stores", storeId, "appliedTemplates"], {
+      ...apiSearchParams
+    }) : Promise.resolve(null)
   ]);
-  
+
   if (!data?.data) {
     return notFound();
   }
-  
+
   return (
     <StoreDetailsPage
       data={data.data}
