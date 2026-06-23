@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
@@ -20,17 +20,19 @@ export default function useRolesLogic({
   const formAction = useFormAction();
   const inputs = RolesInputs(permissions);
 
-  // Build default values for permission group inputs from existing data
+  // Build default values for permission group inputs
   const permDefaults: Record<string, string[]> = {};
-  if (data && permissions) {
+  if (permissions) {
     const existingIds = new Set(
       ((data as any)?.RolePermission ?? []).map((rp: any) => String(rp.permissionId))
     );
     for (const group of permissions) {
       const key = `${PERM_PREFIX}${group.prefix}`;
-      permDefaults[key] = group.methods
-        .filter(m => existingIds.has(String(m.id)))
-        .map(m => String(m.id));
+      permDefaults[key] = data 
+        ? group.methods
+            .filter(m => existingIds.has(String(m.id)))
+            .map(m => String(m.id))
+        : [];
     }
   }
   const { control, handleSubmit, reset } = useForm<RolesType>({
