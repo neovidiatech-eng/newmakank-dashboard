@@ -71,14 +71,20 @@ export default function DashboardPage() {
   const totalDelivery = deliveryResponse?.total ?? deliveryResponse?.data?.length ?? deliveryResponse?.data?.data?.length ?? stats.totalDelivery ?? 0;
   const openStores = openStoresResponse?.total ?? openStoresResponse?.data?.length ?? openStoresResponse?.data?.data?.length ?? 0;
 
-  // Financials calculated from ALL orders
+  // Filter out cancelled, rejected, and payment failed orders
+  const validOrdersForStats = allOrdersForStats.filter(order => {
+    const status = order?.status?.toUpperCase();
+    return status !== "CANCELLED" && status !== "REJECTED" && status !== "PAYMENT_FAILD";
+  });
+
+  // Financials calculated from VALID orders only
   const financialData = {
-    totalAmount: allOrdersForStats.reduce((sum, order) => sum + Number(order?.invoice?.summary?.total ?? order?.price ?? 0), 0),
-    productPrice: allOrdersForStats.reduce((sum, order) => sum + Number(order?.price ?? 0), 0),
-    storeCommission: allOrdersForStats.reduce((sum, order) => sum + Number(order?.storeCommission ?? 0), 0),
-    globalCommission: allOrdersForStats.reduce((sum, order) => sum + Number(order?.globalCommission ?? 0), 0),
-    taxes: allOrdersForStats.reduce((sum, order) => sum + Number(order?.tax ?? 0), 0),
-    deliveryPrice: allOrdersForStats.reduce((sum, order) => sum + Number(order?.shipping ?? 0), 0),
+    totalAmount: validOrdersForStats.reduce((sum, order) => sum + Number(order?.invoice?.summary?.total ?? order?.price ?? 0), 0),
+    productPrice: validOrdersForStats.reduce((sum, order) => sum + Number(order?.price ?? 0), 0),
+    storeCommission: validOrdersForStats.reduce((sum, order) => sum + Number(order?.storeCommission ?? 0), 0),
+    globalCommission: validOrdersForStats.reduce((sum, order) => sum + Number(order?.globalCommission ?? 0), 0),
+    taxes: validOrdersForStats.reduce((sum, order) => sum + Number(order?.tax ?? 0), 0),
+    deliveryPrice: validOrdersForStats.reduce((sum, order) => sum + Number(order?.shipping ?? 0), 0),
   };
 
   return (
