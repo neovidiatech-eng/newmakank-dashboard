@@ -131,7 +131,7 @@ export default function SelectPaginated({
               {},
             ),
             ...(searchTerm ? { locate: searchTerm } : {}),
-            limit: (currentPage * 15).toString(), // Adjust the number of items per page as needed
+            limit: "1000",
             ...searchFilters?.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {}),
           },
         });

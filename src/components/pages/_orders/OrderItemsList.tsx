@@ -20,7 +20,7 @@ export default function OrderItemsList({ items, storeCommission }: { items: ApiR
         <div className="flex flex-col gap-4 w-full">
             {items.map((item) => (
                 <div key={item.id} className="flex items-start gap-4 p-4 border rounded-lg">
-                    <div className="relative h-20 w-20 min-w-20 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800">
+                    <div className="relative h-20 w-20 min-w-20 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 print:hidden">
                         {item.Service?.image ? (
                             <Image
                                 src={imgUrl + item.Service.image}

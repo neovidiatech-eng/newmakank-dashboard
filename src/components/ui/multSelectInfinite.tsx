@@ -35,11 +35,10 @@ export default function MultiSelect({
 
     const data = await fetchHelper({
       endPoint: apiUrl,
-      method: "GET"
-      // params: {
-      // limit: Number(displayedOptions?.length ?? 0) + 15
-      // [searchTermKey]:searchTerm
-      // }
+      method: "GET",
+      params: {
+        limit: 1000
+      }
     });
     setDisplayedOptions(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

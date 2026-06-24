@@ -10,6 +10,7 @@ import InvoiceCustomDeliveryInfo from "@/components/pages/_orders/InvoiceCustomD
 import NoteForDeliveryDialog from "@/components/pages/_orders/NoteForDeliveryDialog";
 import OrderItemsList from "@/components/pages/_orders/OrderItemsList";
 import OrderStatusSelect from "@/components/pages/_orders/OrderStatusSelect";
+import CopyOrderButton from "@/components/pages/_orders/CopyOrderButton";
 import StoreInfo from "@/components/pages/_orders/StoreInfo";
 import { PriceAmount } from "@/components/PriceAmount";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +60,8 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
             {t("Created on")} <DateCol date={data?.createdAt} />
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 print:hidden">
+          <CopyOrderButton orderId={data?.id} items={data?.OrderItems || []} storeCommission={data?.storeCommission} />
           <div className="flex gap-2">
             <TableStatusBadge status={data?.status} />
             <TableStatusBadge status={data?.paymentStatus} />
@@ -70,7 +72,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
         {/* Main Column */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="lg:col-span-8 print:col-span-12 space-y-8">
           {/* Order Items */}
           <div className="space-y-4">
             <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
@@ -87,10 +89,10 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
 
           {/* Payment Summary */}
           <div className="space-y-4">
-            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 print:hidden">
               {t("Payment Details")}
             </h2>
-            <div className="bg-muted/30 dark:bg-muted/10 border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-3.5 text-sm">
+            <div className="bg-muted/30 dark:bg-muted/10 border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-3.5 text-sm print:hidden">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("Price")}</span>
                 <span className="font-medium">
@@ -254,7 +256,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
 
           {/* Custom Delivery Info */}
           {hasCustomDeliveryInfo && (
-            <div className="space-y-4">
+            <div className="space-y-4 print:hidden">
               <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 {t("Custom Delivery Info")}
               </h2>
@@ -269,7 +271,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
           )}
 
           {/* Complaints */}
-          <div className="space-y-4">
+          <div className="space-y-4 print:hidden">
             <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {t("Complaints")}
             </h2>
@@ -280,7 +282,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
         </div>
 
         {/* Sidebar Column */}
-        <div className="lg:col-span-4 lg:border-l lg:pl-8 border-slate-200 dark:border-slate-800 space-y-6">
+        <div className="lg:col-span-4 lg:border-l lg:pl-8 border-slate-200 dark:border-slate-800 space-y-6 print:hidden">
           {/* Customer Info */}
           <div className="pb-6 border-b border-slate-200 dark:border-slate-800 space-y-3">
             <div className="text-xs font-bold tracking-wider text-muted-foreground uppercase">

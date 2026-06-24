@@ -3,7 +3,7 @@ import type { Option } from "../../Form/CustomFormTypes.types";
 import type { endpointType } from "@/utils/endpoints";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const DEFAULT_PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 1000;
 
 interface UsePaginatedSelectOptions {
   apiUrl: endpointType;

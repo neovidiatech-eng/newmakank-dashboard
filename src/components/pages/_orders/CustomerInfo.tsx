@@ -24,7 +24,7 @@ export default function CustomerInfo({ customer }: { customer: ApiResponseCustom
             </div>
             <div>
                 <div className="font-medium">{customer.name}</div>
-                <div className="text-sm text-muted-foreground" dir="ltr">
+                <div className="text-sm text-muted-foreground print:hidden" dir="ltr">
                     {customer.phone}
                 </div>
             </div>

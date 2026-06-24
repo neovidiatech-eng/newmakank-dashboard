@@ -26,7 +26,7 @@ export default function DeliveryInfo({ delivery }: { delivery: ApiResponseDelive
             </div>
             <div>
                 <div className="font-medium">{user.name}</div>
-                <div className="text-sm text-muted-foreground">{user.phone}</div>
+                <div className="text-sm text-muted-foreground print:hidden">{user.phone}</div>
             </div>
         </div>
     );
