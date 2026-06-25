@@ -12,8 +12,8 @@ export default function CustomerInfo({ customer }: { customer: ApiResponseCustom
     return (
         <div className="flex items-center gap-4">
             <div className="relative h-12 w-12 rounded-full overflow-hidden bg-gray-100 border">
-                {customer.image ? (
-                    <Image src={imgUrl + customer.image} alt={customer.name} fill className="object-cover" />
+                {customer.image && customer.image !== "null" ? (
+                    <Image src={customer.image.startsWith("http") ? customer.image : imgUrl + customer.image} alt={customer.name} fill className="object-cover" />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center">
                         <UserIcon className="h-6 w-6 text-gray-400" />

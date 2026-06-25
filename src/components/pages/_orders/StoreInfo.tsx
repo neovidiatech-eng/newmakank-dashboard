@@ -18,9 +18,9 @@ export default function StoreInfo({
             {invoice?.store && (
                 <div className="flex items-center gap-4 mb-4">
                     <div className="relative h-12 w-12 rounded-lg overflow-hidden bg-gray-100 border">
-                        {invoice.store.logo && (
+                        {invoice.store.logo && invoice.store.logo !== "null" && (
                             <Image
-                                src={imgUrl + invoice.store.logo}
+                                src={invoice.store.logo.startsWith("http") ? invoice.store.logo : imgUrl + invoice.store.logo}
                                 alt="Store Logo"
                                 fill
                                 className="object-cover"

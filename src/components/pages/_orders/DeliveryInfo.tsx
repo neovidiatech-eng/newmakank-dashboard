@@ -14,8 +14,8 @@ export default function DeliveryInfo({ delivery }: { delivery: ApiResponseDelive
     return (
         <div className="flex items-center gap-4">
             <div className="relative h-12 w-12 rounded-full overflow-hidden bg-gray-100 border">
-                {user.image ? (
-                    <Image src={imgUrl + user.image} alt={user.name} fill className="object-cover" />
+                {user.image && user.image !== "null" ? (
+                    <Image src={user.image.startsWith("http") ? user.image : imgUrl + user.image} alt={user.name} fill className="object-cover" />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center">
                         <UserIcon className="h-6 w-6 text-gray-400" />
