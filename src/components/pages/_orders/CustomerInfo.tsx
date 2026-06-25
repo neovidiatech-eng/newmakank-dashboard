@@ -2,9 +2,7 @@ import type { ApiResponseCustomer } from "@/pages/dashboard/orders/types";
 import { User as UserIcon } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
-
-const imgUrl = import.meta.env.VITE_API_URL;
-
+const imgUrl = import.meta.env.VITE_API_IMG_URL;
 export default function CustomerInfo({ customer }: { customer: ApiResponseCustomer | null | undefined }) {
     const t = useTranslations();
 
