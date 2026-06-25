@@ -12,7 +12,8 @@
     nameAr:StringReq(t),
     nameEn:StringReq(t)
     ,
-    storeId:noSchema()
+    storeId:noSchema(),
+    order:noSchema()
 })
   };
 
