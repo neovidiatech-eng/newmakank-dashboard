@@ -17,14 +17,12 @@ map: z.object({
     lng: z.number(),
 }).optional(),
 address:StringReq(t),
-UserName:isEdit ? noSchema() : StringReq(t),
-userEmail:isEdit ? noSchema() : EmailReq(t),
-userPhone: isEdit
-  ? noSchema()
-  : StringReq(t).refine((val) => /^(\+20|0020|20)?0?1[0125]\d{8}$/.test(val), {
+UserName:StringReq(t),
+userEmail:EmailReq(t),
+userPhone: StringReq(t).refine((val) => /^(\+20|0020|20)?0?1[0125]\d{8}$/.test(val), {
       message: t("enterValidEgyptianPhone")
     }),
-userPass:isEdit ? noSchema() : StringReq(t)
+userPass:isEdit ? StringNotReq() : StringReq(t)
 })
   };
 

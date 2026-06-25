@@ -31,12 +31,12 @@ export default function StoresFormPage({ data }: { data?: StoresType }) {
 					width: 6,
 					icon: <MapPin className="size-4" />,
 				},
-				...(!!!data ? [{
+				{
 					id: "user",
 					title: t("Store Owner"),
 					width: 6,
 					icon: <User className="size-4" />,
-				}] : []).filter(Boolean),
+				},
 			]}
 			inputs={inputs}
 		/>

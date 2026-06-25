@@ -99,27 +99,18 @@ function createLazyPage(loader, filePath) {
       if (!Component || !isAsyncComponent(Component)) return;
 
       let cancelled = false;
-      const cached = routeResultCache.get(routeKey);
-
-      if (cached?.element) {
-        setAsyncState({ element: cached.element, error: null, routeKey });
-        return;
-      }
 
       setAsyncState({ element: null, error: null, routeKey });
 
-      const promise = cached?.promise ?? Component(routeProps);
-      routeResultCache.set(routeKey, { promise });
+      const promise = Component(routeProps);
 
       Promise.resolve(promise)
         .then(element => {
-          routeResultCache.set(routeKey, { element });
           if (!cancelled) {
             setAsyncState({ element, error: null, routeKey });
           }
         })
         .catch(error => {
-          routeResultCache.delete(routeKey);
           if (!cancelled) {
             setAsyncState({ element: null, error, routeKey });
           }
@@ -135,15 +126,12 @@ function createLazyPage(loader, filePath) {
         const Component = moduleState.Component;
         if (!Component || !isAsyncComponent(Component)) return;
 
-        routeResultCache.delete(routeKey);
         setAsyncState({ element: null, error: null, routeKey: "" });
 
         const promise = Component(routeProps);
-        routeResultCache.set(routeKey, { promise });
 
         Promise.resolve(promise)
           .then(element => {
-            routeResultCache.set(routeKey, { element });
             setAsyncState({ element, error: null, routeKey });
           })
           .catch(error => {

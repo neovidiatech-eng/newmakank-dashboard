@@ -23,6 +23,9 @@ const page = async ({ params }: { params: Params }) => {
       <StoresFormPage
         data={{
           ...data?.data,
+          UserName: Array.isArray(data?.data?.User) ? data?.data?.User[0]?.name || "" : data?.data?.User?.name || "",
+          userEmail: Array.isArray(data?.data?.User) ? data?.data?.User[0]?.email || "" : data?.data?.User?.email || "",
+          userPhone: (Array.isArray(data?.data?.User) ? data?.data?.User[0]?.phone : data?.data?.User?.phone) || data?.data?.phone || "",
           moduleId: data?.data?.Module?.id || "",
           categoryId: categories?.data?.map((category: { id: number }) => category.id) || [],
           templateId: Array.isArray(appliedTemplates?.data) 

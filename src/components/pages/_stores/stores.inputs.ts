@@ -16,10 +16,10 @@ export const StoresInputs = ({ isEdit }: {
       cardId: 'location',
     },
     { name: "address", type: "text", cardId: 'location', required: true, width: 6 },
-    { name: "UserName", type: "text", cardId: 'user', required: true, isHidden: isEdit, width: 6 },
-    { name: "userEmail", type: "email", cardId: 'user', required: true, isHidden: isEdit, width: 6 },
-    { name: "userPhone", type: "tel", cardId: 'user', required: true, isHidden: isEdit, width: 3 },
-    { name: "userPass", type: "password", cardId: 'user', required: true, isHidden: isEdit, width: 3 }
+    { name: "UserName", type: "text", cardId: 'user', required: true, width: 6 },
+    { name: "userEmail", type: "email", cardId: 'user', required: true, width: 6 },
+    { name: "userPhone", type: "tel", cardId: 'user', required: true, width: 3 },
+    { name: "userPass", type: "password", cardId: 'user', required: !isEdit, width: 3 }
   ];
   return inputs;
 };

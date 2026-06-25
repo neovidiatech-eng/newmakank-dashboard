@@ -90,16 +90,12 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       lat: map?.lat,
       lng: map?.lng,
       ...(!isEdit && templateId ? { templateId: Number(templateId) } : {}),
-      ...(!isEdit
-        ? {
-          User: JSON.stringify({
-            name: UserName,
-            email: userEmail,
-            password: userPass,
-            phone: formattedPhone
-          })
-        }
-        : {})
+      User: JSON.stringify({
+        name: UserName,
+        email: userEmail,
+        ...(userPass ? { password: userPass } : {}),
+        phone: formattedPhone
+      })
     };
     await formAction({
       data,
