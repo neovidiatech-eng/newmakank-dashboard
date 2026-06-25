@@ -254,7 +254,7 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
 
         <Card className="border-border/60 bg-card/80">
           <CardHeader>
-            <CardTitle>{t("Today Orders")}</CardTitle>
+            <CardTitle>{dateValue ? t("Selected Date Orders") || "طلبات التاريخ المحدد" : t("Today Orders")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>

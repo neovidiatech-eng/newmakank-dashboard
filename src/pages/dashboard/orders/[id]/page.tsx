@@ -22,7 +22,7 @@ import { ApiResponse } from "../types";
 const getImageUrl = (path?: string | null) => {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return `${import.meta.env.VITE_API_URL || ""}${path}`;
+  return `${import.meta.env.VITE_API_IMG_URL || ""}${path}`;
 };
 
 async function page({ params }: { params: Params }): Promise<JSX.Element> {
