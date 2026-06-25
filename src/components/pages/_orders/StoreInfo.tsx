@@ -2,6 +2,7 @@ import type { ApiResponseBranch, ApiResponseInvoice } from "@/pages/dashboard/or
 import { MapPin } from "lucide-react";
 import { useLocale, useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
+import { useState } from "react";
 const imgUrl = import.meta.env.VITE_API_IMG_URL;
 export default function StoreInfo({
     branch,
@@ -12,19 +13,23 @@ export default function StoreInfo({
 }) {
     const t = useTranslations();
     const locale = useLocale();
+    const [imgError, setImgError] = useState(false);
 
     return (
         <>
             {invoice?.store && (
                 <div className="flex items-center gap-4 mb-4">
-                    <div className="relative h-12 w-12 rounded-lg overflow-hidden bg-gray-100 border">
-                        {invoice.store.logo && invoice.store.logo !== "null" && (
+                    <div className="relative h-12 w-12 rounded-lg overflow-hidden bg-gray-100 border flex items-center justify-center text-xs text-muted-foreground">
+                        {invoice.store.logo && invoice.store.logo !== "null" && !imgError ? (
                             <Image
                                 src={invoice.store.logo.startsWith("http") ? invoice.store.logo : imgUrl + invoice.store.logo}
                                 alt="Store Logo"
                                 fill
                                 className="object-cover"
+                                onError={() => setImgError(true)}
                             />
+                        ) : (
+                            <span>{invoice.store.name[locale as "en" | "ar"]?.[0] || invoice.store.name.en?.[0] || "?"}</span>
                         )}
                     </div>
                     <div>
