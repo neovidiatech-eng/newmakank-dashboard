@@ -194,8 +194,8 @@ export default function OrdersColumns(): any {
       id: "estimatedArrival",
       header: () => <IconHeader columnKey="Order Arrival" />,
       cell: ({ row }) => {
-        const arrivalDate = getEstimatedArrivalDate(row.original);
-        return arrivalDate ? <DateCol date={arrivalDate.toISOString()} /> : <span>-</span>;
+        const orderDate = row.original.createdAt || row.original.date;
+        return orderDate ? <DateCol date={orderDate} /> : <span>-</span>;
       }
     },
 
