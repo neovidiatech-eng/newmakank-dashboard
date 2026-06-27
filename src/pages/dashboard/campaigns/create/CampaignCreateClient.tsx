@@ -490,6 +490,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                   isMulti
                   name="targetUserIds"
                   apiUrl={customersApiUrl}
+                  searchTermKey="name"
                   value={form.targetUserIds}
                   onChange={value => updateForm("targetUserIds", Array.isArray(value) ? value.map(item => String(item.value ?? item)) : [])}
                   placeholder={t("selectedCustomers")}
