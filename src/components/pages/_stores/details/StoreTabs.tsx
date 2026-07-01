@@ -55,6 +55,15 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
     }) ?? [];
   }, [branches?.data]);
 
+  const sortedCategories = useMemo(() => {
+    if (!categories?.data) return [];
+    return [...categories.data].sort((a, b) => {
+      const orderA = typeof a.order === 'number' ? a.order : 0;
+      const orderB = typeof b.order === 'number' ? b.order : 0;
+      return orderA - orderB;
+    });
+  }, [categories?.data]);
+
   const tabs: TabItem[] = [
     {
       value: "branches",
@@ -130,7 +139,7 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
       ),
       content: (
         <TableBasic
-          data={categories?.data}
+          data={sortedCategories}
           columns={CategoryColumns}
           cardHeader={t("Store Categories")}
           createNewLink={`/stores/${storeId}/categories/create`}

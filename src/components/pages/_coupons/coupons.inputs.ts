@@ -34,7 +34,7 @@ export const CouponsInputs = (couponType?: CouponType | null) => {
     { name: "minOrderAmount", type: "number", cardId: 'usage', required: true, toolTip: t("minOrderAmountTooltip") },
     { name: "startDate", type: "date", cardId: 'dates', required: true },
     { name: "endDate", type: "date", cardId: 'dates', required: true },
-    { name: "userIds", isHidden: !showUserRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['customers'], isMulti: true },
+    { name: "userIds", isHidden: !showUserRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['customers'], isMulti: true, searchTermKey: "name" },
     { name: "storeIds", isHidden: !showStoreRestrictions, type: "selectPaginated", cardId: 'restrictions', apiUrl: ['stores'], isMulti: true },
     {
       name: "zoneIds",

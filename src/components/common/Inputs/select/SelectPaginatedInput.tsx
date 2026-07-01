@@ -130,7 +130,7 @@ export default function SelectPaginated({
               (acc, curr) => ({ ...acc, [curr]: searchParams.get(curr) }),
               {},
             ),
-            ...(searchTerm ? { locate: searchTerm } : {}),
+            ...(searchTerm ? { [searchTermKey]: searchTerm } : {}),
             limit: "1000",
             ...searchFilters?.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {}),
           },
