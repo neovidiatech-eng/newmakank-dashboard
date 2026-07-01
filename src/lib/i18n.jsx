@@ -6,6 +6,7 @@ const messages = { ar, en };
 const I18nContext = createContext(null);
 
 function getPathValue(source, key) {
+  if (!key) return undefined;
   return key.split(".").reduce((value, part) => value?.[part], source);
 }
 

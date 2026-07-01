@@ -43,7 +43,7 @@ const UserDropdown = ({
               <span className="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-primary/30 to-primary/10 blur-sm"></span>
               <ImageCell
                 cell={user.image}
-
+                openImgWhenClickType="none"
                 className={cn(
                   "rounded-full object-cover border-2 border-primary/40 shadow-md relative z-10",
                   compact ? "w-8 h-8" : "w-10 h-10"

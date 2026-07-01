@@ -1,8 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "@/lib/i18n";
 
-function TableStatusBadge({ status }: { status: string }) {
+function TableStatusBadge({ status }: { status?: string | null }) {
   const t = useTranslations();
+  if (!status) return null;
   let variant: "default" | "destructive" | "secondary" | "outline" | "success" = "default";
   switch (status?.toString()) {
     case "APPROVED":
