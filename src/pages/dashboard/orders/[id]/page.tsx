@@ -96,6 +96,12 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("Price")}</span>
                 <span className="font-medium">
+                  <PriceAmount value={data?.price || 0} />
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t("Products Price Without Commission") || "سعر المنتجات من غير العمولة"}</span>
+                <span className="font-medium">
                   <PriceAmount value={Math.max(0, (data?.price || 0) - (data?.storeCommission || 0))} />
                 </span>
               </div>
@@ -170,19 +176,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   </span>
                 </div>
               )}
-              {data?.adminCommission > 0 && (
-                <div className="flex justify-between">
-                  <div>
-                    <span className="text-muted-foreground block">{t("Admin Commission")}</span>
-                    <span className="text-[11px] text-muted-foreground/70">
-                      ({t("Platform Fee")} + {t("Store Commission")})
-                    </span>
-                  </div>
-                  <span className="font-medium">
-                    <PriceAmount value={data?.adminCommission} />
-                  </span>
-                </div>
-              )}
+
               <Separator className="my-3 bg-slate-200 dark:bg-slate-800" />
               <div className="flex justify-between font-bold text-lg text-slate-900 dark:text-slate-50">
                 <span>{t("Total")}</span>
@@ -197,6 +191,19 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   {data?.paidWithWallet ? t("Yes") : t("No")}
                 </Badge>
               </div>
+              {data?.adminCommission > 0 && (
+                <div className="flex justify-between">
+                  <div>
+                    <span className="text-muted-foreground block">{t("Admin Commission")}</span>
+                    <span className="text-[11px] text-muted-foreground/70">
+                      ({t("Platform Fee")} + {t("Store Commission")})
+                    </span>
+                  </div>
+                  <span className="font-medium">
+                    <PriceAmount value={data?.adminCommission} />
+                  </span>
+                </div>
+              )}
               {data?.couponId && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("Coupon ID")}</span>
