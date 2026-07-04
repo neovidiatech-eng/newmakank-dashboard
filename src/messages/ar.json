@@ -1,5 +1,7 @@
 {
   "": "",
+  "productsPriceWithCommission": "سعر المنتجات بالعمولة",
+  "productsPriceWithoutCommission": "سعر المنتجات من غير العمولة",
   "Import from Variation Template": "استيراد من قوالب المتغيرات",
   "SelectTemplatePlaceholder": "اختر قالباً...",
   "Select a pre-configured template to automatically add it as a new size option": "اختر قالباً تم إعداده مسبقاً لإضافته تلقائياً كخيار حجم جديد",

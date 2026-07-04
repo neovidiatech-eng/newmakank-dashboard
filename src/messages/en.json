@@ -1,5 +1,7 @@
 {
   "": "",
+  "productsPriceWithCommission": "Products Price With Commission",
+  "productsPriceWithoutCommission": "Products Price Without Commission",
   "Import from Variation Template": "Import from Variation Template",
   "SelectTemplatePlaceholder": "Select a template...",
   "Select a pre-configured template to automatically add it as a new size option": "Select a pre-configured template to automatically add it as a new size option",
