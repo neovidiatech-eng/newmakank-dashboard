@@ -12,8 +12,7 @@ export default function OrderItemsList({ items, storeCommission }: { items: ApiR
     const locale = useLocale();
 
     const getOriginalPrice = (item: any) => {
-        const commission = storeCommission || 0;
-        return item.price - commission;
+        return item.price;
     };
 
     return (
