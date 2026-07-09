@@ -5,6 +5,7 @@ import { CheckCircle2, Clock3, ImageIcon, MapPin, Navigation, Package, Truck } f
 import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 import dynamic from "@/lib/dynamic";
+import { getEnv } from "@/lib/env";
 
 const RouteMapView = dynamic(() => import("./RouteMapView"));
 
@@ -49,7 +50,7 @@ function getLocalizedText(value: LocalizedText) {
 function getImageUrl(path?: string | null) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return `${import.meta.env.VITE_API_URL || ""}${path}`;
+  return `${getEnv("VITE_API_URL")}${path}`;
 }
 
 function getStationLatLng(station?: CustomDeliveryStation) {

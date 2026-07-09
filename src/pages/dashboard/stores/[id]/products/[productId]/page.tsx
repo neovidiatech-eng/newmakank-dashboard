@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/lib/navigation";
 import { getTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
+import { getEnv } from "@/lib/env";
 
 async function Page({ params }: { params: Promise<{ id: string, productId: string, locale: string }> }): Promise<JSX.Element> {
     const t = await getTranslations();
@@ -32,7 +33,7 @@ async function Page({ params }: { params: Promise<{ id: string, productId: strin
                     <Card className="overflow-hidden border-none shadow-md">
                         <div className="relative h-80 w-full group">
                             {data?.image ? (
-                                <Image src={import.meta.env.VITE_API_IMG_URL + data?.image} alt={title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                                <Image src={getEnv("VITE_API_IMG_URL") + data?.image} alt={title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                             ) : (
                                 <div className="h-full w-full bg-muted flex items-center justify-center text-muted-foreground">
                                     {t("No image")}

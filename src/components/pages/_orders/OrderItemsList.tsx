@@ -4,8 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { User as UserIcon } from "lucide-react";
 import { useLocale, useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
+import { getEnv } from "@/lib/env";
 
-const imgUrl = import.meta.env.VITE_API_IMG_URL;
+const imgUrl = getEnv("VITE_API_IMG_URL");
 
 export default function OrderItemsList({ items, storeCommission }: { items: ApiResponseOrderItemsItem[], storeCommission?: number }) {
     const t = useTranslations();

@@ -6,7 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/lib/i18n";
-const API_IMG_URL = import.meta.env.VITE_API_IMG_URL;
+import { getEnv } from "@/lib/env";
+const API_IMG_URL = getEnv("VITE_API_IMG_URL");
 
 type VideoInputProps = {
   name: string;

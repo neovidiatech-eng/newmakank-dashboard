@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { FileIcon, UploadIcon, XIcon } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import Link from "@/lib/Link";
+import { getEnv } from "@/lib/env";
 import React, { useEffect, useState } from "react";
 
 interface PdfInputProps {
@@ -14,7 +15,7 @@ interface PdfInputProps {
   disabled?: boolean;
 }
 
-const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = getEnv("VITE_API_URL");
 export default function PdfInput({
   name,
   value,

@@ -2,8 +2,9 @@ import type { ApiResponseBranch, ApiResponseInvoice } from "@/pages/dashboard/or
 import { MapPin } from "lucide-react";
 import { useLocale, useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
+import { getEnv } from "@/lib/env";
 import { useState } from "react";
-const imgUrl = import.meta.env.VITE_API_IMG_URL;
+const imgUrl = getEnv("VITE_API_IMG_URL");
 export default function StoreInfo({
     branch,
     invoice,

@@ -9,25 +9,19 @@ import type { ApiResponseOrderItemsItem } from "@/pages/dashboard/orders/types";
 interface CopyOrderButtonProps {
     orderId: string | number;
     items: ApiResponseOrderItemsItem[];
-    storeCommission?: number;
 }
 
-export default function CopyOrderButton({ orderId, items, storeCommission }: CopyOrderButtonProps) {
+export default function CopyOrderButton({ orderId, items }: CopyOrderButtonProps) {
     const t = useTranslations();
     const locale = useLocale();
     const [copied, setCopied] = useState(false);
 
     const handleCopy = async () => {
-        const getOriginalPrice = (item: any) => {
-            const commission = storeCommission || 0;
-            return item.price - commission;
-        };
-
         const title = `${t("Order Details")} #${orderId}\n\n`;
-        
+
         const itemsText = items.map(item => {
             const name = item.Service?.name[locale as "en" | "ar"] || item.Service?.name.en || "";
-            const price = getOriginalPrice(item);
+            const price = item.price;
             const size = item.Size?.name[locale as "en" | "ar"] || item.Size?.name.en || "";
             
             let text = `- ${name}\n`;

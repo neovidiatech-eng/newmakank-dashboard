@@ -4,7 +4,8 @@ import OrdersColumns from "@/pages/dashboard/orders/OrdersColumns";
 import ServicesColumns from "@/pages/dashboard/services/ServicesColumns";
 import CustomTabs, { TabItem } from "@/components/common/CustomTabs/custom-tab";
 import TableBasic from "@/components/common/table/TableBasic";
-import { Layers, MapPin, Package, ShoppingBag, FileCode2 } from "lucide-react";
+import BtnAction from "@/components/common/table/tableActions/btn-action";
+import { Layers, MapPin, Package, ShoppingBag, FileCode2, Trash2 } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "@/lib/navigation";
@@ -197,7 +198,25 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
               const tpl = row.original.template?.name;
               return tpl ? (tpl.ar || tpl.en || tpl) : "-";
             }
-          }, { accessorKey: "appliedAt", header: t("Applied At"), cell: ({ getValue }: any) => new Date(getValue() as string).toLocaleString() }]}
+          }, { accessorKey: "appliedAt", header: t("Applied At"), cell: ({ getValue }: any) => new Date(getValue() as string).toLocaleString() },
+          {
+            id: "actions",
+            header: t("Actions"),
+            cell: ({ row }: any) => {
+              const templateId = row.original.templateId ?? row.original.template?.id;
+              if (!templateId) return null;
+              return (
+                <BtnAction
+                  variant="destructive"
+                  method="DELETE"
+                  endpoint={["stores", storeId, "applyTemplate", templateId]}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  {t("Remove Template")}
+                </BtnAction>
+              );
+            }
+          }]}
           cardHeader={t("appliedTemplates")}
           hideCreateNew
           isInnerTable={false}

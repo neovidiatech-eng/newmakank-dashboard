@@ -2,6 +2,7 @@ import { stores } from "@/pages/dashboard/stores/types";
 import { CheckCircle2, Layers, Star } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
+import { getEnv } from "@/lib/env";
 
 interface StoreHeroProps {
   data: stores;
@@ -9,6 +10,7 @@ interface StoreHeroProps {
 
 export function StoreHero({ data }: StoreHeroProps) {
   const t = useTranslations();
+  const imgUrl = getEnv("VITE_API_IMG_URL");
 
   const getName = (obj: { en: string; ar: string } | undefined) => {
     return obj?.en || obj?.ar || "N/A";
@@ -17,7 +19,7 @@ export function StoreHero({ data }: StoreHeroProps) {
   return (
     <div className="relative w-full h-56 md:h-72 rounded-xl overflow-hidden group">
       <Image
-        src={import.meta.env.VITE_API_IMG_URL + data?.cover || "/placeholder-cover.jpg"}
+        src={imgUrl + data?.cover || "/placeholder-cover.jpg"}
         alt="Store Cover"
         fill
         className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
@@ -30,7 +32,7 @@ export function StoreHero({ data }: StoreHeroProps) {
         {/* Logo */}
         <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg bg-white flex-shrink-0">
           <Image
-            src={import.meta.env.VITE_API_IMG_URL + data?.logo || "/placeholder-logo.jpg"}
+            src={imgUrl + data?.logo || "/placeholder-logo.jpg"}
             alt="Store Logo"
             fill
             className="object-cover"

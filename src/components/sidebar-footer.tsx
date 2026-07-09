@@ -14,7 +14,8 @@ import Image from "@/lib/Image";
 import Link from "@/lib/Link";
 import { FaUserFriends } from "react-icons/fa";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
-const API_IMG_URL = import.meta.env.VITE_API_IMG_URL as string;
+import { getEnv } from "@/lib/env";
+const API_IMG_URL = getEnv("VITE_API_IMG_URL");
 // ...existing code...
 
 export const SideBarFooter = ({

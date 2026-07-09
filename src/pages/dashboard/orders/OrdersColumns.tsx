@@ -10,7 +10,7 @@ import { OrderServicesCell } from "@/components/pages/_orders/OrderServicesCell"
 import OrderStatusSelect from "@/components/pages/_orders/OrderStatusSelect";
 import AdminNoteDialog from "@/components/pages/_orders/AdminNoteDialog";
 import { Badge } from "@/components/ui/badge";
-import { Gift } from "lucide-react";
+import { Gift, CalendarClock } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 
 const getNestedValue = (source: Record<string, any>, paths: string[]) => {
@@ -153,6 +153,20 @@ export default function OrdersColumns(): any {
       cell: ({ getValue }) => {
         const orderType = String(getValue() || "DELIVERY");
         return <Badge variant="outline">{t(orderType)}</Badge>;
+      }
+    },
+    {
+      accessorKey: "category",
+      header: () => <IconHeader columnKey="category" />,
+      cell: ({ getValue }) => {
+        const category = getValue() as string;
+        if (category !== "SCHEDULED") return <span className="text-muted-foreground">—</span>;
+        return (
+          <Badge variant="outline" className="gap-1 border-violet-400 text-violet-500">
+            <CalendarClock className="h-3.5 w-3.5" />
+            {t("Scheduled Order")}
+          </Badge>
+        );
       }
     },
     {

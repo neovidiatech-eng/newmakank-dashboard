@@ -3,8 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, User as UserIcon, Zap } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
+import { getEnv } from "@/lib/env";
 
-const imgUrl = import.meta.env.VITE_API_URL;
+const imgUrl = getEnv("VITE_API_URL");
 
 export interface DeliveryUser {
   id: number;

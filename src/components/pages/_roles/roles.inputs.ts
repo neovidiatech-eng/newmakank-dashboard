@@ -9,7 +9,6 @@ export const RolesInputs = (permissions?: AppConfig.SystemPermission[]) => {
   const locale = useLocale() as "ar" | "en";
   const inputs: FormInput[] = [
     { name: "name", type: "text", multiLang: true, cardId: 'lang', required: true },
-    // { name: "roleKey", type: "text", required: true },
     ...(permissions ?? []).map((group): FormInput => ({
       name: `${PERM_PREFIX}${group.prefix}`,
       label: (group.name as any)?.[locale] || group.prefix,

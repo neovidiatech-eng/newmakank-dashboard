@@ -103,7 +103,14 @@ export const endpoints = {
   customerCategoriesAssign: "/api/customer-categories/assign",
   storeTemplates: "/api/store-templates",
   applyTemplate: "/apply-template",
-  appliedTemplates: "/applied-templates"
+  appliedTemplates: "/applied-templates",
+  approval: "/approval",
+  verifyPayment: "/verify-payment",
+  resetPeriod: "/api/statistics/reset-period",
+  storeResetPeriod: "/api/statistics/store/reset-period",
+  employees: "/api/employees",
+  deliveryWithdrawals: "/api/delivery/withdrawals",
+  deliveryCashSettlements: "/api/delivery/cash-settlements"
 };
 // addresses
 // allPermissions

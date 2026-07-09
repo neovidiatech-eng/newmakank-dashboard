@@ -6,7 +6,8 @@ import { Link } from "@/lib/navigation";
 import { currency } from "@/utils/config";
 import { getTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
-const imgUrl = import.meta.env.VITE_API_IMG_URL;
+import { getEnv } from "@/lib/env";
+const imgUrl = getEnv("VITE_API_IMG_URL");
 async function page({ params }: { params: Params }): Promise<JSX.Element> {
   const t = await getTranslations();
   const p = await params;

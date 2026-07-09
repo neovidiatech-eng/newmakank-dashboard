@@ -7,7 +7,8 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/swiper-bundle.css";
 // import 'swiper/css';
 import { useTranslations } from "@/lib/i18n";
-const API_IMG_URL = import.meta.env.VITE_API_IMG_URL as string;
+import { getEnv } from "@/lib/env";
+const API_IMG_URL = getEnv("VITE_API_IMG_URL");
 function SwiperImage({ images }: { images: { url: string; key: string }[] }) {
   const t = useTranslations();
   return (

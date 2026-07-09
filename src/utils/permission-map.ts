@@ -20,6 +20,7 @@ export const routePermissionMap: Record<string, string> = {
   stores: "Stores",
   transactions: "transactions",
   users: "Users",
+  employees: "Employees",
   withdraw: "withdraw",
   banks: "banks",
   bankAccounts: "bankAccounts",

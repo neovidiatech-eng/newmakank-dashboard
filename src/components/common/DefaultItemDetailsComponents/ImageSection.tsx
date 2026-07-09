@@ -6,7 +6,8 @@ import Image from "@/lib/Image";
 import { useTranslations } from "@/lib/i18n";
 import "swiper/swiper-bundle.css";
 import SwiperImage from "./SwiperImage";
-const API_IMG_URL = import.meta.env.VITE_API_IMG_URL as string;
+import { getEnv } from "@/lib/env";
+const API_IMG_URL = getEnv("VITE_API_IMG_URL");
 function ImageSection({ images }: { images: { url: string; key: string }[] }) {
   const t = useTranslations();
   return images.length == 1 ? (

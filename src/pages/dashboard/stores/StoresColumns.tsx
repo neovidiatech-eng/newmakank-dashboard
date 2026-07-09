@@ -8,6 +8,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { Ban, CheckCircle } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { StoreStatusSelect } from "@/components/pages/_stores/StoreStatusSelect";
+import { StoreApprovalAction } from "@/components/pages/_stores/StoreApprovalAction";
 
 export default function StoresColumns(): ColumnDef<Record<string, unknown>>[] {
   const t = useTranslations();
@@ -62,6 +63,15 @@ export default function StoresColumns(): ColumnDef<Record<string, unknown>>[] {
       cell: ({ getValue }) => <TableStatusBadge status={getValue()} />
     },
     {
+      accessorKey: "isStoreAccepted",
+      header: () => <IconHeader columnKey="isStoreAccepted" />,
+      cell: ({ row }) => {
+        const isAccepted = row.original.isStoreAccepted as boolean;
+        if (isAccepted) return <TableStatusBadge status="true" />;
+        return <StoreApprovalAction storeId={row.original.id as number} />;
+      }
+    },
+    {
       accessorKey: "rating",
       header: () => <IconHeader columnKey="Rating" />,
       cell: ({ getValue }) => <span>{getValue() as string}</span>
@@ -108,7 +118,6 @@ export default function StoresColumns(): ColumnDef<Record<string, unknown>>[] {
       cell: ({ row }) => {
         const storeId = row.original.id as string;
         const isBlocked = row.original.isBlocked as boolean;
-        console.log(row.original, isBlocked);
         return (
           <BtnAction variant={isBlocked ? "destructive" : "default"} endpoint={["stores", Number(storeId), "block"]} method="PATCH">
             {isBlocked ? (

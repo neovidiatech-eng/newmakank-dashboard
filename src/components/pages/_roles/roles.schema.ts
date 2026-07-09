@@ -16,7 +16,6 @@
     );
     return z.object({
     nameAr:StringReq(t), nameEn:StringReq(t),
-// roleKey:StringReq(t),
 ...permFields,
 })
   };

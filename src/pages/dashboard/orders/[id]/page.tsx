@@ -11,18 +11,21 @@ import NoteForDeliveryDialog from "@/components/pages/_orders/NoteForDeliveryDia
 import OrderItemsList from "@/components/pages/_orders/OrderItemsList";
 import OrderStatusSelect from "@/components/pages/_orders/OrderStatusSelect";
 import CopyOrderButton from "@/components/pages/_orders/CopyOrderButton";
+import VerifyPaymentAction from "@/components/pages/_orders/VerifyPaymentAction";
 import StoreInfo from "@/components/pages/_orders/StoreInfo";
+import { CalendarClock } from "lucide-react";
 import { PriceAmount } from "@/components/PriceAmount";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { getTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
+import { getEnv } from "@/lib/env";
 import { ApiResponse } from "../types";
 
 const getImageUrl = (path?: string | null) => {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return `${import.meta.env.VITE_API_IMG_URL || ""}${path}`;
+  return `${getEnv("VITE_API_IMG_URL")}${path}`;
 };
 
 async function page({ params }: { params: Params }): Promise<JSX.Element> {
@@ -61,14 +64,29 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 print:hidden">
-          <CopyOrderButton orderId={data?.id} items={data?.OrderItems || []} storeCommission={data?.storeCommission} />
+          <CopyOrderButton orderId={data?.id} items={data?.OrderItems || []} />
           <div className="flex gap-2">
             <TableStatusBadge status={data?.status} />
             <TableStatusBadge status={data?.paymentStatus} />
+            {(data as any)?.category === "SCHEDULED" && (
+              <Badge variant="outline" className="gap-1 border-violet-400 text-violet-500">
+                <CalendarClock className="h-3.5 w-3.5" />
+                {t("Scheduled Order")}
+              </Badge>
+            )}
           </div>
           <OrderStatusSelect orderId={data?.id} status={data?.status} />
         </div>
       </div>
+
+      {data?.status === "PENDING_PAYMENT" && (
+        <div className="mt-4 flex items-center justify-between gap-4 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 print:hidden">
+          <span className="text-sm font-medium text-amber-800 dark:text-amber-300">
+            {t("verifyPaymentDescription")}
+          </span>
+          <VerifyPaymentAction orderId={data?.id} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
         {/* Main Column */}
@@ -378,6 +396,14 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   {t(data?.paymentMethod) || data?.paymentMethod}
                 </Badge>
               </div>
+              {(data as any)?.scheduledAt && (
+                <div>
+                  <span className="text-muted-foreground block text-xs mb-0.5">{t("Scheduled At")}</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">
+                    <DateCol date={(data as any)?.scheduledAt} />
+                  </span>
+                </div>
+              )}
               {data?.estimatedArrivalMinutes > 0 && (
                 <div>
                   <span className="text-muted-foreground block text-xs mb-0.5">{t("Estimated Arrival")}</span>

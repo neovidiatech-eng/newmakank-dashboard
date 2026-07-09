@@ -28,6 +28,14 @@ export default async function page({ searchParams }: { searchParams: SearchParam
             name: "branchId",
             type: "selectPaginated",
             apiUrl: ["branches"]
+          },
+          {
+            name: "fromDate",
+            type: "date"
+          },
+          {
+            name: "toDate",
+            type: "date"
           }
         ]}
       />

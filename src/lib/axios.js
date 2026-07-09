@@ -1,5 +1,6 @@
 import axios from "axios";
 import { REFRESH_TOKEN, TOKEN } from "@/utils/config";
+import { endpoints } from "@/utils/endpoints";
 import { getEnv } from "@/lib/env";
 import { localizePath } from "@/lib/navigation";
 import { toast } from "sonner";
@@ -23,6 +24,14 @@ function redirectToSigninOnce() {
   window.location.replace(target);
 }
 
+function clearAuthAndRedirect(error) {
+  localStorage.removeItem(TOKEN);
+  localStorage.removeItem(REFRESH_TOKEN);
+  if (!error?.config?.skipAuthRedirect) {
+    redirectToSigninOnce();
+  }
+}
+
 apiClient.interceptors.request.use(config => {
   const token = localStorage.getItem(TOKEN);
   const locale = localStorage.getItem("locale") || "ar";
@@ -35,9 +44,39 @@ apiClient.interceptors.request.use(config => {
   return config;
 });
 
+// Shared in-flight refresh promise so concurrent 401s trigger a single refresh call, not one per request.
+let refreshPromise = null;
+
+function performTokenRefresh() {
+  if (!refreshPromise) {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN);
+    refreshPromise = apiClient
+      .post(endpoints.refreshToken, undefined, {
+        headers: {
+          Authorization: refreshToken ? `Bearer ${refreshToken}` : undefined,
+          Locale: localStorage.getItem("locale") || "ar",
+          isLocalized: "true"
+        },
+        skipAuthRedirect: true,
+        skipErrorToast: true
+      })
+      .then(response => {
+        const accessToken =
+          response?.data?.data?.user?.AccessToken || response?.data?.data?.AccessToken;
+        if (!accessToken) throw new Error("No access token in refresh response");
+        localStorage.setItem(TOKEN, accessToken);
+        return accessToken;
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
+
 apiClient.interceptors.response.use(
   response => response,
-  error => {
+  async error => {
     const status = error?.response?.status;
     const message =
       error?.response?.data?.message ||
@@ -45,19 +84,37 @@ apiClient.interceptors.response.use(
       error?.message ||
       "Request failed";
 
-    if (status === 401) {
-      localStorage.removeItem(TOKEN);
-      localStorage.removeItem(REFRESH_TOKEN);
-      if (!error?.config?.skipAuthRedirect) {
-        redirectToSigninOnce();
+    const originalRequest = error?.config;
+    const isRefreshCall = originalRequest?.url === endpoints.refreshToken;
+
+    if (status === 401 && !isRefreshCall && !originalRequest?._retry) {
+      const hasRefreshToken = Boolean(localStorage.getItem(REFRESH_TOKEN));
+      if (hasRefreshToken) {
+        try {
+          originalRequest._retry = true;
+          const accessToken = await performTokenRefresh();
+          originalRequest.headers = {
+            ...originalRequest.headers,
+            Authorization: `Bearer ${accessToken}`
+          };
+          return apiClient.request(originalRequest);
+        } catch {
+          clearAuthAndRedirect(error);
+          return Promise.reject(error);
+        }
       }
+
+      clearAuthAndRedirect(error);
+      return Promise.reject(error);
+    }
+
+    if (status === 401) {
+      clearAuthAndRedirect(error);
       return Promise.reject(error);
     }
 
     if (typeof window !== "undefined" && !error?.config?.skipErrorToast) {
-      if (!message || !message.includes("Unsupported type for boolean conversion")) {
-        toast.error(message);
-      }
+      toast.error(message);
     }
 
     return Promise.reject(new Error(message));

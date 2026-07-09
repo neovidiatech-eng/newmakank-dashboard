@@ -4,8 +4,9 @@ import { cn } from "@/lib/utils";
 import { ExternalLink, Image as Img } from "lucide-react";
 import Image from "@/lib/Image";
 import Link from "@/lib/Link";
+import { getEnv } from "@/lib/env";
 import { useState } from "react";
-const API_IMG_URL = import.meta.env.VITE_API_IMG_URL;
+const API_IMG_URL = getEnv("VITE_API_IMG_URL");
 
 export function ImageCell({ cell, className, openImgWhenClickType = 'view' }: {
   openImgWhenClickType?: "new_tab" | "download" | 'view' | 'none';

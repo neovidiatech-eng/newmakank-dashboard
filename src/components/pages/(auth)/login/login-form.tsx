@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useLoginForm } from "@/features/auth/login/hooks/use-login-form";
-import { Activity, Bell, Eye, EyeOff, Lock, Mail, MapPinned, PackageCheck, Store, Truck } from "lucide-react";
+import { Activity, Eye, EyeOff, Lock, Mail, MapPinned, PackageCheck, Store, Truck } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 import Link from "@/lib/Link";
@@ -21,9 +21,7 @@ export function LoginForm() {
     isLoading,
     showPassword,
     togglePasswordVisibility,
-    onSubmit,
-    notificationPermission,
-    requestPermission
+    onSubmit
   } = useLoginForm();
 
   return (
@@ -118,23 +116,6 @@ export function LoginForm() {
                       </button>
                     </div>
                   </div>
-
-                  {notificationPermission !== "granted" && (
-                    <div className="space-y-2">
-                      <Button
-                        type="button"
-                        onClick={requestPermission}
-                        variant="outline"
-                        className="w-full h-11 rounded-full border border-border/70 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        <Bell className="h-4 w-4 mr-2" />
-                        {t("Enable Notifications")}
-                      </Button>
-                      <p className="text-xs text-muted-foreground text-center">
-                        {t("Allow notifications to receive updates")}
-                      </p>
-                    </div>
-                  )}
 
                   <Button
                     disabled={isLoading}

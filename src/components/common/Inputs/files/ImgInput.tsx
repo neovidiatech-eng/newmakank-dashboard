@@ -2,8 +2,9 @@ import { ImageIcon } from "@radix-ui/react-icons";
 import { Trash2 } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
+import { getEnv } from "@/lib/env";
 import React, { useEffect, useState, useRef } from "react";
-const API_IMG_URL = import.meta.env.VITE_API_IMG_URL;
+const API_IMG_URL = getEnv("VITE_API_IMG_URL");
 interface ImgInputProps {
   alt?: string;
   name?: string;

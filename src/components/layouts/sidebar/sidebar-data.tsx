@@ -80,6 +80,7 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
       (permissions?.Roles?.get ||
         permissions?.Permissions?.get ||
         permissions?.Users?.get ||
+        permissions?.Employees?.get ||
         permissions?.Customers?.get ||
         permissions?.delivery?.get ||
         permissions?.specialists?.get) && {
@@ -100,6 +101,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
           permissions?.Users?.get && {
             title: "users",
             url: "/users"
+          },
+          permissions?.Employees?.get && {
+            title: "employees",
+            url: "/employees"
           },
           permissions?.Customers?.get && {
             title: "customers",
@@ -145,7 +150,8 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         permissions?.fund?.get ||
         permissions?.transactions?.get ||
         permissions?.bankAccounts?.get ||
-        permissions?.wallet?.get) && {
+        permissions?.wallet?.get ||
+        permissions?.delivery?.get) && {
         title: "accounting",
         items: [
           permissions?.withdraw?.get && {
@@ -171,6 +177,14 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
           permissions?.wallet?.get && {
             title: "wallet",
             url: "/wallet"
+          },
+          permissions?.delivery?.get && {
+            title: "Driver Withdrawals",
+            url: "/delivery/withdrawals"
+          },
+          permissions?.delivery?.get && {
+            title: "Cash Settlements",
+            url: "/delivery/cash-settlements"
           }
         ].filter(Boolean)
       },

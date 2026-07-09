@@ -17,12 +17,13 @@ import { Link } from "@/lib/navigation";
 import { IdCard, Mail, PackageCheck, PackageX, Phone, Trash2, UserRound, View } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { usePathname, useRouter } from "@/lib/navigation";
+import { getEnv } from "@/lib/env";
 import { useState } from "react";
 import { toast } from "sonner";
 
 type DeliveryCardItem = Record<string, any>;
 
-const imgUrl = import.meta.env.VITE_API_URL;
+const imgUrl = getEnv("VITE_API_URL");
 
 function getDeliveryDetails(delivery: DeliveryCardItem) {
   return delivery.DeliveryDetails?.[0] ?? {};

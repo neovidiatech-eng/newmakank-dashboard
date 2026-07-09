@@ -72,8 +72,6 @@ export default function TableWithQuery({
     ? (rawData[dataKey] as Record<string, unknown>[])
     : [];
 
-  console.log("TableWithQuery debug:", { endPoint, params, response, rawData, tableData, isLoading });
-
   const total = response?.total ?? tableData.length;
 
   if (isLoading && tableData.length === 0) {
