@@ -1,14 +1,7 @@
 type AppEnvKey =
   | "VITE_API_URL"
   | "VITE_API_IMG_URL"
-  | "VITE_GOOGLE_MAP_API_KEY"
-  | "VITE_FIREBASE_API_KEY"
-  | "VITE_FIREBASE_AUTH_DOMAIN"
-  | "VITE_FIREBASE_PROJECT_ID"
-  | "VITE_FIREBASE_STORAGE_BUCKET"
-  | "VITE_FIREBASE_MESSAGING_SENDER_ID"
-  | "VITE_FIREBASE_APP_ID"
-  | "VITE_FIREBASE_VAPID_KEY";
+  | "VITE_GOOGLE_MAP_API_KEY";
 
 export function getEnv(name: AppEnvKey, fallback = ""): string {
   return import.meta.env[name] || fallback;

@@ -33,13 +33,12 @@ export default function WithdrawColumns(): ColumnDef<Record<string, unknown>>[] 
       header: () => <IconHeader columnKey="Status" />,
       cell: ({ getValue }) => {
         const status = getValue() as string;
-        console.log(status);
         return <TableStatusBadge status={status} />;
       }
     },
     {
       accessorKey: "StoreAccount.Bank.name",
-      header: () => <IconHeader key="StoreAccount > Bank > Name" columnKey="StoreAccount > Bank > Name" />,
+      header: () => <IconHeader key="Bank" columnKey="Bank" />,
       cell: ({ row }) => {
         const en = row.original.StoreAccount?.Bank?.name?.en as string;
         const ar = row.original.StoreAccount?.Bank?.name?.ar as string;
@@ -50,7 +49,7 @@ export default function WithdrawColumns(): ColumnDef<Record<string, unknown>>[] 
     },
     {
       accessorKey: "StoreAccount.Branch.name",
-      header: () => <IconHeader key="StoreAccount > Branch > Name" columnKey="StoreAccount > Branch > Name" />,
+      header: () => <IconHeader key="Branch" columnKey="Branch" />,
       cell: ({ row }) => {
         const en = row.original.StoreAccount?.Branch?.name?.en as string;
         const ar = row.original.StoreAccount?.Branch?.name?.ar as string;
@@ -61,7 +60,7 @@ export default function WithdrawColumns(): ColumnDef<Record<string, unknown>>[] 
     },
     {
       accessorKey: "id",
-      header: () => <IconHeader columnKey="status" />,
+      header: () => <IconHeader columnKey="Actions" />,
       cell: ({ getValue, row }) => (
         <>
           <ChangeStatusTableAction

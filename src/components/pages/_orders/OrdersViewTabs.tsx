@@ -24,6 +24,14 @@ const getDefaultFilters = (t: ReturnType<typeof useTranslations>): FormInput[] =
     ]
   },
   {
+    name: "category",
+    type: "select",
+    options: [
+      { label: t("NORMAL"), value: "NORMAL" },
+      { label: t("SCHEDULED"), value: "SCHEDULED" }
+    ]
+  },
+  {
     name: "branchId",
     type: "selectPaginated",
     apiUrl: ["branches"],
@@ -70,40 +78,19 @@ export default function OrdersViewTabs({
   const resolvedFilters = filters ?? getDefaultFilters(t);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
 
-  // Build params from URL search params
+  // Build params from URL search params — fromDate/toDate are sent to the server like
+  // any other filter (storeId, branchId, ...) instead of being filtered client-side.
+  // Filtering client-side only covered the current page of results and silently missed
+  // matches on other pages, so it was dropped in favor of the same server-side pattern
+  // used everywhere else.
   const params: Record<string, unknown> = {};
   searchParams.forEach((value, key) => { params[key] = value; });
-
-  const fromDate = params.fromDate as string | undefined;
-  const toDate = params.toDate as string | undefined;
-
-  delete params.fromDate;
-  delete params.toDate;
 
   const queryKey = [endPoint.join("/"), JSON.stringify(params)];
   const { data: response } = useApiQuery({ queryKey, endPoint, params, staleTime: 0 });
 
-  let orders: Record<string, unknown>[] = Array.isArray(response?.data) ? response.data : [];
-
-  if (fromDate) {
-    const fromTime = new Date(fromDate).getTime();
-    orders = orders.filter((item: any) => {
-      if (!item.createdAt) return true;
-      return new Date(item.createdAt).getTime() >= fromTime;
-    });
-  }
-
-  if (toDate) {
-    const to = new Date(toDate);
-    to.setHours(23, 59, 59, 999);
-    const toTime = to.getTime();
-    orders = orders.filter((item: any) => {
-      if (!item.createdAt) return true;
-      return new Date(item.createdAt).getTime() <= toTime;
-    });
-  }
-
-  const total = (fromDate || toDate) ? orders.length : (response?.total ?? orders.length);
+  const orders: Record<string, unknown>[] = Array.isArray(response?.data) ? response.data : [];
+  const total = response?.total ?? orders.length;
 
   const toggleOrderSelection = (orderId: string) => {
     setSelectedOrderIds(prev =>

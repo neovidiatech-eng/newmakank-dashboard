@@ -17,8 +17,17 @@ export default async function page({ searchParams }: { searchParams: SearchParam
         columns={TransactionsColumns}
         hideCreateNew={!permission?.post}
         cardHeader={t("Transactions")}
-        
-        filters={[]}
+
+        filters={[
+          {
+            name: "fromDate",
+            type: "date"
+          },
+          {
+            name: "toDate",
+            type: "date"
+          }
+        ]}
       />
     </>
   );

@@ -4,14 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { onMessageListener } from "@/utils/firebase/firebaseMessaging";
 import * as Popover from "@radix-ui/react-popover";
 import { Bell } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import Image from "@/lib/Image";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 type Notification = {
   id: ID;
@@ -53,38 +51,6 @@ export function Notifications() {
   // Initial fetch
   useEffect(() => {
     fetchNotifications();
-  }, []);
-
-  // Listen for Firebase messages
-  useEffect(() => {
-    const setupMessageListener = () => {
-      onMessageListener({
-        messagingPayload: payload => {
-          // Toast notification
-          toast.info(payload.notification?.title, {
-            description: payload.notification?.body
-          });
-          // Add notification to list if it matches our structure
-          if (payload.data && payload.notification) {
-            try {
-              const newNotification = {
-                id: parseInt(payload.data?.id),
-                title: payload.notification.title || "New Notification",
-                body: payload.notification.body || ""
-              };
-              // Add the new notification to the list
-              setNotifications(prev => [newNotification, ...prev]);
-              setUnreadCount(count => count + 1);
-            } catch (error) {
-              console.error("Error processing notification payload:", error);
-            }
-          }
-          // Refresh notifications from server (optional)
-          fetchNotifications();
-        }
-      });
-    };
-    setupMessageListener();
   }, []);
 
   const markAllAsRead = async () => {

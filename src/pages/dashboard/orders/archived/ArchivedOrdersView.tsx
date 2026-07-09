@@ -47,6 +47,12 @@ export default function ArchivedOrdersView({ tableTitle }: ArchivedOrdersViewPro
         name: 'userId',
         type: 'selectPaginated',
         apiUrl: ['users']
+      }, {
+        name: 'fromDate',
+        type: 'date'
+      }, {
+        name: 'toDate',
+        type: 'date'
       }]}
     />
   );

@@ -6,12 +6,10 @@ import { useRouter } from "@/lib/navigation";
 import { REDIRECT_AFTER_AUTH } from "@/utils/config";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useFcmToken } from "./use-fcm-token";
 
 export function useLoginForm() {
   const locale = useLocale();
   const router = useRouter();
-  const { getLoginFcmToken, notificationPermission, requestPermission } = useFcmToken();
   const [loginType, setLoginType] = useState<"email" | "phone">("email");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -39,17 +37,13 @@ export function useLoginForm() {
       return;
     }
 
-    const fcm = await getLoginFcmToken();
-
     const requestBody: {
       password: string;
-      fcm: string | null;
       email?: string;
       phone?: string;
       locale: string;
     } = {
       password,
-      fcm,
       locale
     };
 
@@ -147,8 +141,6 @@ export function useLoginForm() {
     isLoading,
     showPassword,
     togglePasswordVisibility,
-    onSubmit,
-    notificationPermission,
-    requestPermission
+    onSubmit
   };
 }

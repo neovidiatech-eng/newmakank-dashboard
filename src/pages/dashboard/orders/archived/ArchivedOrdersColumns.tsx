@@ -58,6 +58,14 @@ export default function ArchivedOrdersColumns(): any {
       }
     },
     {
+      accessorKey: "scheduledAt",
+      header: () => <IconHeader columnKey="Scheduled At" />,
+      cell: ({ getValue }) => {
+        const value = getValue();
+        return value ? <DateCol date={value} /> : <span>-</span>;
+      }
+    },
+    {
       accessorKey: "createdAt",
       header: () => <IconHeader columnKey="CreatedAt" />,
       cell: ({ getValue }) => {

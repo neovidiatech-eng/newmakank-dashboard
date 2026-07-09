@@ -1,4 +1,5 @@
 'use client'
+import { PriceAmount } from "@/components/PriceAmount";
 import DateCol from "@/components/common/table/columns/date.column";
 import IconHeader from "@/components/common/table/columns/icon-header";
 import { ImageCell } from "@/components/common/table/columns/img-cell";
@@ -11,17 +12,17 @@ export default function TransactionsColumns(): ColumnDef<Record<string, unknown>
   {
     accessorKey: "credit",
     header: () => <IconHeader columnKey="Credit" />,
-    cell: ({ getValue }) => <span>{getValue() as string}</span>
+    cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
   },
   {
     accessorKey: "debit",
     header: () => <IconHeader columnKey="Debit" />,
-    cell: ({ getValue }) => <span>{getValue() as string}</span>
+    cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
   },
   {
     accessorKey: "balance",
     header: () => <IconHeader columnKey="Balance" />,
-    cell: ({ getValue }) => <span>{getValue() as string}</span>
+    cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
   },
   {
     accessorKey: "createdAt",

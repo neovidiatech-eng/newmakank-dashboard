@@ -29,6 +29,45 @@ const resolveInputWidth = (item: SettingsItem): number => {
   return 6;
 };
 
+// New delivery/custom-delivery numeric settings introduced alongside the geofence &
+// independent custom-delivery pricing backend changes — same min-value convention as
+// the existing shippingKMCharge special case below.
+const MIN_ZERO_SETTINGS = [
+  "pickupGeofenceRadiusMeters",
+  "deliveryGeofenceRadiusMeters",
+  "customDeliveryKMCharge",
+  "customDeliveryBaseFee",
+  "customDeliveryExtraStopPrice",
+  "customDeliveryCommissionRate",
+  "deliveryAcceptanceTimer",
+  "deliveryAfkBreakMinutes"
+];
+
+// Groups settings that are easy to confuse with each other into separate, clearly
+// titled boxes (see settingsForm.page.tsx for the box titles/descriptions). Any
+// setting key not listed here keeps the old generic "settings" bucket, so unknown
+// future backend settings never silently disappear.
+const SETTING_GROUPS: Record<string, string> = {
+  // Normal in-app restaurant order delivery pricing.
+  shippingKMCharge: "restaurant_delivery",
+  deliveryCommission: "restaurant_delivery",
+  // Independent "custom delivery" (courier-only, no restaurant involved) pricing.
+  customDeliveryKMCharge: "custom_delivery",
+  customDeliveryBaseFee: "custom_delivery",
+  customDeliveryExtraStopPrice: "custom_delivery",
+  customDeliveryCommissionForAll: "custom_delivery",
+  customDeliveryCommissionRate: "custom_delivery",
+  customDeliveryCommissionType: "custom_delivery",
+  // Pickup/delivery geofence radii.
+  pickupGeofenceRadiusMeters: "geofence",
+  deliveryGeofenceRadiusMeters: "geofence",
+  // Driver assignment behavior.
+  deliveryAssignmentMode: "driver_assignment",
+  deliveryAcceptanceTimer: "driver_assignment",
+  deliveryAfkBreakEnabled: "driver_assignment",
+  deliveryAfkBreakMinutes: "driver_assignment"
+};
+
 const SettingsInputs = ({
   settings,
   t
@@ -42,9 +81,10 @@ const SettingsInputs = ({
       label: t(item.setting),
       type: resolveInputType(item),
       options: item.dataType =='BOOLEAN' ? booleanOptions(t)  : item?.enumValues?.map(value => ({ label: t(value), value })) ?? undefined,
-      cardId: "settings",
+      cardId: SETTING_GROUPS[item.setting] ?? "settings",
       width: resolveInputWidth(item),
-      ...(item.setting === "shippingKMCharge" ? { min: 0.000001 } : {})
+      ...(item.setting === "shippingKMCharge" ? { min: 0.000001 } : {}),
+      ...(MIN_ZERO_SETTINGS.includes(item.setting) ? { min: 0 } : {})
     }));
 };
 
