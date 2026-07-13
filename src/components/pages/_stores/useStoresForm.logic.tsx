@@ -32,7 +32,6 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       map: data?.lat && data?.lng ? { lat: data.lat, lng: data.lng } : undefined
     } as StoresType
   });
-  console.log(data, "sda2edas");
   const onSubmit = async (formData: StoresType) => {
     if (!(data as any)?.id) {
       const hasImage =
@@ -89,6 +88,10 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       ...rest,
       lat: map?.lat,
       lng: map?.lng,
+      // Required by the backend on create — default to 0 (first/unsorted) if left blank
+      // rather than blocking store creation over a manual sort number nobody filled in.
+      storeOrder:
+        rest.storeOrder !== undefined && rest.storeOrder !== "" ? Number(rest.storeOrder) : 0,
       ...(!isEdit && templateId ? { templateId: Number(templateId) } : {}),
       User: JSON.stringify({
         name: UserName,

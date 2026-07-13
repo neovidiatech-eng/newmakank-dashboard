@@ -2656,5 +2656,6 @@
   "Free": "Free",
   "Offers Information": "Offer Information",
   "zoneDeliveryPriceDescription": "Set a fixed delivery price for this zone to override the base-fee + per-km formula everywhere it's used (regular delivery, 2-stop custom delivery, online delivery). Leave it empty to keep using the formula.",
-  "offersPickStoreFirst": "Pick a store first — offers can only be listed one store at a time."
+  "offersPickStoreFirst": "Pick a store first — offers can only be listed one store at a time.",
+  "storeOrder": "Display Order"
 }

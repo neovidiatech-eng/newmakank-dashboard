@@ -9,6 +9,7 @@ export const StoresInputs = ({ isEdit }: {
     { name: "templateId", type: "selectPaginated", apiUrl: ['storeTemplates'], cardId: 'info', required: true, width: 3 },
     { name: "logo", type: "img", cardId: 'info', width: 3 },
     { name: "cover", type: "img", cardId: 'info', width: 3 },
+    { name: "storeOrder", type: "number", cardId: 'info', width: 3, min: 0 },
     {
       name: 'map',
       type: 'map',
