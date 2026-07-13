@@ -1,13 +1,51 @@
 import useFormErrorLang from "@/components/common/Form/hooks/useFormErrorLang";
+import { fetchHelper } from "@/api/fetch";
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
 import { useFormAction } from "@/utils/FormActions";
+import { getEnv } from "@/lib/env";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "@/lib/i18n";
+import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { ServicesInputs } from "./services.inputs";
 import { ServicesSchema, type ServicesType } from "./services.schema";
-import { log } from "console";
+import { EMPTY_OFFER_VALUE, type OfferSectionValue } from "./OfferSection";
+
+// Bundles are a separate backend entity (no offer field lives on Service itself) — find
+// whichever bundle (if any) already references this product, regardless of whether it's
+// in the paid or free scope, so editing a product that's already an offer shows it as such.
+function extractScopeServiceIds(bundle: any): number[] {
+  const scope = bundle?.ScopeServices;
+  if (!scope) return [];
+  const list = Array.isArray(scope) ? scope : [scope];
+  return list
+    .map((entry: any) => Number(entry?.serviceId ?? entry?.Service?.id))
+    .filter((id: number) => Number.isFinite(id) && id > 0);
+}
+
+function toDateInputValue(value?: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+}
+
+async function resolveBundleImage(image: unknown): Promise<File | undefined> {
+  if (image instanceof File) return image;
+  if (typeof image === "string" && image.trim() !== "") {
+    try {
+      const url = image.startsWith("http") ? image : `${getEnv("VITE_API_IMG_URL")}${image}`;
+      const response = await fetch(url);
+      if (!response.ok) return undefined;
+      const blob = await response.blob();
+      return new File([blob], "offer-image.png", { type: blob.type || "image/png" });
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
+}
 
 export default function useServicesLogic({ data, hideStoreInput }: { data?: ServicesType; hideStoreInput?: boolean }) {
   const t = useTranslations();
@@ -54,12 +92,97 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
     } as ServicesType
   });
 
+  const [offer, setOffer] = useState<OfferSectionValue>(EMPTY_OFFER_VALUE);
+  const [existingBundleId, setExistingBundleId] = useState<number | null>(null);
+
+  // Edit mode: a Bundle is a separate entity, so we have to look it up — fetch this
+  // store's bundles and check whether any of them already reference this product.
+  useEffect(() => {
+    const serviceId = (data as any)?.id;
+    const storeId = (data?.Store as any)?.id ?? data?.storeId;
+    if (!serviceId || !storeId) return;
+
+    let cancelled = false;
+    (async () => {
+      const response = await fetchHelper({
+        endPoint: ["bundles"],
+        method: "GET",
+        params: { storeId, limit: 200 }
+      });
+      if (cancelled) return;
+      const bundles = Array.isArray((response as any)?.data) ? (response as any).data : [];
+      const match = bundles.find((bundle: any) =>
+        extractScopeServiceIds(bundle).includes(Number(serviceId))
+      );
+      if (match) {
+        setExistingBundleId(match.id);
+        setOffer({
+          isOffer: true,
+          requiredPaidQuantity: String(match.requiredPaidQuantity ?? 2),
+          freeQuantity: String(match.freeQuantity ?? 1),
+          freeServiceIds: extractScopeServiceIds(match).map(String),
+          startDate: toDateInputValue(match.startDate),
+          endDate: toDateInputValue(match.endDate)
+        });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [(data as any)?.id]);
+
+  // Bundles live behind a separate endpoint (`/api/bundles`) — this creates/updates/deletes
+  // the linked bundle after the product itself has been saved, since a new product's id is
+  // only known once that save succeeds.
+  const syncOffer = async (serviceId: number, formattedData: any) => {
+    if (!offer.isOffer) {
+      if (existingBundleId) {
+        await fetchHelper({ endPoint: ["bundles", existingBundleId], method: "DELETE" });
+        setExistingBundleId(null);
+      }
+      return;
+    }
+
+    const nameAr = formattedData.nameAr || formattedData.name?.ar || "";
+    const nameEn = formattedData.nameEn || formattedData.name?.en || "";
+    const bundleImage = await resolveBundleImage(formattedData.image);
+    const freeServiceIds =
+      offer.freeServiceIds.length > 0 ? offer.freeServiceIds : [String(serviceId)];
+
+    const body = new FormData();
+    body.append("title", JSON.stringify({ ar: `عرض على ${nameAr}`, en: `Offer on ${nameEn}` }));
+    body.append(
+      "description",
+      JSON.stringify({
+        ar: `اشتري ${offer.requiredPaidQuantity} واخد ${offer.freeQuantity} ببلاش`,
+        en: `Buy ${offer.requiredPaidQuantity} get ${offer.freeQuantity} free`
+      })
+    );
+    if (bundleImage) body.append("image", bundleImage);
+    body.append("storeId", String(formattedData.storeId));
+    body.append("requiredPaidQuantity", offer.requiredPaidQuantity);
+    body.append("freeQuantity", offer.freeQuantity);
+    body.append("isActive", "true");
+    body.append("type", "BUY_X_GET_Y_FREE");
+    body.append("paidServiceIds", String(serviceId));
+    freeServiceIds.forEach(id => body.append("freeServiceIds", id));
+    if (offer.startDate) body.append("startDate", new Date(offer.startDate).toISOString());
+    if (offer.endDate) body.append("endDate", new Date(offer.endDate).toISOString());
+
+    await fetchHelper({
+      endPoint: existingBundleId ? ["bundles", existingBundleId] : ["bundles"],
+      method: existingBundleId ? "PATCH" : "POST",
+      body
+    });
+  };
+
   const onSubmit = async (formData: ServicesType) => {
     let finalImage = formData.image;
     if (formData.storeId == null) {
       formData.storeId = data?.storeId as number;
     }
-    console.log("front",{formData});
     delete formData.Store;
     
     if (!(data as any)?.id) {
@@ -125,7 +248,7 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
     };
 
     delete (formattedData as any).priceBeforeDiscount;
-    await formAction({
+    const res = await formAction({
       data,
       formData: extractFormNameInputs({ inputs, data: formattedData }),
       endpoint: ["services"],
@@ -149,8 +272,15 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
         } as any);
         sizesReplace([]);
         addonsReplace([]);
+        setOffer(EMPTY_OFFER_VALUE);
+        setExistingBundleId(null);
       }
     });
+
+    const serviceId = (data as any)?.id ?? (res as any)?.data?.id;
+    if (res?.success && serviceId) {
+      await syncOffer(Number(serviceId), formattedData);
+    }
   };
 
   const formSubmit = handleSubmit(onSubmit);
@@ -246,6 +376,8 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
     addonsAppend,
     addonsRemove,
     importServiceData,
+    offer,
+    setOffer,
     t
   };
 }

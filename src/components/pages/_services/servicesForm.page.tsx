@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ServicesAddonsInputs, ServicesSizesInputs } from "./services.inputs";
 import type { ServicesType } from "./services.schema";
 import useServicesLogic from "./useServicesForm.logic";
+import OfferSection from "./OfferSection";
 
 export default function ServicesFormPage({ data, hideStoreInput }: { data?: ServicesType; hideStoreInput?: boolean }) {
   const {
@@ -27,7 +28,9 @@ export default function ServicesFormPage({ data, hideStoreInput }: { data?: Serv
     addonsFields,
     addonsAppend,
     addonsRemove,
-    importServiceData
+    importServiceData,
+    offer,
+    setOffer
   } = useServicesLogic({ data, hideStoreInput });
   const sizesInputs = ServicesSizesInputs();
   const addonsInputs = ServicesAddonsInputs();
@@ -345,6 +348,7 @@ export default function ServicesFormPage({ data, hideStoreInput }: { data?: Serv
           </div>
           {tabs[0]?.content}
         </div>
+        <OfferSection value={offer} onChange={setOffer} storeId={watch("storeId") as any} />
         </div>
       </CustomForm>
     </div>
