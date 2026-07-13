@@ -6,20 +6,37 @@ import ChangeStatusTableAction from "@/components/common/table/tableActions/Chan
 import TableStatusBadge from "@/components/common/table/tableHelperComponents/TableStatusBadge";
 import { type ColumnDef } from "@tanstack/react-table";
 
+// The BankAccount/Bank system was removed from the backend — withdrawals no longer carry a
+// StoreAccount relation. The response shape is now flat: { amount, branchId, payoutMethod,
+// payoutDetails, status, createdAt, Branch? }.
 export default function WithdrawColumns(): ColumnDef<Record<string, unknown>>[] {
   const columns = [
     {
-      accessorKey: "StoreAccount.name.ar",
-      header: () => <IconHeader columnKey="StoreAccount > Name > Ar" />,
+      accessorKey: "Branch.name",
+      header: () => <IconHeader columnKey="Branch" />,
       cell: ({ row }) => {
-        const value = row.original.StoreAccount?.name?.ar;
-        return <span>{value || "-"}</span>;
+        const branch = row.original.Branch as { name?: { en?: string; ar?: string } } | undefined;
+        if (branch?.name) {
+          return <LocaleViewColumn value={{ en: branch.name.en, ar: branch.name.ar }} />;
+        }
+        const branchId = row.original.branchId as number | undefined;
+        return <span>{branchId ? `#${branchId}` : "-"}</span>;
       }
     },
     {
       accessorKey: "amount",
       header: () => <IconHeader columnKey="Amount" />,
       cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
+    },
+    {
+      accessorKey: "payoutMethod",
+      header: () => <IconHeader columnKey="payoutMethod" />,
+      cell: ({ getValue }) => <TableStatusBadge status={getValue() as string} />
+    },
+    {
+      accessorKey: "payoutDetails",
+      header: () => <IconHeader columnKey="payoutDetails" />,
+      cell: ({ getValue }) => <span>{(getValue() as string) || "-"}</span>
     },
     {
       accessorKey: "createdAt",
@@ -34,28 +51,6 @@ export default function WithdrawColumns(): ColumnDef<Record<string, unknown>>[] 
       cell: ({ getValue }) => {
         const status = getValue() as string;
         return <TableStatusBadge status={status} />;
-      }
-    },
-    {
-      accessorKey: "StoreAccount.Bank.name",
-      header: () => <IconHeader key="Bank" columnKey="Bank" />,
-      cell: ({ row }) => {
-        const en = row.original.StoreAccount?.Bank?.name?.en as string;
-        const ar = row.original.StoreAccount?.Bank?.name?.ar as string;
-        return (
-          <LocaleViewColumn value={{ en, ar }} />
-        );
-      }
-    },
-    {
-      accessorKey: "StoreAccount.Branch.name",
-      header: () => <IconHeader key="Branch" columnKey="Branch" />,
-      cell: ({ row }) => {
-        const en = row.original.StoreAccount?.Branch?.name?.en as string;
-        const ar = row.original.StoreAccount?.Branch?.name?.ar as string;
-        return (
-          <LocaleViewColumn value={{ en, ar }} />
-        );
       }
     },
     {

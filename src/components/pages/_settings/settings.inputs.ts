@@ -40,7 +40,11 @@ const MIN_ZERO_SETTINGS = [
   "customDeliveryExtraStopPrice",
   "customDeliveryCommissionRate",
   "deliveryAcceptanceTimer",
-  "deliveryAfkBreakMinutes"
+  "deliveryAfkBreakMinutes",
+  "driverAssignmentDelaySeconds",
+  "onlineDeliveryBaseFee",
+  "onlineDeliveryCommission",
+  "packagingFee"
 ];
 
 // Groups settings that are easy to confuse with each other into separate, clearly
@@ -51,18 +55,28 @@ const SETTING_GROUPS: Record<string, string> = {
   // Normal in-app restaurant order delivery pricing.
   shippingKMCharge: "restaurant_delivery",
   deliveryCommission: "restaurant_delivery",
-  // Independent "custom delivery" (courier-only, no restaurant involved) pricing.
+  pickupEnabled: "restaurant_delivery",
+  // Independent "custom delivery" (courier-only, no restaurant involved) pricing —
+  // covers both the PURCHASE/RESTAURANT kinds.
+  customDeliveryEnabled: "custom_delivery",
   customDeliveryKMCharge: "custom_delivery",
   customDeliveryBaseFee: "custom_delivery",
   customDeliveryExtraStopPrice: "custom_delivery",
   customDeliveryCommissionForAll: "custom_delivery",
   customDeliveryCommissionRate: "custom_delivery",
   customDeliveryCommissionType: "custom_delivery",
+  // Online delivery (multi-recipient batch) — separate on/off switch and pricing from
+  // the custom-delivery (Purchase/Restaurant) settings above.
+  onlineDeliveryEnabled: "online_delivery",
+  onlineDeliveryBaseFee: "online_delivery",
+  onlineDeliveryCommission: "online_delivery",
+  packagingFee: "online_delivery",
   // Pickup/delivery geofence radii.
   pickupGeofenceRadiusMeters: "geofence",
   deliveryGeofenceRadiusMeters: "geofence",
   // Driver assignment behavior.
   deliveryAssignmentMode: "driver_assignment",
+  driverAssignmentDelaySeconds: "driver_assignment",
   deliveryAcceptanceTimer: "driver_assignment",
   deliveryAfkBreakEnabled: "driver_assignment",
   deliveryAfkBreakMinutes: "driver_assignment"

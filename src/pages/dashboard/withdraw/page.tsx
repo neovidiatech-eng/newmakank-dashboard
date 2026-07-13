@@ -30,6 +30,15 @@ export default async function page({ searchParams }: { searchParams: SearchParam
             apiUrl: ["branches"]
           },
           {
+            name: "status",
+            type: "select",
+            options: [
+              { label: t("PENDING"), value: "PENDING" },
+              { label: t("APPROVED"), value: "APPROVED" },
+              { label: t("DENIED"), value: "DENIED" }
+            ]
+          },
+          {
             name: "fromDate",
             type: "date"
           },

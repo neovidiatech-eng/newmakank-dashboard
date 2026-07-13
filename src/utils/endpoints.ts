@@ -28,6 +28,7 @@ export const endpoints = {
   storeStatistics: "/api/statistics/store",
   commission: "/commission",
   userWallet: '/api/users/me/wallet',
+  storeMeWallet: '/api/stores/me/wallet',
   coupons: "/api/coupons",
   subscriptionStatistics: "/api/subscription/statistics",
   studentSubscriptions: "/api/students/my/subscriptions",
@@ -46,9 +47,7 @@ export const endpoints = {
   storeTemplatesCategories: "/api/store-templates/categories",
   activateUser: "/api/user/activate",
   schedule: "/api/schedule",
-  banks: "/api/banks", // FORM , PAGE
   variationTemplate: '/api/variation-templates',
-  bankAccounts: "/api/bankAccounts", // FORM ,
   cities: "/api/cities", // FORM , PAGE
   ordersStatistics: "/api/orders/statistics", // DONE
   withdraw: "/api/withdraw",
@@ -114,7 +113,8 @@ export const endpoints = {
   storeZonePricingToggle: "/zone-pricing/toggle",
   storeZonePrices: "/zone-prices",
   onlineDelivery: "/api/orders",
-  onlineDeliverySellerProfile: "/api/orders/online-delivery/seller-profile"
+  onlineDeliverySellerProfile: "/api/orders/online-delivery/seller-profile",
+  bundles: "/api/bundles"
 };
 // addresses
 // allPermissions

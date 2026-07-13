@@ -156,6 +156,19 @@ export default function OrdersColumns(): any {
       }
     },
     {
+      accessorKey: "customDeliveryKind",
+      header: () => <IconHeader columnKey="Delivery Service" />,
+      cell: ({ row, getValue }) => {
+        if (row.original.type !== "CUSTOM_DELIVERY") return <span className="text-muted-foreground">—</span>;
+        const kind = (getValue() as string) || "PURCHASE";
+        return (
+          <Badge variant="outline" className="gap-1 border-sky-400 text-sky-600 dark:text-sky-400">
+            {t(kind)}
+          </Badge>
+        );
+      }
+    },
+    {
       accessorKey: "category",
       header: () => <IconHeader columnKey="category" />,
       cell: ({ getValue }) => {

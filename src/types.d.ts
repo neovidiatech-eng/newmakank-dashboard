@@ -49,8 +49,6 @@ declare namespace Auth {
     Cities: PermissionsType;
     "Service Rating": PermissionsType;
     "Store Rating": PermissionsType;
-    banks: PermissionsType;
-    bankAccounts: PermissionsType;
     statistics: PermissionsType;
     notification: PermissionsType;
     specialists: PermissionsType;

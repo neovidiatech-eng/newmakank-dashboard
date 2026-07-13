@@ -47,6 +47,7 @@ type CampaignData = {
   clickStoreId?: string | number | null;
   clickCategoryId?: string | number | null;
   clickServiceId?: string | number | null;
+  clickDeliveryId?: string | number | null;
   clickUrl?: string;
 };
 
@@ -71,6 +72,7 @@ type CampaignFormState = {
   clickStoreId: string;
   clickCategoryId: string;
   clickServiceId: string;
+  clickDeliveryId: string;
   clickUrl: string;
 };
 
@@ -141,6 +143,7 @@ function getInitialForm(data?: CampaignData | null, locale = "ar"): CampaignForm
     clickStoreId: data?.clickStoreId ? String(data.clickStoreId) : "",
     clickCategoryId: data?.clickCategoryId ? String(data.clickCategoryId) : "",
     clickServiceId: data?.clickServiceId ? String(data.clickServiceId) : "",
+    clickDeliveryId: data?.clickDeliveryId ? String(data.clickDeliveryId) : "",
     clickUrl: data?.clickUrl ?? ""
   };
 }
@@ -162,6 +165,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
   const storesApiUrl = useMemo<endpointType>(() => ["stores"], []);
   const servicesApiUrl = useMemo<endpointType>(() => ["services"], []);
   const customersApiUrl = useMemo<endpointType>(() => ["customers"], []);
+  const deliveryApiUrl = useMemo<endpointType>(() => ["delivery"], []);
   const serviceSearchFilters = useMemo(() => form.storeId ? [{ key: "storeId", value: form.storeId }] : [], [form.storeId]);
   const clickServiceSearchFilters = useMemo(() => form.clickStoreId ? [{ key: "storeId", value: form.clickStoreId }] : [], [form.clickStoreId]);
 
@@ -201,6 +205,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
       clickStoreId: "",
       clickCategoryId: "",
       clickServiceId: "",
+      clickDeliveryId: "",
       clickUrl: ""
     }));
   };
@@ -258,6 +263,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
     if (requiresStore && !form.storeId) return t("campaignStoreRequired");
     if (requiresService && !form.serviceId) return t("campaignServiceRequired");
     if (requiresUsers && form.targetUserIds.length === 0) return t("campaignUsersRequired");
+    if (form.type === "NOTIFICATION" && form.clickTargetType === "SPECIAL_DRIVER" && !form.clickDeliveryId) return t("campaignDeliveryRequired");
     if (form.startAt && form.endAt && new Date(form.endAt).getTime() <= new Date(form.startAt).getTime()) return t("campaignEndAfterStartRequired");
     return "";
   };
@@ -273,29 +279,33 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
     let response;
 
     if (form.type === "NOTIFICATION") {
-      const payload: any = {
-        title: { ar: form.titleAr, en: form.titleEn },
-        body: { ar: form.descriptionAr, en: form.descriptionEn },
-        targetType: form.targetType,
-        targetUserIds: form.targetUserIds.map(Number).filter(Boolean),
-        storeId: Number(form.storeId) || 0,
-        clickTargetType: form.clickTargetType,
-        clickStoreId: Number(form.clickStoreId) || 0,
-        clickCategoryId: Number(form.clickCategoryId) || 0,
-        clickServiceId: Number(form.clickServiceId) || 0,
-        clickZoneId: 0,
-        clickOrderId: 0,
-        clickCouponId: 0
-      };
-
-      if (form.clickTargetType === "URL" && form.clickUrl) {
-        payload.clickUrl = form.clickUrl;
+      // Sent as multipart whenever an image is attached (matches the backend's multipart
+      // gotcha: once any field requires a file upload, every field arrives as a string —
+      // FormData already stringifies everything, so this is naturally correct either way).
+      const body = new FormData();
+      body.append("title", JSON.stringify({ ar: form.titleAr, en: form.titleEn }));
+      body.append("body", JSON.stringify({ ar: form.descriptionAr, en: form.descriptionEn }));
+      body.append("targetType", form.targetType);
+      form.targetUserIds.map(Number).filter(Boolean).forEach(id => {
+        body.append("targetUserIds", String(id));
+      });
+      if (form.storeId) body.append("storeId", form.storeId);
+      body.append("clickTargetType", form.clickTargetType);
+      if (form.clickStoreId) body.append("clickStoreId", form.clickStoreId);
+      if (form.clickCategoryId) body.append("clickCategoryId", form.clickCategoryId);
+      if (form.clickServiceId) body.append("clickServiceId", form.clickServiceId);
+      if (form.clickTargetType === "SPECIAL_DRIVER" && form.clickDeliveryId) {
+        body.append("clickDeliveryId", form.clickDeliveryId);
       }
+      if (form.clickTargetType === "URL" && form.clickUrl) {
+        body.append("clickUrl", form.clickUrl);
+      }
+      if (form.image) body.append("image", form.image);
 
       response = await fetchHelper({
         endPoint: isEdit && data?.id ? ["adminNotifications", data.id] : ["adminNotifications"],
         method: isEdit ? "PATCH" : "POST",
-        body: payload,
+        body,
         redirectOnUnauthorized: false
       });
     } else {
@@ -407,9 +417,9 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                 </div>
               </>
             )}
-            {isOffer && (
+            {(isOffer || form.type === "NOTIFICATION") && (
             <div className="grid gap-2">
-              <Label>{`${t("Offer Image")} *`}</Label>
+              <Label>{isOffer ? `${t("Offer Image")} *` : t("Notification Image (optional)")}</Label>
               <div className="flex gap-2 items-center">
                 <Input id="campaign-image-input" type="file" accept="image/*" onChange={event => updateForm("image", event.target.files?.[0] ?? null)} />
                 {form.image && (
@@ -512,7 +522,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                 >
                   <SelectTrigger><SelectValue placeholder={t("clickTargetType") || "Select Type"} /></SelectTrigger>
                   <SelectContent>
-                    {["GENERAL", "STORE", "CATEGORY", "SERVICE", "URL"].map(type => (
+                    {["GENERAL", "STORE", "CATEGORY", "SERVICE", "SPECIAL_DRIVER", "URL"].map(type => (
                       <SelectItem key={type} value={type}>
                         {t(`clickTargetType.${type}`) || type}
                       </SelectItem>
@@ -579,6 +589,19 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                     />
                   </div>
                 </>
+              )}
+
+              {form.clickTargetType === "SPECIAL_DRIVER" && (
+                <div className="grid gap-2">
+                  <Label>{t("Delivery")} *</Label>
+                  <SelectPaginated
+                    name="clickDeliveryId"
+                    apiUrl={deliveryApiUrl}
+                    value={form.clickDeliveryId}
+                    onChange={value => updateForm("clickDeliveryId", value ? String(value) : "")}
+                    placeholder={t("Delivery")}
+                  />
+                </div>
               )}
 
               {form.clickTargetType === "URL" && (

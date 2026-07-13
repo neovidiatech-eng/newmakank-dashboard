@@ -12,11 +12,15 @@ export default function OnlineDeliveryTable({ permission }: OnlineDeliveryTableP
   const t = useTranslations();
   const searchParams = useSearchParams();
 
-  const params: Record<string, unknown> = {};
+  // Send `kind` to the server like any other filter instead of fetching everything and
+  // filtering client-side — the previous approach fetched a page of ALL orders, then threw
+  // away every row that wasn't an online-delivery order, so `total`/pagination never matched
+  // what was actually displayed. Deliberately not sending `type=CUSTOM_DELIVERY` — matches
+  // the same convention OrdersViewTabs uses (verified against the live API), where `kind`
+  // alone is enough to scope to custom-delivery orders of that kind.
+  const params: Record<string, unknown> = { kind: "ONLINE" };
   searchParams.forEach((value, key) => {
-    if (key !== "type") {
-      params[key] = value;
-    }
+    params[key] = value;
   });
 
   const { data: response } = useApiQuery({
@@ -26,11 +30,7 @@ export default function OnlineDeliveryTable({ permission }: OnlineDeliveryTableP
     staleTime: 0
   });
 
-  const rawData: any[] = Array.isArray(response?.data) ? response.data : [];
-  const data = rawData.filter(
-    (item: any) =>
-      item.type === "CUSTOM_DELIVERY" && item.customDeliveryKind === "ONLINE"
-  );
+  const data: any[] = Array.isArray(response?.data) ? response.data : [];
   const total = response?.total ?? data.length;
 
   return (

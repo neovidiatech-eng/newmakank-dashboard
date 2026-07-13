@@ -4,25 +4,28 @@ import { PriceAmount } from "@/components/PriceAmount";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DASHBOARD_CARD_MOTION } from "@/features/dashboard/config/stats";
 import { useApiQuery } from "@/hooks/useApiQuery";
-import { Banknote, Clock, DollarSign, TrendingUp, Wallet } from "lucide-react";
+import { Banknote, Clock, DollarSign, HandCoins } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import CustomHeader from "@/components/layouts/header/CustomHeader";
 
+// Backend redesign (financial system): GET /stores/me/wallet was fixed (previously read
+// from the wrong table entirely) and now returns only two real balance fields — `total`
+// (withdrawable balance) and `commissionDeducted` (a transparency-only figure, no balance
+// effect) — plus `pendingWithdraw`/`totalWithdrawn`. Stores never hold customer cash the
+// way drivers do, so there's no third "cash held" figure here.
 export default function WalletPage() {
   const t = useTranslations();
-  const { data: userWallet } = useApiQuery({
-    queryKey: ["userWallet"],
-    endPoint: ["userWallet"]
+  const { data: storeWallet } = useApiQuery({
+    queryKey: ["storeMeWallet"],
+    endPoint: ["storeMeWallet"]
   });
 
-  const walletData = userWallet?.data || {};
+  const walletData = storeWallet?.data || {};
   const walletCards = [
     { title: "Total", value: walletData.total, icon: DollarSign, className: "bg-blue-500/10 text-blue-700 dark:text-blue-300" },
-    { title: "Total Earning", value: walletData.totalEarning, icon: TrendingUp, className: "bg-green-500/10 text-green-700 dark:text-green-300" },
-    { title: "Total Withdrawn", value: walletData.totalWithdrawn, icon: Banknote, className: "bg-red-500/10 text-red-700 dark:text-red-300" },
+    { title: "commissionDeducted", value: walletData.commissionDeducted, icon: HandCoins, className: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300" },
     { title: "Pending Withdraw", value: walletData.pendingWithdraw, icon: Clock, className: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300" },
-    { title: "Collected Cash", value: walletData.collectedCash, icon: Wallet, className: "bg-purple-500/10 text-purple-700 dark:text-purple-300" },
-    { title: "Current Balance", value: walletData.currentBalance, icon: DollarSign, className: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300" },
+    { title: "Total Withdrawn", value: walletData.totalWithdrawn, icon: Banknote, className: "bg-red-500/10 text-red-700 dark:text-red-300" },
   ];
 
   return (
@@ -50,6 +53,7 @@ export default function WalletPage() {
                 );
               })}
             </StatisticsMotionGrid>
+            <p className="text-xs text-muted-foreground mt-4">{t("commissionDeductedExplanation")}</p>
           </CardContent>
         </Card>
       </div>

@@ -39,6 +39,7 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
       (permissions?.Banners?.get ||
         permissions?.Rating?.get ||
         permissions?.Coupons?.get ||
+        permissions?.Service?.get ||
         permissions?.["Social Media"]?.get ||
         permissions?.["store-categories"]?.get ||
         permissions?.campaigns?.get ||
@@ -65,6 +66,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
           permissions?.Coupons?.get && {
             title: "coupons",
             url: "/coupons"
+          },
+          permissions?.Service?.get && {
+            title: "Offers",
+            url: "/offers"
           },
           permissions?.["variation-templates"]?.get && {
             title: "variationTemplate",
@@ -138,6 +143,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
             title: "archivedOrders",
             url: "/orders/archived"
           },
+          permissions?.Orders?.get && {
+            title: "Online Delivery",
+            url: "/orders/online-delivery"
+          },
           permissions?.Complaints?.get && {
             title: "complaint",
             url: "/complaint"
@@ -146,10 +155,8 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
       },
 
       (permissions?.withdraw?.get ||
-        permissions?.banks?.get ||
         permissions?.fund?.get ||
         permissions?.transactions?.get ||
-        permissions?.bankAccounts?.get ||
         permissions?.wallet?.get ||
         permissions?.delivery?.get) && {
         title: "accounting",
@@ -158,10 +165,6 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
             title: "withdraw",
             url: "/withdraw"
           },
-          permissions?.banks?.get && {
-            title: "banks",
-            url: "/banks"
-          },
           permissions?.fund?.get && {
             title: "fund",
             url: "/fund"
@@ -169,10 +172,6 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
           permissions?.transactions?.get && {
             title: "transactions",
             url: "/transactions"
-          },
-          permissions?.bankAccounts?.get && {
-            title: "bankAccounts",
-            url: "/bankAccounts"
           },
           permissions?.wallet?.get && {
             title: "wallet",

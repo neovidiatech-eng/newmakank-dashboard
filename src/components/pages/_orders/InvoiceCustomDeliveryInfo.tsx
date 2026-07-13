@@ -1,7 +1,7 @@
 import type { ApiResponseInvoiceCustomDelivery } from "@/pages/dashboard/orders/types";
 import { PriceAmount } from "@/components/PriceAmount";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Clock3, ImageIcon, MapPin, Navigation, Package, Truck } from "lucide-react";
+import { CheckCircle2, Clock3, ImageIcon, MapPin, Navigation, Package, PackageCheck, Phone, Truck, Wallet } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 import dynamic from "@/lib/dynamic";
@@ -33,6 +33,12 @@ type CustomDeliveryStation = {
   status?: "WAITING" | "GOING" | "REACHED" | string;
   Images?: StationImage[];
   images?: StationImage[];
+  // Online-delivery (multi-recipient batch) fields — only present on ONLINE-kind orders.
+  type?: "PICKUP" | "DROPOFF" | string;
+  contactPhone?: string | null;
+  collectionAmount?: number | string | null;
+  addressDetails?: string | null;
+  packagingRequested?: boolean | null;
 };
 
 type CustomDeliveryProgress = {
@@ -146,6 +152,7 @@ export default function InvoiceCustomDeliveryInfo({
                         {index + 1}. {stationName}
                       </div>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        {station.type && <Badge variant="secondary">{t(station.type)}</Badge>}
                         {station.status && <Badge variant="outline">{t(station.status)}</Badge>}
                         {station.lat && station.lng && (
                           <span className="flex items-center gap-1" dir="ltr">
@@ -167,6 +174,41 @@ export default function InvoiceCustomDeliveryInfo({
                   <div className="mt-3 rounded-lg bg-muted/20 p-2">
                     <div className="text-xs text-muted-foreground">{t("Purchase List")}</div>
                     <div>{station.purchaseList}</div>
+                  </div>
+                )}
+
+                {(station.contactPhone || station.addressDetails) && (
+                  <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {station.contactPhone && (
+                      <div className="rounded-lg bg-muted/20 p-2">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Phone className="h-3.5 w-3.5" />
+                          {t("Phone")}
+                        </div>
+                        <div dir="ltr">{station.contactPhone}</div>
+                      </div>
+                    )}
+                    {station.addressDetails && (
+                      <div className="rounded-lg bg-muted/20 p-2">
+                        <div className="text-xs text-muted-foreground">{t("Address Details")}</div>
+                        <div>{station.addressDetails}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {(station.collectionAmount !== undefined && station.collectionAmount !== null) && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-muted/20 p-2">
+                    <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">{t("Collection Amount")}:</span>
+                    <PriceAmount value={Number(station.collectionAmount)} />
+                  </div>
+                )}
+
+                {station.packagingRequested && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-muted/20 p-2 text-xs">
+                    <PackageCheck className="h-3.5 w-3.5 text-emerald-600" />
+                    {t("Packaging Requested")}
                   </div>
                 )}
 

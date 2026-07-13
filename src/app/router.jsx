@@ -29,7 +29,7 @@ export const routeResultCache = new Map();
 
 function LoadingRoute() {
   const location = useLocation();
-  const isDashboardRoute = /^\/(?:ar|en)\/(dashboard|logs|stores|orders|zones|branches|services|category|coupons|banners|modules|schedule|users|customers|roles|permissions|banks|bankAccounts|fund|transactions|withdraw|complaint|socialMedia|rating|delivery|settings|profile|customer-categories|store-templates)(?:\/|$)/.test(location.pathname);
+  const isDashboardRoute = /^\/(?:ar|en)\/(dashboard|logs|stores|orders|zones|branches|services|category|coupons|offers|banners|modules|schedule|users|employees|customers|roles|permissions|fund|transactions|withdraw|complaint|socialMedia|rating|delivery|settings|profile|customer-categories|store-templates)(?:\/|$)/.test(location.pathname);
 
   if (isDashboardRoute) {
     return <DashboardLoading />;

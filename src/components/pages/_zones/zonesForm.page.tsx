@@ -6,7 +6,7 @@ import { testZonesForm } from "./zones-check-form-validation";
 export default function ZonesFormPage({ data }: { data?: ZonesType }) {
 	const { inputs, t, control, formSubmit ,lang} = useZonesLogic({ data });
   testZonesForm();
- 
+
 	return (
 			<CustomForm
 				handleSubmit={formSubmit}
@@ -15,7 +15,14 @@ export default function ZonesFormPage({ data }: { data?: ZonesType }) {
 				cardConfig={[
 					{
 						id: "lang",
-						title: t("Zones Information"),
+						title: (
+							<div className="flex flex-col gap-1">
+								<span>{t("Zones Information")}</span>
+								<span className="text-sm font-normal text-muted-foreground">
+									{t("zoneDeliveryPriceDescription")}
+								</span>
+							</div>
+						),
 						multiLang: true,
 						width: 6,
 					},

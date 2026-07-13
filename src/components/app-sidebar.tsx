@@ -40,10 +40,8 @@ const FALLBACK_SIDEBAR_PERMISSIONS = {
   Orders: { get: true },
   Complaints: { get: true },
   withdraw: { get: true },
-  banks: { get: true },
   fund: { get: true },
   transactions: { get: true },
-  bankAccounts: { get: true },
   wallet: { get: true },
   settings: { get: true }
 } as unknown as Permission;
@@ -55,8 +53,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     staleTime: 60_000,
     retry: false
   });
-
-  console.log("DEBUG MY PERMISSIONS:", permissionsQuery.data);
 
   const profileQuery = useQuery({
     queryKey: ["profile"],
