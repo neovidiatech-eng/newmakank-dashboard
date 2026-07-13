@@ -100,7 +100,7 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
         phone: formattedPhone
       })
     };
-    await formAction({
+    const res = await formAction({
       data,
       formData: extractFormNameInputs({ inputs, data: formattedData }),
       endpoint: ["stores"],
@@ -108,10 +108,17 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       customReset: () => reset(extractFormDefaultInputs(inputs, undefined) as any)
     });
 
+    // POST /stores alone does NOT copy the template's categories into the store — that
+    // only happens via a separate call to /stores/:id/apply-template. Previously this was
+    // only triggered when editing an existing store and changing its template, so a
+    // brand-new store's chosen template was silently never applied (picked at creation,
+    // required by the backend, but its categories never showed up).
     const oldTemplateId = ((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) ? String((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) : "";
-    if (isEdit && templateId && String(templateId) !== oldTemplateId) {
+    const storeId = (data as any)?.id ?? (res as any)?.data?.id;
+    const shouldApplyTemplate = res?.success && templateId && storeId && (!isEdit || String(templateId) !== oldTemplateId);
+    if (shouldApplyTemplate) {
       await fetchHelper({
-        endPoint: ["stores", (data as any)?.id, "applyTemplate"],
+        endPoint: ["stores", storeId, "applyTemplate"],
         method: "POST",
         body: { templateId: Number(templateId) }
       });
