@@ -5,7 +5,8 @@ import ServicesColumns from "@/pages/dashboard/services/ServicesColumns";
 import CustomTabs, { TabItem } from "@/components/common/CustomTabs/custom-tab";
 import TableBasic from "@/components/common/table/TableBasic";
 import BtnAction from "@/components/common/table/tableActions/btn-action";
-import { Layers, MapPin, Package, ShoppingBag, FileCode2, Trash2 } from "lucide-react";
+import { StoreZonePricingTab } from "./StoreZonePricingTab";
+import { Layers, MapPin, MapPinned, Package, ShoppingBag, FileCode2, Trash2 } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "@/lib/navigation";
@@ -225,6 +226,16 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
           }}
         />
       )
+    },
+    {
+      value: "zonePricing",
+      label: (
+        <div className="flex items-center gap-2">
+          <MapPinned className="w-4 h-4" />
+          {t("Zone Pricing")}
+        </div>
+      ),
+      content: <StoreZonePricingTab storeId={storeId} />
     }
   ];
 

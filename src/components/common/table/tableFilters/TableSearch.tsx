@@ -4,10 +4,13 @@ import { useRouter, useSearchParams } from "@/lib/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { FormInput } from "../../Form/CustomFormTypes.types";
 import { renderInput } from "../../Form/inputs-render";
+import { cn } from "@/lib/utils";
+import { useTranslations } from "@/lib/i18n";
 
 function TableSearch({ searchFilter }: { searchFilter: FormInput }): JSX.Element {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const t = useTranslations();
   const [isPending, startTransition] = useTransition();
 
   const getInitialValue = () => {
@@ -39,6 +42,11 @@ function TableSearch({ searchFilter }: { searchFilter: FormInput }): JSX.Element
     params.delete(searchFilter.name);
     params.delete("page");
 
+    // If changing orderType to something other than CUSTOM_DELIVERY, delete customDeliveryKind!
+    if (searchFilter.name === "orderType" && value !== "CUSTOM_DELIVERY") {
+      params.delete("customDeliveryKind");
+    }
+
     const normalize = (val: any) => {
       if (val instanceof Date) return val.toISOString();
       return String(val);
@@ -56,6 +64,44 @@ function TableSearch({ searchFilter }: { searchFilter: FormInput }): JSX.Element
       router.push(`?${params.toString()}`);
     });
   };
+
+  if (searchFilter.type === "tabs") {
+    const options = searchFilter.options || [];
+    const allOptions = [{ label: t("ALL") || "All", value: "" }, ...options];
+
+    return (
+      <div className="flex flex-col gap-1.5 min-w-[200px]">
+        {searchFilter.label && (
+          <span className="text-xs font-semibold text-muted-foreground px-1">
+            {searchFilter.label}
+          </span>
+        )}
+        <div className="inline-flex items-center gap-1 rounded-xl bg-muted/60 p-1 border border-border/60">
+          {allOptions.map(opt => {
+            const isActive = (filterValue || "") === opt.value;
+            return (
+              <button
+                key={String(opt.value)}
+                type="button"
+                onClick={() => {
+                  setFilterValue(opt.value);
+                  onFilterSubmit(opt.value);
+                }}
+                className={cn(
+                  "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition",
+                  isActive
+                    ? "bg-background text-foreground shadow-sm border border-border/60"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   if (searchFilter.type !== "text") {
     return (

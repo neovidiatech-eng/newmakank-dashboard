@@ -28,6 +28,7 @@ export type inputTypes =
   | "color"
   | "space"
   | "video"
+  | "tabs"
   | "date";
 export type CardConfig = {
   id?: number | string;
@@ -72,6 +73,7 @@ export type FormInput = {
   };
   options?: Option[];
   isHidden?: boolean;
+  isQuick?: boolean;
   searchFilters?: { key: string; value: string | number }[];
 };
 

@@ -242,4 +242,8 @@ export interface ApiResponse {
   canDeliver: boolean;
   transferNumer?: string | number | null;
   transferImage?: string | null;
+  transferType?: "VODAFONE_CASH" | "INSTAPAY" | "BANK_TRANSFER" | null;
+  transferAccountNumber?: string | null;
+  customDeliveryKind?: "PURCHASE" | "RESTAURANT" | "ONLINE" | null;
+  customerSelectedZoneId?: number | null;
 }

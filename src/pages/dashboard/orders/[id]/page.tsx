@@ -74,6 +74,11 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                 {t("Scheduled Order")}
               </Badge>
             )}
+            {(data as any)?.customDeliveryKind && (
+              <Badge variant="outline" className="gap-1 border-sky-400 text-sky-600 dark:text-sky-400">
+                {t((data as any)?.customDeliveryKind) || (data as any)?.customDeliveryKind}
+              </Badge>
+            )}
           </div>
           <OrderStatusSelect orderId={data?.id} status={data?.status} />
         </div>
@@ -236,17 +241,36 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   </Badge>
                 </div>
               )}
-              {(data?.transferNumer || data?.transferImage) && (
+              {(data?.transferNumer || data?.transferImage || (data as any)?.transferType) && (
                 <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
                   <h3 className="font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     {t("Bank Transfer Verification")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    {(data as any)?.transferType && (
+                      <div className="space-y-1">
+                        <span className="text-muted-foreground text-xs block">{t("Transfer Type")}</span>
+                        <Badge variant={
+                          (data as any)?.transferType === "BANK_TRANSFER" ? "default" :
+                          (data as any)?.transferType === "VODAFONE_CASH" ? "secondary" : "outline"
+                        } className="font-medium">
+                          {t((data as any)?.transferType) || (data as any)?.transferType}
+                        </Badge>
+                      </div>
+                    )}
                     {(
                       <div className="space-y-1">
                         <span className="text-muted-foreground text-xs block">{t("Reference Number")}</span>
                         <div className="font-mono text-sm bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-md select-all text-slate-800 dark:text-slate-200">
                           {data?.transferNumer ?? '-'}
+                        </div>
+                      </div>
+                    )}
+                    {(data as any)?.transferAccountNumber && (
+                      <div className="space-y-1">
+                        <span className="text-muted-foreground text-xs block">{t("Bank Account / IBAN")}</span>
+                        <div className="font-mono text-sm bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-md select-all text-slate-800 dark:text-slate-200">
+                          {(data as any)?.transferAccountNumber}
                         </div>
                       </div>
                     )}

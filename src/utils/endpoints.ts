@@ -110,7 +110,11 @@ export const endpoints = {
   storeResetPeriod: "/api/statistics/store/reset-period",
   employees: "/api/employees",
   deliveryWithdrawals: "/api/delivery/withdrawals",
-  deliveryCashSettlements: "/api/delivery/cash-settlements"
+  deliveryCashSettlements: "/api/delivery/cash-settlements",
+  storeZonePricingToggle: "/zone-pricing/toggle",
+  storeZonePrices: "/zone-prices",
+  onlineDelivery: "/api/orders",
+  onlineDeliverySellerProfile: "/api/orders/online-delivery/seller-profile"
 };
 // addresses
 // allPermissions

@@ -15,13 +15,25 @@ type OrdersViewTabsProps = {
 
 const getDefaultFilters = (t: ReturnType<typeof useTranslations>): FormInput[] => [
   {
-    name: "type",
+    name: "orderType",
     type: "select",
     options: [
       { label: t("DELIVERY"), value: "DELIVERY" },
       { label: t("PICKUP"), value: "PICKUP" },
       { label: t("CUSTOM_DELIVERY"), value: "CUSTOM_DELIVERY" }
-    ]
+    ],
+    isQuick: true
+  },
+  {
+    name: "customDeliveryKind",
+    label: t("Delivery Service"),
+    type: "tabs",
+    options: [
+      { label: t("PURCHASE"), value: "PURCHASE" },
+      { label: t("RESTAURANT"), value: "RESTAURANT" },
+      { label: t("ONLINE"), value: "ONLINE" }
+    ],
+    isQuick: true
   },
   {
     name: "category",
@@ -75,7 +87,15 @@ export default function OrdersViewTabs({
   const t = useTranslations();
   const searchParams = useSearchParams();
   const columns = OrdersColumns();
-  const resolvedFilters = filters ?? getDefaultFilters(t);
+  const resolvedFilters = (filters ?? getDefaultFilters(t)).map(filter => {
+    if (filter.name === "customDeliveryKind") {
+      return {
+        ...filter,
+        isHidden: searchParams.get("orderType") !== "CUSTOM_DELIVERY"
+      };
+    }
+    return filter;
+  });
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
 
   // Build params from URL search params — fromDate/toDate are sent to the server like
@@ -84,10 +104,26 @@ export default function OrdersViewTabs({
   // matches on other pages, so it was dropped in favor of the same server-side pattern
   // used everywhere else.
   const params: Record<string, unknown> = {};
-  searchParams.forEach((value, key) => { params[key] = value; });
+  searchParams.forEach((value, key) => {
+    if (key === "orderType" && value === "CUSTOM_DELIVERY") {
+      // Do not send orderType=CUSTOM_DELIVERY to the backend API
+    } else if (key === "customDeliveryKind") {
+      params["kind"] = value;
+    } else {
+      params[key] = value;
+    }
+  });
+
+  const isCustomDeliveryWithoutKind = searchParams.get("orderType") === "CUSTOM_DELIVERY" && !searchParams.get("customDeliveryKind");
 
   const queryKey = [endPoint.join("/"), JSON.stringify(params)];
-  const { data: response } = useApiQuery({ queryKey, endPoint, params, staleTime: 0 });
+  const { data: response } = useApiQuery({
+    queryKey,
+    endPoint,
+    params,
+    staleTime: 0,
+    enabled: !isCustomDeliveryWithoutKind
+  });
 
   const orders: Record<string, unknown>[] = Array.isArray(response?.data) ? response.data : [];
   const total = response?.total ?? orders.length;
