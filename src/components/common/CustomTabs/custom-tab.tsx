@@ -47,10 +47,10 @@ export default function CustomTabs({
   const containerClass = `${className} ${dir === "rtl" ? "rtl" : ""}`;
 
   const listClass = [
-    "inline-flex w-full max-w-[520px] items-center gap-1",
+    "inline-flex w-full items-center gap-1",
     "rounded-xl bg-muted/60 p-1",
     "border border-border/60",
-    "mx-auto",
+    "mx-auto flex-wrap",
     dir === "rtl" ? "flex-row-reverse" : "",
     tabsListClassName,
   ].join(" ");

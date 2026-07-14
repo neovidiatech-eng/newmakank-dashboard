@@ -143,10 +143,6 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
             title: "archivedOrders",
             url: "/orders/archived"
           },
-          permissions?.Orders?.get && {
-            title: "Online Delivery",
-            url: "/orders/online-delivery"
-          },
           permissions?.Complaints?.get && {
             title: "complaint",
             url: "/complaint"

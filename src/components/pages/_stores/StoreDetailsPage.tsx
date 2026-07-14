@@ -17,6 +17,7 @@ interface StoreDetailsPageProps {
   orders: ApiResponse<any[]>;
   services: ApiResponse<any[]>;
   appliedTemplates: ApiResponse<any[]>;
+  bundles: ApiResponse<any[]>;
 }
 
 export default function StoreDetailsPage({
@@ -25,7 +26,8 @@ export default function StoreDetailsPage({
   categories,
   orders,
   services,
-  appliedTemplates
+  appliedTemplates,
+  bundles
 }: StoreDetailsPageProps) {
   const t = useTranslations();
   const currentCommission = Number((data as any)?.commission ?? (data as any)?.commotion ?? 0);
@@ -88,6 +90,7 @@ export default function StoreDetailsPage({
         orders={orders}
         services={services}
         appliedTemplates={appliedTemplates}
+        bundles={bundles}
         storeId={Number(data.id)}
       />
     </div>

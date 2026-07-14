@@ -136,7 +136,6 @@ export default function SelectPaginated({
           },
         });
         data = onLabelAction ? onLabelAction(data) : data;
-        console.log(data, 'datasad2', name);
         const formattedData = Array.isArray(data?.data) ? data.data : data;
         const newOptions = Array.isArray(formattedData)
           ? formattedData?.map((item: ApiResponseItem) => ({
@@ -149,15 +148,7 @@ export default function SelectPaginated({
 
         // If we're doing a new search, replace options, otherwise append
         if (isNewSearch) {
-          setApiOptions(prevOptions => {
-            const combined = [...prevOptions];
-            newOptions.forEach(newOption => {
-              if (!combined.some(existing => existing.value === newOption.value)) {
-                combined.push(newOption);
-              }
-            });
-            return combined;
-          });
+          setApiOptions(newOptions);
           setPage(2); // Reset to page 2 for next fetch
         } else {
           // Combine old and new options, avoiding duplicates

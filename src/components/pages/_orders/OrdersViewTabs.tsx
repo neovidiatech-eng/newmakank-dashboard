@@ -15,25 +15,13 @@ type OrdersViewTabsProps = {
 
 const getDefaultFilters = (t: ReturnType<typeof useTranslations>): FormInput[] => [
   {
-    name: "orderType",
+    name: "type",
     type: "select",
     options: [
       { label: t("DELIVERY"), value: "DELIVERY" },
       { label: t("PICKUP"), value: "PICKUP" },
       { label: t("CUSTOM_DELIVERY"), value: "CUSTOM_DELIVERY" }
-    ],
-    isQuick: true
-  },
-  {
-    name: "customDeliveryKind",
-    label: t("Delivery Service"),
-    type: "tabs",
-    options: [
-      { label: t("PURCHASE"), value: "PURCHASE" },
-      { label: t("RESTAURANT"), value: "RESTAURANT" },
-      { label: t("ONLINE"), value: "ONLINE" }
-    ],
-    isQuick: true
+    ]
   },
   {
     name: "category",
@@ -87,46 +75,44 @@ export default function OrdersViewTabs({
   const t = useTranslations();
   const searchParams = useSearchParams();
   const columns = OrdersColumns();
-  const resolvedFilters = (filters ?? getDefaultFilters(t)).map(filter => {
-    if (filter.name === "customDeliveryKind") {
-      return {
-        ...filter,
-        isHidden: searchParams.get("orderType") !== "CUSTOM_DELIVERY"
-      };
-    }
-    return filter;
-  });
+  const resolvedFilters = filters ?? getDefaultFilters(t);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
 
-  // Build params from URL search params — fromDate/toDate are sent to the server like
-  // any other filter (storeId, branchId, ...) instead of being filtered client-side.
-  // Filtering client-side only covered the current page of results and silently missed
-  // matches on other pages, so it was dropped in favor of the same server-side pattern
-  // used everywhere else.
+  // Build params from URL search params.
+  // The "type" filter (DELIVERY / PICKUP / CUSTOM_DELIVERY) is handled client-side
+  // so we don't make a separate API call for each type.
+  const clientSideFilterKeys = ["type"];
   const params: Record<string, unknown> = {};
-  searchParams.forEach((value, key) => {
-    if (key === "orderType" && value === "CUSTOM_DELIVERY") {
-      // Do not send orderType=CUSTOM_DELIVERY to the backend API
-    } else if (key === "customDeliveryKind") {
-      params["kind"] = value;
-    } else {
-      params[key] = value;
-    }
-  });
+  searchParams.forEach((value, key) => { params[key] = value; });
 
-  const isCustomDeliveryWithoutKind = searchParams.get("orderType") === "CUSTOM_DELIVERY" && !searchParams.get("customDeliveryKind");
+  // Extract client-side filter values then remove them from the server params
+  const selectedType = params.type as string | undefined;
+  for (const key of clientSideFilterKeys) { delete params[key]; }
+
+  // Always fetch ALL orders from the server (no server pagination).
+  // Pagination and type filtering are handled entirely client-side.
+  const currentPage = Number(params.page) || 1;
+  const currentLimit = Number(params.limit) || 10;
+  delete params.page;
+  delete params.limit;
 
   const queryKey = [endPoint.join("/"), JSON.stringify(params)];
-  const { data: response } = useApiQuery({
-    queryKey,
-    endPoint,
-    params,
-    staleTime: 0,
-    enabled: !isCustomDeliveryWithoutKind
-  });
+  const { data: response } = useApiQuery({ queryKey, endPoint, params, staleTime: 0 });
 
-  const orders: Record<string, unknown>[] = Array.isArray(response?.data) ? response.data : [];
-  const total = response?.total ?? orders.length;
+  const allOrders: Record<string, unknown>[] = Array.isArray(response?.data) ? response.data : [];
+
+  // Client-side filtering by order type, then manual pagination
+  let orders: Record<string, unknown>[];
+  let total: number;
+
+  if (selectedType) {
+    const filtered = allOrders.filter(order => order.type === selectedType);
+    orders = filtered.slice((currentPage - 1) * currentLimit, currentPage * currentLimit);
+    total = filtered.length;
+  } else {
+    orders = allOrders;
+    total = response?.total ?? orders.length;
+  }
 
   const toggleOrderSelection = (orderId: string) => {
     setSelectedOrderIds(prev =>

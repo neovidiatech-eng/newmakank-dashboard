@@ -24,7 +24,7 @@ async function page({
   // Remove tab from the parameters sent to the API
   const { tab, ...apiSearchParams } = resolvedSearchParams;
 
-  const [data, branchesData, categoriesData, ordersData, servicesData, appliedTemplatesData] = await Promise.all([
+  const [data, branchesData, categoriesData, ordersData, servicesData, appliedTemplatesData, bundlesData] = await Promise.all([
     fetchData(["stores", storeId]),
     activeTab === "branches" ? fetchData(["branches"], {
       ...apiSearchParams,
@@ -44,6 +44,10 @@ async function page({
     }) : Promise.resolve(null),
     activeTab === "appliedTemplates" ? fetchData(["stores", storeId, "appliedTemplates"], {
       ...apiSearchParams
+    }) : Promise.resolve(null),
+    activeTab === "offers" ? fetchData(["bundles"] as any, {
+      ...apiSearchParams,
+      storeId
     }) : Promise.resolve(null)
   ]);
 
@@ -59,6 +63,7 @@ async function page({
       orders={ordersData || emptyListResponse}
       services={servicesData || emptyListResponse}
       appliedTemplates={appliedTemplatesData || emptyListResponse}
+      bundles={bundlesData || emptyListResponse}
     />
   );
 }

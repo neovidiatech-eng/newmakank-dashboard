@@ -105,7 +105,7 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
     let cancelled = false;
     (async () => {
       const response = await fetchHelper({
-        endPoint: ["bundles"],
+        endPoint: ["bundles"] as any,
         method: "GET",
         params: { storeId, limit: 200 }
       });
@@ -139,7 +139,7 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
   const syncOffer = async (serviceId: number, formattedData: any) => {
     if (!offer.isOffer) {
       if (existingBundleId) {
-        await fetchHelper({ endPoint: ["bundles", existingBundleId], method: "DELETE" });
+        await fetchHelper({ endPoint: ["bundles", existingBundleId] as any, method: "DELETE" });
         setExistingBundleId(null);
       }
       return;
@@ -172,7 +172,7 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
     if (offer.endDate) body.append("endDate", new Date(offer.endDate).toISOString());
 
     await fetchHelper({
-      endPoint: existingBundleId ? ["bundles", existingBundleId] : ["bundles"],
+      endPoint: (existingBundleId ? ["bundles", existingBundleId] : ["bundles"]) as any,
       method: existingBundleId ? "PATCH" : "POST",
       body
     });
@@ -306,14 +306,32 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
     control,
     name: "Addons"
   });
-  const importServiceData = (serviceData: any) => {
+  const importServiceData = async (serviceData: any) => {
+    // If there is an image path, resolve it to a binary File object so it can be re-uploaded.
+    let resolvedImageFile: File | undefined = undefined;
+    if (serviceData?.image && typeof serviceData.image === "string") {
+      try {
+        const url = serviceData.image.startsWith("http") 
+          ? serviceData.image 
+          : `${getEnv("VITE_API_IMG_URL")}${serviceData.image}`;
+        const imgResponse = await fetch(url);
+        if (imgResponse.ok) {
+          const blob = await imgResponse.blob();
+          const fileName = serviceData.image.split("/").pop() || "product-image.png";
+          resolvedImageFile = new File([blob], fileName, { type: blob.type || "image/png" });
+        }
+      } catch (err) {
+        console.error("Failed to resolve imported product image to file:", err);
+      }
+    }
+
     const normalizedData = {
       ...serviceData,
       nameAr: serviceData?.name?.ar ?? "",
       nameEn: serviceData?.name?.en ?? "",
       descriptionAr: serviceData?.description?.ar ?? "",
       descriptionEn: serviceData?.description?.en ?? "",
-      image: serviceData?.image ?? "",
+      image: resolvedImageFile ?? serviceData?.image ?? "",
       durationMinutes: serviceData?.durationMinutes ?? 0,
       price: serviceData?.price ?? 0,
       priceBeforeDiscount:

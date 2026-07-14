@@ -6,8 +6,9 @@ import CustomTabs, { TabItem } from "@/components/common/CustomTabs/custom-tab";
 import TableBasic from "@/components/common/table/TableBasic";
 import BtnAction from "@/components/common/table/tableActions/btn-action";
 import { StoreZonePricingTab } from "./StoreZonePricingTab";
-import { Layers, MapPin, MapPinned, Package, ShoppingBag, FileCode2, Trash2 } from "lucide-react";
+import { Layers, MapPin, MapPinned, Package, ShoppingBag, FileCode2, Trash2, Gift } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
+import OffersColumns from "@/pages/dashboard/offers/OffersColumns";
 import { useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "@/lib/navigation";
 
@@ -17,10 +18,11 @@ interface StoreTabsProps {
   orders: ApiResponse<any[]>;
   services: ApiResponse<any[]>;
   appliedTemplates?: ApiResponse<any[]>;
+  bundles?: ApiResponse<any[]>;
   storeId: number;
 }
 
-export function StoreTabs({ branches, categories, orders, services, appliedTemplates, storeId }: StoreTabsProps) {
+export function StoreTabs({ branches, categories, orders, services, appliedTemplates, bundles, storeId }: StoreTabsProps) {
   const t = useTranslations();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -35,6 +37,7 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
   };
 
   const ordersColumns = OrdersColumns();
+  const offersColumns = OffersColumns();
   const formattedBranches = useMemo(() => {
     const arabicNumberFormatter = new Intl.NumberFormat("ar-EG", {
       useGrouping: false
@@ -159,6 +162,33 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
       )
     },
     {
+      value: "offers",
+      label: (
+        <div className="flex items-center gap-2">
+          <Gift className="w-4 h-4" />
+          {t("Offers")}
+        </div>
+      ),
+      content: (
+        <TableBasic
+          data={bundles?.data}
+          columns={offersColumns}
+          cardHeader={t("Offers")}
+          createNewLink={`/offers/create?storeId=${storeId}`}
+          hideCreateNew={false}
+          isInnerTable={false}
+          pagination={{
+            total: bundles?.total
+          }}
+          tableActions={{
+            onDelete: ["bundles"] as any,
+            onEdit: `/offers`,
+            fixedActions: true
+          }}
+        />
+      )
+    },
+    {
       value: "orders",
       label: (
         <div className="flex items-center gap-2">
@@ -244,7 +274,7 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
       tabs={tabs}
       value={currentTab}
       onValueChange={handleTabChange}
-      className="mt-6"
+      className="mt-6 w-full"
     />
   );
 }

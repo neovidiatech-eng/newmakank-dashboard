@@ -277,6 +277,7 @@ export default function ServicesFormPage({ data, hideStoreInput }: { data?: Serv
           apiUrl={["services"]}
           value=""
           labelFormat="serviceStore"
+          searchTermKey="name"
           placeholder={t("SearchProductToCopy")}
           onChange={async val => {
             if (!val) return;
