@@ -2718,5 +2718,19 @@
   "freeRequiredSizeName": "اسم المقاس المطلوب للقطعة الهدية",
   "freeValueRule": "شرط قيمة/سعر القطعة الهدية",
   "maxFreeItemValue": "الحد الأقصى لسعر قطعة الهدية",
-  "Bundle Rules": "قواعد العرض (المقاسات والقيم)"
+  "Bundle Rules": "قواعد العرض (المقاسات والقيم)",
+  "sizeRuleAny": "أي مقاس (مرونة كاملة)",
+  "sizeRuleName": "مقاس معيّن بالاسم (تحديد مقاس بالاسم)",
+  "freeValueCapToCheapestPaid": "سعر الهدية لا يتعدى أرخص قطعة مدفوعة (الافتراضي)",
+  "freeValueNoCap": "بدون حد أقصى لقيمة الهدية",
+  "freeValueMaxFreeValue": "سقف سعر ثابت محدد للهدية",
+  "paidServicesOrCategoriesRequired": "يجب تحديد منتج واحد أو فئة واحدة على الأقل للقطع المدفوعة",
+  "freeServicesOrCategoriesRequired": "يجب تحديد منتج واحد أو فئة واحدة على الأقل للقطع الهدية",
+  "paidRequiredSizeNameRequired": "اسم المقاس المطلوب إجباري عند اختيار التقييد بالاسم",
+  "freeRequiredSizeNameRequired": "اسم المقاس المطلوب إجباري عند اختيار التقييد بالاسم",
+  "maxFreeItemValueRequired": "سقف سعر الهدية مطلوب عند اختيار حد أقصى ثابت",
+  "Paid size": "مقاس المدفوع",
+  "Free size": "مقاس الهدية",
+  "Max free value": "سقف",
+  "Cap to cheapest paid": "سقف سعر الهدية = أرخص مدفوع"
 }

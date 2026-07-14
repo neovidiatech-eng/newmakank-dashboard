@@ -2723,5 +2723,19 @@
   "freeRequiredSizeName": "Free Item Required Size Name",
   "freeValueRule": "Free Item Value/Price Rule",
   "maxFreeItemValue": "Free Item Maximum Value",
-  "Bundle Rules": "Bundle Rules (Sizes & Values)"
+  "Bundle Rules": "Bundle Rules (Sizes & Values)",
+  "sizeRuleAny": "Any Size (Full Flexibility)",
+  "sizeRuleName": "Specific Size By Name",
+  "freeValueCapToCheapestPaid": "Free item price capped to cheapest paid item (Default)",
+  "freeValueNoCap": "No Cap (Free item can be any price)",
+  "freeValueMaxFreeValue": "Fixed maximum cap for free item value",
+  "paidServicesOrCategoriesRequired": "You must select at least one product or category for the paid items",
+  "freeServicesOrCategoriesRequired": "You must select at least one product or category for the free items",
+  "paidRequiredSizeNameRequired": "Required size name is mandatory when restricted by name",
+  "freeRequiredSizeNameRequired": "Required size name is mandatory when restricted by name",
+  "maxFreeItemValueRequired": "Free item cap value is mandatory when fixed cap is selected",
+  "Paid size": "Paid size",
+  "Free size": "Free size",
+  "Max free value": "Max free value",
+  "Cap to cheapest paid": "Capped to cheapest paid item"
 }
