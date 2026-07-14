@@ -15,18 +15,36 @@ const toArray = (value: unknown): string[] => {
 export default function useOffersLogic({ data }: { data?: OffersType }) {
   const t = useTranslations();
   const formAction = useFormAction();
-  const inputs = OffersInputs({ storeId: data?.storeId as number });
+
   const {
     control,
     handleSubmit,
-    reset
+    reset,
+    watch
   } = useForm<OffersType>({
     mode: "onSubmit",
     resolver: zodResolver(OffersSchema(t)),
     defaultValues: {
-      ...extractFormDefaultInputs(inputs, data),
-      isActive: data?.isActive !== undefined ? String(data.isActive) : "true"
+      ...extractFormDefaultInputs(OffersInputs({ storeId: data?.storeId as number }), data),
+      isActive: data?.isActive !== undefined ? String(data.isActive) : "true",
+      paidSizeRule: (data as any)?.paidSizeRule || "ANY",
+      paidRequiredSizeName: (data as any)?.paidRequiredSizeName || "",
+      freeSizeRule: (data as any)?.freeSizeRule || "ANY",
+      freeRequiredSizeName: (data as any)?.freeRequiredSizeName || "",
+      freeValueRule: (data as any)?.freeValueRule || "CAP_TO_CHEAPEST_PAID",
+      maxFreeItemValue: (data as any)?.maxFreeItemValue !== undefined && (data as any)?.maxFreeItemValue !== null ? String((data as any).maxFreeItemValue) : "",
     } as OffersType
+  });
+
+  const paidSizeRule = watch("paidSizeRule");
+  const freeSizeRule = watch("freeSizeRule");
+  const freeValueRule = watch("freeValueRule");
+
+  const inputs = OffersInputs({
+    storeId: data?.storeId as number,
+    paidSizeRule,
+    freeSizeRule,
+    freeValueRule
   });
 
   const onSubmit = async (formData: OffersType) => {
@@ -62,8 +80,25 @@ export default function useOffersLogic({ data }: { data?: OffersType }) {
     body.append("type", "BUY_X_GET_Y_FREE");
     body.append("requiredPaidQuantity", String(formData.requiredPaidQuantity));
     body.append("freeQuantity", String(formData.freeQuantity));
+
     toArray(formData.paidServiceIds).forEach(id => body.append("paidServiceIds", id));
+    toArray(formData.paidCategoryIds).forEach(id => body.append("paidCategoryIds", id));
     toArray(formData.freeServiceIds).forEach(id => body.append("freeServiceIds", id));
+    toArray(formData.freeCategoryIds).forEach(id => body.append("freeCategoryIds", id));
+
+    body.append("paidSizeRule", String(formData.paidSizeRule ?? "ANY"));
+    if (formData.paidSizeRule === "NAME" && formData.paidRequiredSizeName) {
+      body.append("paidRequiredSizeName", formData.paidRequiredSizeName);
+    }
+    body.append("freeSizeRule", String(formData.freeSizeRule ?? "ANY"));
+    if (formData.freeSizeRule === "NAME" && formData.freeRequiredSizeName) {
+      body.append("freeRequiredSizeName", formData.freeRequiredSizeName);
+    }
+    body.append("freeValueRule", String(formData.freeValueRule ?? "CAP_TO_CHEAPEST_PAID"));
+    if (formData.freeValueRule === "MAX_FREE_VALUE" && formData.maxFreeItemValue !== undefined && formData.maxFreeItemValue !== null) {
+      body.append("maxFreeItemValue", String(formData.maxFreeItemValue));
+    }
+
     if ((formData as any).startDate) {
       body.append("startDate", new Date((formData as any).startDate).toISOString());
     }

@@ -12,7 +12,8 @@ export default function OffersFormPage({ data }: { data?: OffersType }) {
       cardConfig={[
         { id: "lang", title: t("Offers Information"), multiLang: true, width: 6 },
         { id: "basic", title: t("Basic Details"), width: 6 },
-        { id: "associations", title: t("Associations"), width: 12 }
+        { id: "associations", title: t("Associations"), width: 12 },
+        { id: "rules", title: t("Bundle Rules"), width: 12 }
       ]}
       inputs={inputs}
     />

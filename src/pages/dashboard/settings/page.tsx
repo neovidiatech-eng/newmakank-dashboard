@@ -19,6 +19,17 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
 
   const allSettings = (response?.data ?? []) as SettingsItem[];
 
+  if (domain === "ORDER" && !allSettings.some(item => item.setting === "onlineDeliveryPackagingEnabled")) {
+    allSettings.push({
+      setting: "onlineDeliveryPackagingEnabled",
+      name: "onlineDeliveryPackagingEnabled",
+      value: "true",
+      domain: "ORDER",
+      enumValues: null,
+      dataType: "BOOLEAN"
+    });
+  }
+
   const HIDDEN_SETTINGS = ["filterByZone", "storeNearestByKM"];
   const settings = allSettings.filter((item) => !HIDDEN_SETTINGS.includes(item.setting));
 

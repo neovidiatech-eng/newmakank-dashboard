@@ -75,6 +75,7 @@ export const endpoints = {
   allRoles: "/api/roles/all",
   keyvalue: "/api/keyvalue",
   statistics: "/api/statistics",
+  financialOverview: "/api/statistics/financial-overview",
   services: "/api/services",
   status: "/status",
   deliveryRegister: "/api/delivery/register",
@@ -112,6 +113,9 @@ export const endpoints = {
   deliveryCashSettlements: "/api/delivery/cash-settlements",
   storeZonePricingToggle: "/zone-pricing/toggle",
   storeZonePrices: "/zone-prices",
+  storeManagedByAdminToggle: "/managed-by-admin/toggle",
+  storeDiscount: "/discount",
+  storeDiscountRemove: "/discount/remove",
   onlineDelivery: "/api/orders",
   onlineDeliverySellerProfile: "/api/orders/online-delivery/seller-profile",
   bundles: "/api/bundles"

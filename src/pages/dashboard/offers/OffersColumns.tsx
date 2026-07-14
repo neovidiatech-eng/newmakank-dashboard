@@ -32,10 +32,37 @@ export default function OffersColumns(): ColumnDef<Record<string, unknown>>[] {
       cell: ({ row }) => {
         const paid = row.original.requiredPaidQuantity as number;
         const free = row.original.freeQuantity as number;
+        const paidSizeRule = row.original.paidSizeRule as string;
+        const paidSizeName = row.original.paidRequiredSizeName as string;
+        const freeSizeRule = row.original.freeSizeRule as string;
+        const freeSizeName = row.original.freeRequiredSizeName as string;
+        const freeValueRule = row.original.freeValueRule as string;
+        const maxFreeValue = row.original.maxFreeItemValue as number;
+
+        let ruleText = `${t("Buy")} ${paid} ${t("Get")} ${free} ${t("Free")}`;
+        
+        const details: string[] = [];
+        if (paidSizeRule === "NAME" && paidSizeName) {
+          details.push(`${t("Paid size", "مقاس المدفوع")}: ${paidSizeName}`);
+        }
+        if (freeSizeRule === "NAME" && freeSizeName) {
+          details.push(`${t("Free size", "مقاس الهدية")}: ${freeSizeName}`);
+        }
+        if (freeValueRule === "MAX_FREE_VALUE" && maxFreeValue) {
+          details.push(`${t("Max free value", "سقف")}: ${maxFreeValue} EGP`);
+        } else if (freeValueRule === "CAP_TO_CHEAPEST_PAID") {
+          details.push(t("Cap to cheapest paid", "سقف سعر الهدية = أرخص مدفوع"));
+        }
+
         return (
-          <span className="text-sm">
-            {t("Buy")} {paid} {t("Get")} {free} {t("Free")}
-          </span>
+          <div className="flex flex-col text-start">
+            <span className="font-semibold text-sm">{ruleText}</span>
+            {details.length > 0 && (
+              <span className="text-xs text-muted-foreground mt-0.5">
+                {details.join(" | ")}
+              </span>
+            )}
+          </div>
         );
       }
     },

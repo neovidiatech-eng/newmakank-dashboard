@@ -4,9 +4,29 @@ import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 import { getEnv } from "@/lib/env";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 const imgUrl = getEnv("VITE_API_IMG_URL");
-export default function DeliveryInfo({ delivery }: { delivery: ApiResponseDelivery | null | undefined }) {
+
+const KIND_STYLES: Record<string, string> = {
+  ONLINE: "border-sky-400 text-sky-600 dark:text-sky-400",
+  PURCHASE: "border-amber-400 text-amber-600 dark:text-amber-400",
+  RESTAURANT: "border-orange-400 text-orange-600 dark:text-orange-400"
+};
+
+const KIND_LABEL: Record<string, string> = {
+  ONLINE: "مندوب أونلاين",
+  PURCHASE: "مندوب مشتريات",
+  RESTAURANT: "مندوب مطاعم"
+};
+
+export default function DeliveryInfo({
+  delivery,
+  deliveryKind
+}: {
+  delivery: ApiResponseDelivery | null | undefined;
+  deliveryKind?: "ONLINE" | "PURCHASE" | "RESTAURANT" | null;
+}) {
     const t = useTranslations();
     const [imgError, setImgError] = useState(false);
 
@@ -26,9 +46,20 @@ export default function DeliveryInfo({ delivery }: { delivery: ApiResponseDelive
                     </div>
                 )}
             </div>
-            <div>
-                <div className="font-medium">{user.name}</div>
+            <div className="space-y-1">
+                <div className="flex items-center gap-1.5 font-medium">
+                    <span>{user.name}</span>
+                    <span className="text-xs text-muted-foreground bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono">#{user.id}</span>
+                </div>
                 <div className="text-sm text-muted-foreground print:hidden">{user.phone}</div>
+                {deliveryKind && (
+                    <Badge
+                        variant="outline"
+                        className={`text-xs font-semibold ${KIND_STYLES[deliveryKind] ?? ""}`}
+                    >
+                        {KIND_LABEL[deliveryKind] ?? deliveryKind}
+                    </Badge>
+                )}
             </div>
         </div>
     );

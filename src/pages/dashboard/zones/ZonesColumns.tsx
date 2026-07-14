@@ -45,6 +45,14 @@ export default function ZonesColumns(): ColumnDef<Record<string, unknown>>[] {
       header: () => <IconHeader columnKey="City" />,
       cell: ({ row }) => <CityCell row={row} />
     },
+    {
+      accessorKey: "deliveryPrice",
+      header: () => <IconHeader columnKey="Delivery Price" />,
+      cell: ({ getValue }) => {
+        const val = getValue() as number | undefined;
+        return <span>{val !== undefined && val !== null ? `${val} EGP` : "-"}</span>;
+      }
+    },
     // {
     //   accessorKey: "coordinates",
     //   header: "Coordinates",

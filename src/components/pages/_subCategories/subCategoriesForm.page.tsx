@@ -17,9 +17,13 @@ export default function SubCategoriesFormPage({ data, storeId }: { data?: SubCat
 					multiLang: true,
 					width: 6,
 				},
+				{
+					id: "basic",
+					title: t("Image"),
+					width: 6,
+				},
 			]}
 			inputs={inputs}
 		/>
 	);
 }
-

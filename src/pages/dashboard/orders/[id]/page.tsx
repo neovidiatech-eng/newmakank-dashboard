@@ -64,7 +64,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 print:hidden">
-          <CopyOrderButton orderId={data?.id} items={data?.OrderItems || []} />
+          <CopyOrderButton orderId={data?.id} items={data?.OrderItems || []} orderData={data as any} />
           <div className="flex gap-2">
             <TableStatusBadge status={data?.status} />
             <TableStatusBadge status={data?.paymentStatus} />
@@ -365,7 +365,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                 disabled={!!data?.Delivery?.User?.id}
               />
             </div>
-            <DeliveryInfo delivery={data?.Delivery} />
+            <DeliveryInfo delivery={data?.Delivery} deliveryKind={(data as any)?.customDeliveryKind} />
 
             <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
               <div className="flex items-center justify-between">
@@ -414,6 +414,34 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   {t(data?.type) || data?.type}
                 </Badge>
               </div>
+              {/* Delivery kind — shown for all orders that have a driver */}
+              {data?.Delivery?.User && (
+                <div>
+                  <span className="text-muted-foreground block text-xs mb-0.5">{t("Delivery Service")}</span>
+                  {(data as any)?.customDeliveryKind ? (
+                    <Badge
+                      variant="outline"
+                      className={
+                        (data as any).customDeliveryKind === "ONLINE"
+                          ? "font-semibold border-sky-400 text-sky-600 dark:text-sky-400"
+                          : (data as any).customDeliveryKind === "PURCHASE"
+                          ? "font-semibold border-amber-400 text-amber-600 dark:text-amber-400"
+                          : "font-semibold border-orange-400 text-orange-600 dark:text-orange-400"
+                      }
+                    >
+                      {(data as any).customDeliveryKind === "ONLINE"
+                        ? "مندوب أونلاين"
+                        : (data as any).customDeliveryKind === "PURCHASE"
+                        ? "مندوب مشتريات"
+                        : "مندوب مطاعم"}
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="font-normal mt-0.5">
+                      {t(data?.type) || data?.type}
+                    </Badge>
+                  )}
+                </div>
+              )}
               <div>
                 <span className="text-muted-foreground block text-xs mb-0.5">{t("Payment Method")}</span>
                 <Badge variant="secondary" className="font-normal capitalize mt-0.5">

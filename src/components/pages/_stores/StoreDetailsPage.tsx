@@ -7,6 +7,8 @@ import { StoreHero } from "./details/StoreHero";
 import { StoreSidebar } from "./details/StoreSidebar";
 import { StoreStats } from "./details/StoreStats";
 import { StoreTabs } from "./details/StoreTabs";
+import { StoreManagedByAdminToggle } from "./details/StoreManagedByAdminToggle";
+import { StoreDiscountButton } from "./details/StoreDiscountButton";
 import { useTranslations } from "@/lib/i18n";
 import { AlertTriangle } from "lucide-react";
 
@@ -60,6 +62,11 @@ export default function StoreDetailsPage({
             <span className="text-foreground font-semibold">{commissionLabel}</span>
             <span className="text-xs">({t(currentCommissionType)})</span>
           </div>
+          <StoreManagedByAdminToggle
+            storeId={Number(data.id)}
+            initialEnabled={(data as any).managedByAdmin}
+          />
+          <StoreDiscountButton storeId={Number(data.id)} />
           <ApplyTemplateButton storeId={Number(data.id)} />
           <StoreCommotionButton
             storeId={Number(data.id)}

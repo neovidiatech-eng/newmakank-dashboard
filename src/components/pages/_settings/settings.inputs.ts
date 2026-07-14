@@ -71,6 +71,7 @@ const SETTING_GROUPS: Record<string, string> = {
   onlineDeliveryBaseFee: "online_delivery",
   onlineDeliveryCommission: "online_delivery",
   packagingFee: "online_delivery",
+  onlineDeliveryPackagingEnabled: "online_delivery",
   // Pickup/delivery geofence radii.
   pickupGeofenceRadiusMeters: "geofence",
   deliveryGeofenceRadiusMeters: "geofence",
@@ -90,16 +91,23 @@ const SettingsInputs = ({
   t: (key: string) => string;
 }): FormInput[] => {
   return settings
-    .map(item => ({
-      name: item.setting,
-      label: t(item.setting),
-      type: resolveInputType(item),
-      options: item.dataType =='BOOLEAN' ? booleanOptions(t)  : item?.enumValues?.map(value => ({ label: t(value), value })) ?? undefined,
-      cardId: SETTING_GROUPS[item.setting] ?? "settings",
-      width: resolveInputWidth(item),
-      ...(item.setting === "shippingKMCharge" ? { min: 0.000001 } : {}),
-      ...(MIN_ZERO_SETTINGS.includes(item.setting) ? { min: 0 } : {})
-    }));
+    .map(item => {
+      const descKey = `${item.setting}Description`;
+      const descVal = t(descKey);
+      const toolTip = descVal !== descKey ? descVal : undefined;
+
+      return {
+        name: item.setting,
+        label: t(item.setting),
+        type: resolveInputType(item),
+        options: item.dataType =='BOOLEAN' ? booleanOptions(t)  : item?.enumValues?.map(value => ({ label: t(value), value })) ?? undefined,
+        cardId: SETTING_GROUPS[item.setting] ?? "settings",
+        width: resolveInputWidth(item),
+        toolTip,
+        ...(item.setting === "shippingKMCharge" ? { min: 0.000001 } : {}),
+        ...(MIN_ZERO_SETTINGS.includes(item.setting) ? { min: 0 } : {})
+      };
+    });
 };
 
 export { SettingsInputs };

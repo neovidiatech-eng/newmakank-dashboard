@@ -169,20 +169,6 @@ export default function OrdersColumns(): any {
       }
     },
     {
-      accessorKey: "category",
-      header: () => <IconHeader columnKey="category" />,
-      cell: ({ getValue }) => {
-        const category = getValue() as string;
-        if (category !== "SCHEDULED") return <span className="text-muted-foreground">—</span>;
-        return (
-          <Badge variant="outline" className="gap-1 border-violet-400 text-violet-500">
-            <CalendarClock className="h-3.5 w-3.5" />
-            {t("Scheduled Order")}
-          </Badge>
-        );
-      }
-    },
-    {
       accessorKey: "isGift",
       header: () => <IconHeader columnKey="Gift Order" />,
       cell: ({ getValue }) => {
@@ -314,7 +300,38 @@ export default function OrdersColumns(): any {
       header: () => <IconHeader columnKey="Delivery Name" />,
       cell: ({ row }) => {
         const value = row?.original?.Delivery?.User?.name;
-        return <span>{value || "-"}</span>;
+        if (!value) return <span>-</span>;
+        const driverId = row?.original?.Delivery?.User?.id;
+        const kind = row?.original?.customDeliveryKind as string | null;
+        const orderType = row?.original?.type as string | null;
+
+        const KIND_STYLES: Record<string, string> = {
+          ONLINE: "border-sky-400 text-sky-600 dark:text-sky-400",
+          PURCHASE: "border-amber-400 text-amber-600 dark:text-amber-400",
+          RESTAURANT: "border-orange-400 text-orange-600 dark:text-orange-400"
+        };
+        const KIND_LABEL: Record<string, string> = {
+          ONLINE: "مندوب أونلاين",
+          PURCHASE: "مندوب مشتريات",
+          RESTAURANT: "مندوب مطاعم"
+        };
+
+        return (
+          <div className="flex flex-col gap-1">
+            <span className="font-medium">
+              {value} {driverId && <span className="text-xs text-muted-foreground font-normal font-mono bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">#{driverId}</span>}
+            </span>
+            {kind ? (
+              <Badge variant="outline" className={`text-xs w-fit ${KIND_STYLES[kind] ?? ""}`}>
+                {KIND_LABEL[kind] ?? kind}
+              </Badge>
+            ) : orderType ? (
+              <Badge variant="secondary" className="text-xs w-fit font-normal">
+                {t(orderType) || orderType}
+              </Badge>
+            ) : null}
+          </div>
+        );
       }
     },
     {

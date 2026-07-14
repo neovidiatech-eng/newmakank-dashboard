@@ -174,7 +174,7 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
           data={bundles?.data}
           columns={offersColumns}
           cardHeader={t("Offers")}
-          createNewLink={`/offers/create?storeId=${storeId}`}
+          createNewLink={`/stores/${storeId}/offers/create`}
           hideCreateNew={false}
           isInnerTable={false}
           pagination={{
