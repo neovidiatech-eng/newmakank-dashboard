@@ -1,15 +1,19 @@
 import { DashboardIcon, Pencil1Icon } from "@radix-ui/react-icons";
 import {
   Activity,
+  Archive,
   Banknote,
   Box,
+  Briefcase,
   Building,
   Calendar,
   ClipboardList,
   Clock,
   Coins,
   Folder,
+  Gift,
   GraduationCap,
+  HandCoins,
   Image,
   Languages,
   Layers,
@@ -19,6 +23,7 @@ import {
   Megaphone,
   Percent,
   Plus,
+  Receipt,
   Settings,
   Share2,
   Shield,
@@ -26,18 +31,21 @@ import {
   Store,
   Tag,
   Ticket,
+  TrendingUp,
   Truck,
   User,
   Users,
   Power,
   RotateCcw,
-  ScrollText
+  ScrollText,
+  Wallet
 } from "lucide-react";
 export const mainIcons = {
   users: User,
   edit: Pencil1Icon,
   create: Plus,
   Dashboard: DashboardIcon,
+  financialOverview: TrendingUp,
   activityLogs: ScrollText,
   languages: Languages,
   currency: Coins,
@@ -65,19 +73,25 @@ export const mainIcons = {
   roles: Shield,
   permissions: Lock,
   orders: ClipboardList,
+  archivedOrders: Archive,
   complaint: MessageSquare,
   services: Settings,
   products: Box,
   zones: MapPin,
   coupons: Ticket,
+  Offers: Gift,
   variationTemplate: Folder,
   customers: Users,
+  employees: Briefcase,
   socialMedia: Share2,
   academicContent: GraduationCap,
   systemSettings: Settings,
   settings: Settings,
   storeTemplates: Layers,
-  customerCategories: Users
+  customerCategories: Users,
+  wallet: Wallet,
+  "Driver Withdrawals": HandCoins,
+  "Cash Settlements": Receipt
 };
 
 export const columnsIcons = {
