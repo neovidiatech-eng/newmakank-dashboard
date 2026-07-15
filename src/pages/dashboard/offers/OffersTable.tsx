@@ -48,7 +48,8 @@ export default function OffersTable({ permission }: { permission?: Auth.Permissi
     <TableWithQuery
       endPoint={["bundles"]}
       columns={OffersColumns}
-      hideCreateNew
+      hideCreateNew={!permission?.post}
+      createNewLink={`/stores/${storeId}/offers/create`}
       cardHeader={t("Offers")}
       tableActions={{
         onEdit: permission?.put || permission?.patch,
