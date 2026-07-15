@@ -104,7 +104,7 @@ const SettingsInputs = ({
         cardId: SETTING_GROUPS[item.setting] ?? "settings",
         width: resolveInputWidth(item),
         toolTip,
-        ...(item.setting === "shippingKMCharge" ? { min: 0.000001 } : {}),
+        ...(item.setting === "shippingKMCharge" ? { min: 0 } : {}),
         ...(MIN_ZERO_SETTINGS.includes(item.setting) ? { min: 0 } : {})
       };
     });
