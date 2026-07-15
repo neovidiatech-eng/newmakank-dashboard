@@ -25,9 +25,15 @@ type DiscountType = "PERCENTAGE" | "FIXED";
 
 interface StoreDiscountButtonProps {
   storeId: number;
+  initialDiscountType?: DiscountType;
+  initialDiscountValue?: number;
 }
 
-export function StoreDiscountButton({ storeId }: StoreDiscountButtonProps) {
+export function StoreDiscountButton({
+  storeId,
+  initialDiscountType,
+  initialDiscountValue
+}: StoreDiscountButtonProps) {
   const t = useTranslations();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -113,14 +119,34 @@ export function StoreDiscountButton({ storeId }: StoreDiscountButtonProps) {
     setIsRemoving(false);
   };
 
-  const handleOpenChange = (nextOpen: boolean) => {
+  const handleOpenChange = async (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (nextOpen) {
-      // Start from a clean slate every time the dialog is opened, so a category picked
-      // (and not submitted) in a previous visit can't silently carry over.
-      setValue("");
-      setCategoryId("");
-      setDiscountType("PERCENTAGE");
+      // If we already have initial values from props, use them immediately
+      if (initialDiscountValue != null && initialDiscountValue > 0) {
+        setDiscountType(initialDiscountType ?? "PERCENTAGE");
+        setValue(String(initialDiscountValue));
+        setCategoryId("");
+        return;
+      }
+      // Otherwise fetch the store's current discount from the API
+      try {
+        const res = await fetchHelper({ endPoint: ["stores", storeId] });
+        const storeData = res?.data as any;
+        const fetchedType: DiscountType =
+          storeData?.discountType === "FIXED" ? "FIXED" : "PERCENTAGE";
+        const fetchedValue = Number(
+          storeData?.discountValue ?? storeData?.discount ?? 0
+        );
+        setDiscountType(fetchedType);
+        setValue(fetchedValue > 0 ? String(fetchedValue) : "");
+        setCategoryId("");
+      } catch {
+        // fallback to clean slate
+        setDiscountType("PERCENTAGE");
+        setValue("");
+        setCategoryId("");
+      }
     }
   };
 

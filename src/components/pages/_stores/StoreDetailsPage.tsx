@@ -66,7 +66,11 @@ export default function StoreDetailsPage({
             storeId={Number(data.id)}
             initialEnabled={(data as any).managedByAdmin}
           />
-          <StoreDiscountButton storeId={Number(data.id)} />
+          <StoreDiscountButton
+            storeId={Number(data.id)}
+            initialDiscountType={((data as any)?.discountType === "FIXED" ? "FIXED" : "PERCENTAGE") as "PERCENTAGE" | "FIXED"}
+            initialDiscountValue={Number((data as any)?.discountValue ?? (data as any)?.discount ?? 0)}
+          />
           <ApplyTemplateButton storeId={Number(data.id)} />
           <StoreCommotionButton
             storeId={Number(data.id)}
