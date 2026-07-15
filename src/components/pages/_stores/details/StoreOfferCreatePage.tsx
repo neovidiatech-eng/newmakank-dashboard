@@ -20,20 +20,24 @@ export default function StoreOfferCreatePage({ storeId }: StoreOfferCreatePagePr
   const t = useTranslations();
   const router = useRouter();
 
-  const allInputs = OffersInputs({ storeId });
-
-  // Hide the storeId select — it's fixed to this store's context
-  const inputs = allInputs.filter(input => input.name !== "storeId");
-
-  const { control, handleSubmit, reset } = useForm<OffersType>({
+  const { control, handleSubmit, reset, watch } = useForm<OffersType>({
     mode: "onSubmit",
     resolver: zodResolver(OffersSchema(t)),
     defaultValues: {
-      ...extractFormDefaultInputs(inputs, undefined),
+      ...extractFormDefaultInputs(OffersInputs({ storeId }), undefined),
       storeId: storeId as any,
       isActive: "true"
     } as OffersType
   });
+
+  const paidSizeRule = watch("paidSizeRule");
+  const freeSizeRule = watch("freeSizeRule");
+  const freeValueRule = watch("freeValueRule");
+
+  const allInputs = OffersInputs({ storeId, paidSizeRule, freeSizeRule, freeValueRule });
+
+  // Hide the storeId select — it's fixed to this store's context
+  const inputs = allInputs.filter(input => input.name !== "storeId");
 
   const toArray = (value: unknown): string[] => {
     if (Array.isArray(value)) return value.map(item => String((item as any)?.value ?? item));
@@ -75,7 +79,23 @@ export default function StoreOfferCreatePage({ storeId }: StoreOfferCreatePagePr
     body.append("requiredPaidQuantity", String(formData.requiredPaidQuantity));
     body.append("freeQuantity", String(formData.freeQuantity));
     toArray(formData.paidServiceIds).forEach(id => body.append("paidServiceIds", id));
+    toArray((formData as any).paidCategoryIds).forEach(id => body.append("paidCategoryIds", id));
     toArray(formData.freeServiceIds).forEach(id => body.append("freeServiceIds", id));
+    toArray((formData as any).freeCategoryIds).forEach(id => body.append("freeCategoryIds", id));
+
+    body.append("paidSizeRule", String(paidSizeRule ?? "ANY"));
+    if (paidSizeRule === "NAME" && (formData as any).paidRequiredSizeName) {
+      body.append("paidRequiredSizeName", (formData as any).paidRequiredSizeName);
+    }
+    body.append("freeSizeRule", String(freeSizeRule ?? "ANY"));
+    if (freeSizeRule === "NAME" && (formData as any).freeRequiredSizeName) {
+      body.append("freeRequiredSizeName", (formData as any).freeRequiredSizeName);
+    }
+    body.append("freeValueRule", String(freeValueRule ?? "CAP_TO_CHEAPEST_PAID"));
+    if (freeValueRule === "MAX_FREE_VALUE" && (formData as any).maxFreeItemValue) {
+      body.append("maxFreeItemValue", String((formData as any).maxFreeItemValue));
+    }
+
     if ((formData as any).startDate) {
       body.append("startDate", new Date((formData as any).startDate).toISOString());
     }
@@ -114,7 +134,8 @@ export default function StoreOfferCreatePage({ storeId }: StoreOfferCreatePagePr
       cardConfig={[
         { id: "lang", title: t("Offers Information"), multiLang: true, width: 6 },
         { id: "basic", title: t("Basic Details"), width: 6 },
-        { id: "associations", title: t("Associations"), width: 12 }
+        { id: "associations", title: t("Associations"), width: 12 },
+        { id: "rules", title: t("Bundle Rules"), width: 12 }
       ]}
       inputs={inputs}
     />

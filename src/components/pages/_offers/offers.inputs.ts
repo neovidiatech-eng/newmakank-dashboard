@@ -44,7 +44,8 @@ export const OffersInputs = ({
       apiUrl: ["services"],
       searchFilters: serviceSearchFilters,
       cardId: "associations",
-      width: 6
+      width: 6,
+      toolTip: t("paidServiceIdsTooltip")
     },
     {
       name: "paidCategoryIds",
@@ -54,7 +55,8 @@ export const OffersInputs = ({
       apiUrl: ["storeCategories"],
       searchFilters: serviceSearchFilters,
       cardId: "associations",
-      width: 6
+      width: 6,
+      toolTip: t("paidCategoryIdsTooltip")
     },
 
     // Free Section Associations
@@ -66,7 +68,8 @@ export const OffersInputs = ({
       apiUrl: ["services"],
       searchFilters: serviceSearchFilters,
       cardId: "associations",
-      width: 6
+      width: 6,
+      toolTip: t("freeServiceIdsTooltip")
     },
     {
       name: "freeCategoryIds",
@@ -76,7 +79,8 @@ export const OffersInputs = ({
       apiUrl: ["storeCategories"],
       searchFilters: serviceSearchFilters,
       cardId: "associations",
-      width: 6
+      width: 6,
+      toolTip: t("freeCategoryIdsTooltip")
     },
 
     // Size Settings (Paid)
@@ -89,7 +93,8 @@ export const OffersInputs = ({
         { label: t("sizeRuleName", "مقاس معيّن بالاسم (تحديد مقاس بالاسم)"), value: "NAME" }
       ],
       cardId: "rules",
-      width: 6
+      width: 6,
+      toolTip: t("paidSizeRuleTooltip")
     },
     {
       name: "paidRequiredSizeName",
@@ -110,7 +115,8 @@ export const OffersInputs = ({
         { label: t("sizeRuleName", "مقاس معيّن بالاسم (تحديد مقاس بالاسم)"), value: "NAME" }
       ],
       cardId: "rules",
-      width: 6
+      width: 6,
+      toolTip: t("freeSizeRuleTooltip")
     },
     {
       name: "freeRequiredSizeName",
@@ -132,7 +138,8 @@ export const OffersInputs = ({
         { label: t("freeValueMaxFreeValue", "سقف سعر ثابت محدد للهدية"), value: "MAX_FREE_VALUE" }
       ],
       cardId: "rules",
-      width: 6
+      width: 6,
+      toolTip: t("freeValueRuleTooltip")
     },
     {
       name: "maxFreeItemValue",
