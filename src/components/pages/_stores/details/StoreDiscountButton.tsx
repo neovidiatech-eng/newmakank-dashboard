@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import SelectPaginated from "@/components/common/Inputs/select/SelectPaginatedInput";
 import { useTranslations } from "@/lib/i18n";
 import { useRouter } from "@/lib/navigation";
 import { useMemo, useState } from "react";
@@ -32,6 +33,7 @@ export function StoreDiscountButton({ storeId }: StoreDiscountButtonProps) {
   const [open, setOpen] = useState(false);
   const [discountType, setDiscountType] = useState<DiscountType>("PERCENTAGE");
   const [value, setValue] = useState<string>("");
+  const [categoryId, setCategoryId] = useState<string>("");
   const [isApplying, setIsApplying] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
@@ -58,7 +60,8 @@ export function StoreDiscountButton({ storeId }: StoreDiscountButtonProps) {
       method: "PATCH",
       body: {
         discountType,
-        value: numericValue
+        value: numericValue,
+        ...(categoryId ? { categoryId: Number(categoryId) } : {})
       }
     });
 
@@ -75,6 +78,7 @@ export function StoreDiscountButton({ storeId }: StoreDiscountButtonProps) {
       });
       setOpen(false);
       setValue("");
+      setCategoryId("");
       router.refresh();
     } else {
       toast.error(t("error"), {
@@ -90,13 +94,15 @@ export function StoreDiscountButton({ storeId }: StoreDiscountButtonProps) {
 
     const res = await fetchHelper({
       endPoint: ["stores", storeId, "storeDiscountRemove"],
-      method: "PATCH"
+      method: "PATCH",
+      body: categoryId ? { categoryId: Number(categoryId) } : undefined
     });
 
     if (res.success) {
       toast.success(t("discountRemovedSuccessfully"));
       setOpen(false);
       setValue("");
+      setCategoryId("");
       router.refresh();
     } else {
       toast.error(t("error"), {
@@ -153,6 +159,19 @@ export function StoreDiscountButton({ storeId }: StoreDiscountButtonProps) {
               placeholder={discountType === "PERCENTAGE" ? "0 - 100" : "0"}
             />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="store-discount-category">{t("Discount Category")}</Label>
+            <SelectPaginated
+              name="store-discount-category"
+              value={categoryId}
+              onChange={v => setCategoryId((v as string) ?? "")}
+              apiUrl={["storeCategories"]}
+              searchFilters={[{ key: "storeId", value: storeId }]}
+              placeholder={t("allCategoriesDiscount")}
+            />
+            <p className="text-xs text-muted-foreground">{t("discountCategoryHint")}</p>
+          </div>
         </div>
 
         <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2">
@@ -167,7 +186,7 @@ export function StoreDiscountButton({ storeId }: StoreDiscountButtonProps) {
             ) : (
               <Trash2 className="h-4 w-4" />
             )}
-            {t("Remove Discount")}
+            {categoryId ? t("Remove Category Discount") : t("Remove Discount")}
           </Button>
 
           <div className="flex gap-2">
