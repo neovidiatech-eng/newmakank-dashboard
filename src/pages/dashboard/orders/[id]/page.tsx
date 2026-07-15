@@ -393,7 +393,10 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
             <div className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
               {t("Address Info")}
             </div>
-            <AddressInfo address={data?.Address} />
+            <AddressInfo
+              address={data?.Address}
+              zoneId={(data as any)?.customerSelectedZoneId ?? (data as any)?.zoneId}
+            />
           </div>
 
           {/* Order Properties */}

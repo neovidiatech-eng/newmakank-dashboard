@@ -1,9 +1,27 @@
 import type { ApiResponseAddress } from "@/pages/dashboard/orders/types";
-import { ExternalLink, MapPin } from "lucide-react";
-import { useTranslations } from "@/lib/i18n";
+import { ExternalLink, MapPin, LocateFixed } from "lucide-react";
+import { useTranslations, useLocale } from "@/lib/i18n";
+import { useApiQuery } from "@/hooks/useApiQuery";
+import { Badge } from "@/components/ui/badge";
 
-export default function AddressInfo({ address }: { address: ApiResponseAddress | null | undefined }) {
+export default function AddressInfo({
+    address,
+    zoneId
+}: {
+    address: ApiResponseAddress | null | undefined;
+    zoneId?: number | null;
+}) {
     const t = useTranslations();
+    const locale = useLocale();
+
+    const { data: zoneResponse } = useApiQuery({
+        queryKey: ["order-address-zone", zoneId],
+        endPoint: ["zones", zoneId as number],
+        enabled: Boolean(zoneId),
+        staleTime: 5 * 60_000
+    });
+    const zone = zoneResponse?.data;
+    const zoneName = zone?.name?.[locale] || zone?.name?.ar || zone?.name?.en;
 
     if (!address)
         return <div className="text-muted-foreground text-sm">{t("No Address Provided")}</div>;
@@ -23,6 +41,15 @@ export default function AddressInfo({ address }: { address: ApiResponseAddress |
                 >
                     {t("View on Map")} <ExternalLink className="h-3 w-3" />
                 </a>
+            )}
+            {zoneId && (
+                <div className="flex items-center gap-1.5 pl-6 mt-2">
+                    <LocateFixed className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">{t("customerSelectedZone")}:</span>
+                    <Badge variant="outline" className="text-xs font-medium">
+                        {zoneName || `#${zoneId}`}
+                    </Badge>
+                </div>
             )}
         </div>
     );
