@@ -113,8 +113,19 @@ export function StoreDiscountButton({ storeId }: StoreDiscountButtonProps) {
     setIsRemoving(false);
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (nextOpen) {
+      // Start from a clean slate every time the dialog is opened, so a category picked
+      // (and not submitted) in a previous visit can't silently carry over.
+      setValue("");
+      setCategoryId("");
+      setDiscountType("PERCENTAGE");
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" className="gap-2">
           <Percent className="h-4 w-4" />
