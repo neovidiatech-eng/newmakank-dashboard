@@ -40,6 +40,11 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         url: "/services"
       },
 
+      permissions?.Service?.get && {
+        title: "Offers",
+        url: "/offers"
+      },
+
       (permissions?.Banners?.get ||
         permissions?.Rating?.get ||
         permissions?.Coupons?.get ||
@@ -70,10 +75,6 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
           permissions?.Coupons?.get && {
             title: "coupons",
             url: "/coupons"
-          },
-          permissions?.Service?.get && {
-            title: "Offers",
-            url: "/offers"
           },
           permissions?.["variation-templates"]?.get && {
             title: "variationTemplate",
