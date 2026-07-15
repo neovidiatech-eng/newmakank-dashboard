@@ -39,6 +39,14 @@ export default function StoreDetailsPage({
   const commissionLabel =
     currentCommissionType === "PERCENTAGE" ? `${currentCommission}%` : String(currentCommission);
 
+  const currentDiscount = Number((data as any)?.discountValue ?? (data as any)?.discount ?? 0);
+  const currentDiscountType = ((data as any)?.discountType === "FIXED" ? "FIXED" : "PERCENTAGE") as
+    | "PERCENTAGE"
+    | "FIXED";
+  const discountLabel =
+    currentDiscountType === "PERCENTAGE" ? `${currentDiscount}%` : String(currentDiscount);
+  const hasDiscount = currentDiscount > 0;
+
   const isPendingApproval = (data as any)?.isStoreAccepted === false;
 
   return (
@@ -62,14 +70,21 @@ export default function StoreDetailsPage({
             <span className="text-foreground font-semibold">{commissionLabel}</span>
             <span className="text-xs">({t(currentCommissionType)})</span>
           </div>
+          {hasDiscount && (
+            <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-orange-500/10 dark:bg-orange-500/20 px-3 py-1.5 rounded-lg border border-orange-400/40">
+              <span>{t("Store Discount")}:</span>
+              <span className="text-orange-600 dark:text-orange-400 font-semibold">{discountLabel}</span>
+              <span className="text-xs">({t(currentDiscountType)})</span>
+            </div>
+          )}
           <StoreManagedByAdminToggle
             storeId={Number(data.id)}
             initialEnabled={(data as any).managedByAdmin}
           />
           <StoreDiscountButton
             storeId={Number(data.id)}
-            initialDiscountType={((data as any)?.discountType === "FIXED" ? "FIXED" : "PERCENTAGE") as "PERCENTAGE" | "FIXED"}
-            initialDiscountValue={Number((data as any)?.discountValue ?? (data as any)?.discount ?? 0)}
+            initialDiscountType={currentDiscountType}
+            initialDiscountValue={currentDiscount}
           />
           <ApplyTemplateButton storeId={Number(data.id)} />
           <StoreCommotionButton

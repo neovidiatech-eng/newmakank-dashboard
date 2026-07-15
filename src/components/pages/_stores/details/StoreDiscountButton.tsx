@@ -133,6 +133,8 @@ export function StoreDiscountButton({
       try {
         const res = await fetchHelper({ endPoint: ["stores", storeId] });
         const storeData = res?.data as any;
+        // DEBUG - سنشيله بعد ما نعرف الـ field name
+        console.log("🔍 Store API Response:", JSON.stringify(storeData, null, 2));
         const fetchedType: DiscountType =
           storeData?.discountType === "FIXED" ? "FIXED" : "PERCENTAGE";
         const fetchedValue = Number(
@@ -141,7 +143,8 @@ export function StoreDiscountButton({
         setDiscountType(fetchedType);
         setValue(fetchedValue > 0 ? String(fetchedValue) : "");
         setCategoryId("");
-      } catch {
+      } catch (e) {
+        console.error("❌ Error fetching store data:", e);
         // fallback to clean slate
         setDiscountType("PERCENTAGE");
         setValue("");
