@@ -17,9 +17,7 @@ export const OffersSchema = (t: any) => {
     freeQuantity: PriceSchema(t, 1),
 
     paidServiceIds: z.array(z.union([z.string(), z.number()])).optional().nullable(),
-    paidCategoryIds: z.array(z.union([z.string(), z.number()])).optional().nullable(),
     freeServiceIds: z.array(z.union([z.string(), z.number()])).optional().nullable(),
-    freeCategoryIds: z.array(z.union([z.string(), z.number()])).optional().nullable(),
 
     paidSizeRule: z.enum(["ANY", "NAME"]).optional().default("ANY"),
     paidRequiredSizeName: z.string().optional().nullable(),
@@ -33,20 +31,12 @@ export const OffersSchema = (t: any) => {
     startDate: noSchema(),
     endDate: noSchema()
   })
-  .refine(data => {
-    const hasPaidServices = data.paidServiceIds && data.paidServiceIds.length > 0;
-    const hasPaidCategories = data.paidCategoryIds && data.paidCategoryIds.length > 0;
-    return hasPaidServices || hasPaidCategories;
-  }, {
-    message: t("paidServicesOrCategoriesRequired", "يجب تحديد منتج واحد أو فئة واحدة على الأقل للقطع المدفوعة"),
+  .refine(data => Boolean(data.paidServiceIds && data.paidServiceIds.length > 0), {
+    message: t("paidServicesRequired", "يجب تحديد منتج واحد على الأقل للقطع المدفوعة"),
     path: ["paidServiceIds"]
   })
-  .refine(data => {
-    const hasFreeServices = data.freeServiceIds && data.freeServiceIds.length > 0;
-    const hasFreeCategories = data.freeCategoryIds && data.freeCategoryIds.length > 0;
-    return hasFreeServices || hasFreeCategories;
-  }, {
-    message: t("freeServicesOrCategoriesRequired", "يجب تحديد منتج واحد أو فئة واحدة على الأقل للقطع الهدية"),
+  .refine(data => Boolean(data.freeServiceIds && data.freeServiceIds.length > 0), {
+    message: t("freeServicesRequired", "يجب تحديد منتج واحد على الأقل للقطع الهدية"),
     path: ["freeServiceIds"]
   })
   .refine(data => {

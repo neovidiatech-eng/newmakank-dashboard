@@ -82,9 +82,7 @@ export default function useOffersLogic({ data }: { data?: OffersType }) {
     body.append("freeQuantity", String(formData.freeQuantity));
 
     toArray(formData.paidServiceIds).forEach(id => body.append("paidServiceIds", id));
-    toArray(formData.paidCategoryIds).forEach(id => body.append("paidCategoryIds", id));
     toArray(formData.freeServiceIds).forEach(id => body.append("freeServiceIds", id));
-    toArray(formData.freeCategoryIds).forEach(id => body.append("freeCategoryIds", id));
 
     body.append("paidSizeRule", String(formData.paidSizeRule ?? "ANY"));
     if (formData.paidSizeRule === "NAME" && formData.paidRequiredSizeName) {

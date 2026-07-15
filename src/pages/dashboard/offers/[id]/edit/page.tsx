@@ -15,16 +15,6 @@ function extractScopeIds(scope: unknown, role: string): string[] {
     .map(String);
 }
 
-function extractScopeCategoryIds(scope: unknown, role: string): string[] {
-  if (!scope) return [];
-  const list = Array.isArray(scope) ? scope : [scope];
-  return list
-    .filter((entry: any) => !entry?.role || String(entry.role).toUpperCase() === role)
-    .map((entry: any) => entry?.categoryId ?? entry?.Category?.id)
-    .filter(Boolean)
-    .map(String);
-}
-
 const page = async ({ params }: { params: Params }) => {
   const data = await fetchHelper({
     endPoint: ["bundles", Number((await params).id)],
@@ -41,9 +31,7 @@ const page = async ({ params }: { params: Params }) => {
           bundle && {
             ...bundle,
             paidServiceIds: extractScopeIds(bundle.ScopeServices, "PAID"),
-            freeServiceIds: extractScopeIds(bundle.ScopeServices, "FREE"),
-            paidCategoryIds: extractScopeCategoryIds(bundle.ScopeCategories, "PAID"),
-            freeCategoryIds: extractScopeCategoryIds(bundle.ScopeCategories, "FREE")
+            freeServiceIds: extractScopeIds(bundle.ScopeServices, "FREE")
           }
         }
       />

@@ -45,18 +45,8 @@ export const OffersInputs = ({
       searchFilters: serviceSearchFilters,
       cardId: "associations",
       width: 6,
+      required: true,
       toolTip: t("paidServiceIdsTooltip")
-    },
-    {
-      name: "paidCategoryIds",
-      label: "paidCategoryIds",
-      type: "selectPaginated",
-      isMulti: true,
-      apiUrl: ["storeCategories"],
-      searchFilters: serviceSearchFilters,
-      cardId: "associations",
-      width: 6,
-      toolTip: t("paidCategoryIdsTooltip")
     },
 
     // Free Section Associations
@@ -69,18 +59,8 @@ export const OffersInputs = ({
       searchFilters: serviceSearchFilters,
       cardId: "associations",
       width: 6,
+      required: true,
       toolTip: t("freeServiceIdsTooltip")
-    },
-    {
-      name: "freeCategoryIds",
-      label: "freeCategoryIds",
-      type: "selectPaginated",
-      isMulti: true,
-      apiUrl: ["storeCategories"],
-      searchFilters: serviceSearchFilters,
-      cardId: "associations",
-      width: 6,
-      toolTip: t("freeCategoryIdsTooltip")
     },
 
     // Size Settings (Paid)

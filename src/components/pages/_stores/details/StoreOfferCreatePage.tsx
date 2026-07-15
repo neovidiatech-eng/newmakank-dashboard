@@ -79,9 +79,7 @@ export default function StoreOfferCreatePage({ storeId }: StoreOfferCreatePagePr
     body.append("requiredPaidQuantity", String(formData.requiredPaidQuantity));
     body.append("freeQuantity", String(formData.freeQuantity));
     toArray(formData.paidServiceIds).forEach(id => body.append("paidServiceIds", id));
-    toArray((formData as any).paidCategoryIds).forEach(id => body.append("paidCategoryIds", id));
     toArray(formData.freeServiceIds).forEach(id => body.append("freeServiceIds", id));
-    toArray((formData as any).freeCategoryIds).forEach(id => body.append("freeCategoryIds", id));
 
     body.append("paidSizeRule", String(paidSizeRule ?? "ANY"));
     if (paidSizeRule === "NAME" && (formData as any).paidRequiredSizeName) {
