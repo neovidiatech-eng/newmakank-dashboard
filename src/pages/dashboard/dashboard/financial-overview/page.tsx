@@ -1,12 +1,13 @@
 "use client";
 
+import { useMemo } from "react";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { useSearchParams } from "react-router-dom";
 import { useTranslations, useLocale } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Banknote,
   TrendingUp,
@@ -35,39 +36,67 @@ function formatMoney(value: number | string | null | undefined, locale: string) 
   }).format(Number.isFinite(numberValue) ? numberValue : 0);
 }
 
+function pad2(value: number) {
+  return String(value).padStart(2, "0");
+}
+
+function toDateOnly(date: Date) {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+function getCurrentMonthValue() {
+  const now = new Date();
+  return `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`;
+}
+
+// monthValue is "YYYY-MM" — returns the first/last calendar day of that month as YYYY-MM-DD
+function getMonthRange(monthValue: string) {
+  const [year, month] = monthValue.split("-").map(Number);
+  const fromDate = new Date(year, month - 1, 1);
+  const toDate = new Date(year, month, 0);
+  return { fromDate: toDateOnly(fromDate), toDate: toDateOnly(toDate) };
+}
+
+function buildMonthOptions(locale: string, count = 12) {
+  const formatter = new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
+    year: "numeric",
+    month: "long"
+  });
+  const now = new Date();
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - index, 1);
+    const value = `${date.getFullYear()}-${pad2(date.getMonth() + 1)}`;
+    return { value, label: formatter.format(date) };
+  });
+}
+
 export default function FinancialOverviewPage() {
   const t = useTranslations();
   const locale = useLocale();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const fromDate = searchParams.get("fromDate") || "";
-  const toDate = searchParams.get("toDate") || "";
+  const currentMonthValue = getCurrentMonthValue();
+  const monthValue = searchParams.get("month") || currentMonthValue;
+  const { fromDate, toDate } = useMemo(() => getMonthRange(monthValue), [monthValue]);
+  const monthOptions = useMemo(() => buildMonthOptions(locale), [locale]);
 
   const { data: response, isLoading } = useApiQuery({
     queryKey: ["financialOverview", { fromDate, toDate }],
     endPoint: ["financialOverview"],
-    params: {
-      fromDate: fromDate || undefined,
-      toDate: toDate || undefined
-    }
+    params: { fromDate, toDate }
   });
 
   const financialData = response?.data || {};
 
-  const handleDateChange = (key: "fromDate" | "toDate", val: string) => {
+  const handleMonthChange = (value: string) => {
     const nextParams = new URLSearchParams(searchParams);
-    if (val) {
-      nextParams.set(key, val);
-    } else {
-      nextParams.delete(key);
-    }
+    nextParams.set("month", value);
     setSearchParams(nextParams);
   };
 
   const handleReset = () => {
     const nextParams = new URLSearchParams(searchParams);
-    nextParams.delete("fromDate");
-    nextParams.delete("toDate");
+    nextParams.delete("month");
     setSearchParams(nextParams);
   };
 
@@ -85,39 +114,32 @@ export default function FinancialOverviewPage() {
           </p>
         </div>
 
-        {/* Date Filters */}
+        {/* Month Filter */}
         <div className="flex flex-wrap items-end gap-3 bg-card p-4 rounded-xl border shadow-sm">
           <div className="space-y-1.5">
-            <Label htmlFor="from-date-filter" className="text-xs font-semibold">
-              {t("fromDate", "من تاريخ")}
+            <Label htmlFor="month-filter" className="text-xs font-semibold">
+              {t("selectMonth", "الشهر")}
             </Label>
-            <Input
-              id="from-date-filter"
-              type="date"
-              value={fromDate}
-              onChange={e => handleDateChange("fromDate", e.target.value)}
-              className="h-9 w-40 text-sm"
-            />
+            <Select value={monthValue} onValueChange={handleMonthChange}>
+              <SelectTrigger id="month-filter" className="h-9 w-48 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {monthOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="to-date-filter" className="text-xs font-semibold">
-              {t("toDate", "إلى تاريخ")}
-            </Label>
-            <Input
-              id="to-date-filter"
-              type="date"
-              value={toDate}
-              onChange={e => handleDateChange("toDate", e.target.value)}
-              className="h-9 w-40 text-sm"
-            />
-          </div>
-          {(fromDate || toDate) && (
+          {monthValue !== currentMonthValue && (
             <Button
               variant="outline"
               size="icon"
               onClick={handleReset}
               className="h-9 w-9 text-muted-foreground hover:text-foreground"
-              title={t("resetFilters", "إعادة ضبط")}
+              title={t("resetToCurrentMonth", "الرجوع للشهر الحالي")}
             >
               <RotateCcw className="h-4 w-4" />
             </Button>
