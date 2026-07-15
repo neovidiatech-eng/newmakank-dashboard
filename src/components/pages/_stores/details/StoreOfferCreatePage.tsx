@@ -95,8 +95,15 @@ export default function StoreOfferCreatePage({ storeId }: StoreOfferCreatePagePr
 
     if (res?.success) {
       toast.success(t("Success"), { id: "success-toast" });
-      // Go back to the store offers tab instead of the global offers page
-      router.push(`/stores/${storeId}?tab=offers`);
+      const { queryClient } = await import("@/lib/queryClient");
+      queryClient.clear();
+      // Stay within the store the offer was created for; only fall back to the
+      // general offers list if this page is ever reached without a valid store.
+      if (Number.isFinite(storeId) && storeId > 0) {
+        router.push(`/stores/${storeId}?tab=offers`);
+      } else {
+        router.push(`/offers`);
+      }
     }
   };
 
