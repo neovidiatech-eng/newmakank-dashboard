@@ -44,6 +44,11 @@ export default function StoresColumns(): ColumnDef<Record<string, unknown>>[] {
       }
     },
     {
+      accessorKey: "storeOrder",
+      header: () => <IconHeader columnKey="storeOrder" />,
+      cell: ({ getValue }) => <span>{(getValue() as number) ?? "-"}</span>
+    },
+    {
       accessorKey: "status",
       header: () => <IconHeader columnKey="status" />,
       cell: ({ row }) => {
