@@ -31,6 +31,20 @@ type DashboardOrder = {
   notes?: string | null;
   status?: string | null;
   createdAt?: string | null;
+  customDeliveryKind?: "PURCHASE" | "RESTAURANT" | "ONLINE" | null;
+  zoneId?: number | null;
+  zoneName?: LocalizedText;
+  stations?: Array<{
+    sequence: number;
+    type: "PICKUP" | "DROPOFF";
+    name?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    zoneId?: number | null;
+    zoneName?: LocalizedText;
+    addressDetails?: string | null;
+    contactPhone?: string | null;
+  }>;
 };
 
 type DeliveryDashboard = {
@@ -262,7 +276,7 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
                 <TableRow>
                   <TableHead className="text-center">Id</TableHead>
                   <TableHead className="text-center">{t("Customer")}</TableHead>
-                  <TableHead className="text-center">{t("store")}</TableHead>
+                  <TableHead className="text-center">{t("Store / Zone")}</TableHead>
                   <TableHead className="text-center">{t("products")}</TableHead>
                   <TableHead className="text-center">{t("Invoice Total")}</TableHead>
                   <TableHead className="text-center">{t("Delivery Fees")}</TableHead>
@@ -285,7 +299,23 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
                       <div className="font-medium">{order.customerName || "—"}</div>
                       <div dir="ltr" className="text-xs text-muted-foreground">{order.customerPhone || "—"}</div>
                     </TableCell>
-                    <TableCell className="text-center">{getLocalizedText(order.storeName, locale)}</TableCell>
+                    <TableCell className="text-center">
+                      {order.customDeliveryKind ? (
+                        <div className="flex flex-col items-center gap-1.5 justify-center">
+                          <Badge variant="secondary" className="whitespace-nowrap">
+                            {order.customDeliveryKind === "PURCHASE" ? t("customDeliveryKind_PURCHASE") || "مشتريات" :
+                             order.customDeliveryKind === "RESTAURANT" ? t("customDeliveryKind_RESTAURANT") || "مطعم" :
+                             order.customDeliveryKind === "ONLINE" ? t("customDeliveryKind_ONLINE") || "أونلاين" :
+                             order.customDeliveryKind}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground font-medium">
+                            {getLocalizedText(order.zoneName, locale)}
+                          </span>
+                        </div>
+                      ) : (
+                        getLocalizedText(order.storeName, locale)
+                      )}
+                    </TableCell>
                     <TableCell className="max-w-[260px] text-center text-sm text-muted-foreground">{formatProducts(order.productsSummary, locale)}</TableCell>
                     <TableCell className="text-center">{formatMoney(order.invoiceTotal, locale)}</TableCell>
                     <TableCell className="text-center">{formatMoney(order.deliveryPrice, locale)}</TableCell>

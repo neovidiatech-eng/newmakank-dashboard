@@ -2,7 +2,7 @@ import type { ApiResponseInvoiceCustomDelivery } from "@/pages/dashboard/orders/
 import { PriceAmount } from "@/components/PriceAmount";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Clock3, ImageIcon, MapPin, Navigation, Package, PackageCheck, Phone, Truck, Wallet } from "lucide-react";
-import { useTranslations } from "@/lib/i18n";
+import { useLocale, useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 import dynamic from "@/lib/dynamic";
 import { getEnv } from "@/lib/env";
@@ -39,6 +39,7 @@ type CustomDeliveryStation = {
   collectionAmount?: number | string | null;
   addressDetails?: string | null;
   packagingRequested?: boolean | null;
+  Zone?: { name?: LocalizedText } | null;
 };
 
 type CustomDeliveryProgress = {
@@ -47,10 +48,10 @@ type CustomDeliveryProgress = {
   finished?: boolean;
 };
 
-function getLocalizedText(value: LocalizedText) {
+function getLocalizedText(value: LocalizedText, locale: string = "ar") {
   if (!value) return "";
   if (typeof value === "string") return value;
-  return value.ar || value.en || "";
+  return value[locale as "ar" | "en"] || value.ar || value.en || "";
 }
 
 function getImageUrl(path?: string | null) {
@@ -82,6 +83,7 @@ export default function InvoiceCustomDeliveryInfo({
   progress?: CustomDeliveryProgress | null;
 }) {
   const t = useTranslations();
+  const locale = useLocale();
   const sortedStations = [...(stations ?? [])].sort(
     (first, second) =>
       Number(first.sequence ?? first.order ?? first.step ?? 0) -
@@ -138,8 +140,8 @@ export default function InvoiceCustomDeliveryInfo({
           {sortedStations.map((station, index) => {
             const images = station.Images ?? station.images ?? [];
             const stationName =
-              getLocalizedText(station.name) ||
-              getLocalizedText(station.label) ||
+              getLocalizedText(station.name, locale) ||
+              getLocalizedText(station.label, locale) ||
               `${t("Station")} ${index + 1}`;
 
             return (
@@ -154,6 +156,11 @@ export default function InvoiceCustomDeliveryInfo({
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                         {station.type && <Badge variant="secondary">{t(station.type)}</Badge>}
                         {station.status && <Badge variant="outline">{t(station.status)}</Badge>}
+                        {station.Zone?.name && (
+                          <Badge variant="outline" className="border-orange-200 bg-orange-50/30 text-orange-700 dark:border-orange-900/50 dark:text-orange-300">
+                            {getLocalizedText(station.Zone.name, locale)}
+                          </Badge>
+                        )}
                         {station.lat && station.lng && (
                           <span className="flex items-center gap-1" dir="ltr">
                             <MapPin className="h-3.5 w-3.5" />
