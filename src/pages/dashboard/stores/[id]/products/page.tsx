@@ -22,7 +22,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
         tableActions={{
           onEdit: permission?.put || permission?.patch,
           onDelete: permission?.delete ? ["services"] : undefined,
-          onInfo: '/services'
+          onInfo: true
         }}
         filters={[{ name: "name", type: "text", width: 3 }]}
       />
