@@ -75,8 +75,8 @@ const SETTING_GROUPS: Record<string, string> = {
   packagingFee: "online_delivery",
   onlineDeliveryPackagingEnabled: "online_delivery",
   // Online representative settings
-  onlineRepresentativeBaseFee: "online_representative",
-  onlineRepresentativeExtraStopPrice: "online_representative",
+  onlineRepresentativeBaseFee: "online_delivery",
+  onlineRepresentativeExtraStopPrice: "online_delivery",
   // Pickup/delivery geofence radii.
   pickupGeofenceRadiusMeters: "geofence",
   deliveryGeofenceRadiusMeters: "geofence",

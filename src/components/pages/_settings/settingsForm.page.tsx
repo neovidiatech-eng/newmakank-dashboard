@@ -49,11 +49,6 @@ export default function SettingsFormPage({
           width: 12
         },
         {
-          id: "online_representative",
-          title: <GroupTitle title={t("onlineRepresentativeSettings")} description={t("onlineRepresentativeSettingsDescription")} />,
-          width: 12
-        },
-        {
           id: "geofence",
           title: <GroupTitle title={t("geofenceSettings")} description={t("geofenceSettingsDescription")} />,
           width: 12
