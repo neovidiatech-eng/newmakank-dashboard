@@ -41,10 +41,10 @@ export default function DashboardPage() {
     params: { limit, page }
   });
 
-  const { data: allOrdersResponse } = useApiQuery({
-    queryKey: ["orders_all_for_stats"],
-    endPoint: ["orders"],
-    params: { limit: 100000, page: 1 }
+  const { data: financialOverviewResponse } = useApiQuery({
+    queryKey: ["financialOverviewAllTime"],
+    endPoint: ["financialOverview"],
+    params: {}
   });
 
   const { data: deliveryResponse } = useApiQuery({
@@ -62,7 +62,6 @@ export default function DashboardPage() {
   const stats = (statsResponse?.data ?? {}) as any;
 
   const orders = (ordersResponse?.data?.data ?? ordersResponse?.data ?? []) as any[];
-  const allOrdersForStats = (allOrdersResponse?.data?.data ?? allOrdersResponse?.data ?? []) as any[];
 
   // Data aggregations (defensive fallback)
   const totalCustomers = stats.totalCustomers ?? 0;
@@ -72,27 +71,16 @@ export default function DashboardPage() {
   const totalDelivery = deliveryResponse?.total ?? deliveryResponse?.data?.length ?? deliveryResponse?.data?.data?.length ?? stats.totalDelivery ?? 0;
   const openStores = openStoresResponse?.total ?? openStoresResponse?.data?.length ?? openStoresResponse?.data?.data?.length ?? 0;
 
-  // Only count orders that are actually confirmed — exclude cancelled/rejected/failed
-  // payments, and PENDING_PAYMENT (wallet-transfer orders awaiting admin/store proof
-  // review — not yet confirmed paid, so including them would overstate revenue).
-  const validOrdersForStats = allOrdersForStats.filter(order => {
-    const status = order?.status?.toUpperCase();
-    return (
-      status !== "CANCELLED" &&
-      status !== "REJECTED" &&
-      status !== "PAYMENT_FAILD" &&
-      status !== "PENDING_PAYMENT"
-    );
-  });
-
-  // Financials calculated from VALID orders only
+  // Financials fetched directly from backend-aggregated all-time figures
+  const allTimeRevenue = financialOverviewResponse?.data?.revenue || {};
+  const allTimeCommission = financialOverviewResponse?.data?.commission || {};
   const financialData = {
-    totalAmount: validOrdersForStats.reduce((sum, order) => sum + Number(order?.invoice?.summary?.total ?? order?.price ?? 0), 0),
-    productPrice: validOrdersForStats.reduce((sum, order) => sum + Number(order?.price ?? 0), 0),
-    storeCommission: validOrdersForStats.reduce((sum, order) => sum + Number(order?.storeCommission ?? 0), 0),
-    globalCommission: validOrdersForStats.reduce((sum, order) => sum + Number(order?.globalCommission ?? 0), 0),
-    taxes: validOrdersForStats.reduce((sum, order) => sum + Number(order?.tax ?? 0), 0),
-    deliveryPrice: validOrdersForStats.reduce((sum, order) => sum + Number(order?.shipping ?? 0), 0),
+    totalAmount: allTimeRevenue.totalRevenue ?? 0,
+    productPrice: allTimeRevenue.productPrice ?? 0,
+    storeCommission: allTimeCommission.storeCommission ?? 0,
+    globalCommission: allTimeRevenue.globalCommission ?? 0,
+    taxes: allTimeRevenue.tax ?? 0,
+    deliveryPrice: allTimeRevenue.shipping ?? 0,
   };
 
   return (
