@@ -182,7 +182,7 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
           }}
           tableActions={{
             onDelete: ["bundles"] as any,
-            onEdit: `/offers`,
+            onEdit: `/offers?storeId=${storeId}`,
             fixedActions: true
           }}
         />

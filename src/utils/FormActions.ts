@@ -1,7 +1,7 @@
 import { fetchHelper } from "@/api/fetch";
 import { revalidatePathAction } from "@/api/global/revalidatePath";
 import { endLoading, startLoading } from "@/lib/global-loading";
-import { usePathname, useRouter } from "@/lib/navigation";
+import { usePathname, useRouter, useSearchParams } from "@/lib/navigation";
 import type { FieldValues, UseFormReset } from "react-hook-form";
 import { toast } from "sonner";
 import { endpointType } from "./endpoints";
@@ -10,6 +10,7 @@ import { endpointType } from "./endpoints";
 export function useFormAction() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   return async function <T = any>(args: Parameters<typeof FormAction<T>>[0]): Promise<ApiResponse<T>> {
     const res = await FormAction<T>(args);
@@ -19,7 +20,11 @@ export function useFormAction() {
       const segments = pathname.split("/");
       const last = segments[segments.length - 1];
 
-      if (last === "create") {
+      const storeId = searchParams.get("storeId");
+      if (storeId) {
+        const tab = searchParams.get("tab") || "offers";
+        listPath = `/stores/${storeId}?tab=${tab}`;
+      } else if (last === "create") {
         listPath = segments.slice(0, -1).join("/");
       } else if (last === "edit") {
         listPath = segments.slice(0, -2).join("/");
@@ -38,7 +43,7 @@ export function useFormAction() {
       queryClient.clear();
       router.refresh();
 
-      // Navigate to list page only if it's not a create action
+      // Navigate to list page if it's not a create action
       if (last !== "create") {
         router.push(listPath);
       }

@@ -175,6 +175,44 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
     control,
     name: "Addons"
   });
+
+  useEffect(() => {
+    if (data) {
+      const mappedSizes = data.Sizes?.map((item: any) => {
+        const hasDiscount = Boolean(item?.priceAfterDiscount);
+        return {
+          nameAr: item.nameAr || item.name?.ar || "",
+          nameEn: item.nameEn || item.name?.en || "",
+          priceBeforeDiscount: hasDiscount ? item.price : "",
+          priceAfterDiscount: hasDiscount ? item.priceAfterDiscount : item.price,
+          isDefault: item.isDefault !== undefined ? String(item.isDefault) : "false"
+        };
+      }) || [];
+
+      const mappedAddons = data.Addons?.map((item: any) => {
+        const hasDiscount = Boolean(item?.priceAfterDiscount);
+        return {
+          nameAr: item.nameAr || item.name?.ar || "",
+          nameEn: item.nameEn || item.name?.en || "",
+          priceBeforeDiscount: hasDiscount ? item.price : "",
+          priceAfterDiscount: hasDiscount ? item.priceAfterDiscount : item.price
+        };
+      }) || [];
+
+      reset({
+        ...extractFormDefaultInputs(inputs, data),
+        priceBeforeDiscount: data.priceAfterDiscount ? data.price : "",
+        priceAfterDiscount: data.priceAfterDiscount ? data.priceAfterDiscount : data.price,
+        available: data.available !== undefined ? String(data.available) : "true",
+        Sizes: mappedSizes,
+        Addons: mappedAddons,
+        storeId: (data as any).Store?.id
+      } as any);
+
+      sizesReplace(mappedSizes);
+      addonsReplace(mappedAddons);
+    }
+  }, [data, reset, inputs, sizesReplace, addonsReplace]);
   const importServiceData = async (serviceData: any) => {
     // If there is an image path, resolve it to a binary File object so it can be re-uploaded.
     let resolvedImageFile: File | undefined = undefined;

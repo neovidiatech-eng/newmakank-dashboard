@@ -13,9 +13,16 @@ export default function EditBtn({ onEdit, id }: { id: string; onEdit: string }):
       href={(() => {
         const searchParamsString = searchParams.toString();
         const searchParamsSuffix = searchParamsString ? `?${searchParamsString}` : "";
-        return typeof onEdit == "string"
-          ? `${onEdit}/${id}/edit${searchParamsSuffix}`
-          : `${pathname}/${id}/edit${searchParamsSuffix}`;
+        if (typeof onEdit === "string") {
+          const [basePath, query] = onEdit.split("?");
+          const combinedParams = new URLSearchParams(query || "");
+          searchParams.forEach((value, key) => {
+            combinedParams.set(key, value);
+          });
+          const suffix = combinedParams.toString() ? `?${combinedParams.toString()}` : "";
+          return `${basePath}/${id}/edit${suffix}`;
+        }
+        return `${pathname}/${id}/edit${searchParamsSuffix}`;
       })()}
     >
       <ExpandableButton

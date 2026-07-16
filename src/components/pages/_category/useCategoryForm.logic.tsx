@@ -6,6 +6,7 @@ import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
 import { useFormAction } from "@/utils/FormActions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "@/lib/i18n";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { CategoryInputs } from "./category.inputs";
 import { CategorySchema, type CategoryType } from "./category.schema";
@@ -30,6 +31,12 @@ export default function useCategoryLogic({
     resolver: zodResolver(CategorySchema(t)),
     defaultValues: extractFormDefaultInputs(inputs, data) as CategoryType
   });
+
+  useEffect(() => {
+    if (data) {
+      reset(extractFormDefaultInputs(inputs, data) as CategoryType);
+    }
+  }, [data, reset]);
 
   const onSubmit = async (formData: CategoryType) => {
     if (data?.storeId) formData.storeId = data.storeId;

@@ -2,6 +2,7 @@ import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { useFormAction } from "@/utils/FormActions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "@/lib/i18n";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { OffersInputs } from "./offers.inputs";
 import { OffersSchema, type OffersType } from "./offers.schema";
@@ -46,6 +47,21 @@ export default function useOffersLogic({ data }: { data?: OffersType }) {
     freeSizeRule,
     freeValueRule
   });
+
+  useEffect(() => {
+    if (data) {
+      reset({
+        ...extractFormDefaultInputs(inputs, data),
+        isActive: data.isActive !== undefined ? String(data.isActive) : "true",
+        paidSizeRule: (data as any).paidSizeRule || "ANY",
+        paidRequiredSizeName: (data as any).paidRequiredSizeName || "",
+        freeSizeRule: (data as any).freeSizeRule || "ANY",
+        freeRequiredSizeName: (data as any).freeRequiredSizeName || "",
+        freeValueRule: (data as any).freeValueRule || "CAP_TO_CHEAPEST_PAID",
+        maxFreeItemValue: (data as any).maxFreeItemValue !== undefined && (data as any).maxFreeItemValue !== null ? String((data as any).maxFreeItemValue) : "",
+      } as OffersType);
+    }
+  }, [data, reset, inputs]);
 
   const onSubmit = async (formData: OffersType) => {
     let finalImage: unknown = (formData as any).image;
