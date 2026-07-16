@@ -44,7 +44,9 @@ const MIN_ZERO_SETTINGS = [
   "driverAssignmentDelaySeconds",
   "onlineDeliveryBaseFee",
   "onlineDeliveryCommission",
-  "packagingFee"
+  "packagingFee",
+  "onlineRepresentativeBaseFee",
+  "onlineRepresentativeExtraStopPrice"
 ];
 
 // Groups settings that are easy to confuse with each other into separate, clearly
@@ -72,6 +74,9 @@ const SETTING_GROUPS: Record<string, string> = {
   onlineDeliveryCommission: "online_delivery",
   packagingFee: "online_delivery",
   onlineDeliveryPackagingEnabled: "online_delivery",
+  // Online representative settings
+  onlineRepresentativeBaseFee: "online_representative",
+  onlineRepresentativeExtraStopPrice: "online_representative",
   // Pickup/delivery geofence radii.
   pickupGeofenceRadiusMeters: "geofence",
   deliveryGeofenceRadiusMeters: "geofence",
