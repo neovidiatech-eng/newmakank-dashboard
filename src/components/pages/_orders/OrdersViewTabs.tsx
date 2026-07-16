@@ -79,40 +79,14 @@ export default function OrdersViewTabs({
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
 
   // Build params from URL search params.
-  // The "type" filter (DELIVERY / PICKUP / CUSTOM_DELIVERY) is handled client-side
-  // so we don't make a separate API call for each type.
-  const clientSideFilterKeys = ["type"];
   const params: Record<string, unknown> = {};
   searchParams.forEach((value, key) => { params[key] = value; });
-
-  // Extract client-side filter values then remove them from the server params
-  const selectedType = params.type as string | undefined;
-  for (const key of clientSideFilterKeys) { delete params[key]; }
-
-  // Always fetch ALL orders from the server (no server pagination).
-  // Pagination and type filtering are handled entirely client-side.
-  const currentPage = Number(params.page) || 1;
-  const currentLimit = Number(params.limit) || 10;
-  delete params.page;
-  delete params.limit;
 
   const queryKey = [endPoint.join("/"), JSON.stringify(params)];
   const { data: response } = useApiQuery({ queryKey, endPoint, params, staleTime: 0 });
 
-  const allOrders: Record<string, unknown>[] = Array.isArray(response?.data) ? response.data : [];
-
-  // Client-side filtering by order type, then manual pagination
-  let orders: Record<string, unknown>[];
-  let total: number;
-
-  if (selectedType) {
-    const filtered = allOrders.filter(order => order.type === selectedType);
-    orders = filtered.slice((currentPage - 1) * currentLimit, currentPage * currentLimit);
-    total = filtered.length;
-  } else {
-    orders = allOrders;
-    total = response?.total ?? orders.length;
-  }
+  const orders: Record<string, unknown>[] = Array.isArray(response?.data) ? response.data : [];
+  const total = response?.total ?? orders.length;
 
   const toggleOrderSelection = (orderId: string) => {
     setSelectedOrderIds(prev =>

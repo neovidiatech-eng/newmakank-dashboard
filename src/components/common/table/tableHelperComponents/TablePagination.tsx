@@ -17,7 +17,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/lib/i18n";
 import { usePathname, useRouter, useSearchParams } from "@/lib/navigation";
-import { useEffect } from "react";
 import { TablePaginationType } from "../table.types";
 
 interface PaginationProps {
@@ -35,15 +34,7 @@ export function TablePagination({ pagination }: PaginationProps) {
   const currentLimit = Number(searchParams.get("limit")) || 10;
   const totalPages = Math.max(1, Math.ceil(pagination.total / currentLimit));
 
-  // Correct page if it exceeds total pages or is invalid
-  useEffect(() => {
-    const validPage = Math.max(1, Math.min(currentPage, totalPages));
-    if (currentPage !== validPage) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("page", validPage.toString());
-      router.replace(`${pathname}?${params.toString()}`);
-    }
-  }, [currentPage, totalPages, pathname, router, searchParams]);
+
 
   const createPageUrl = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
