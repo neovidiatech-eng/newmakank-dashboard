@@ -41,7 +41,7 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
     staleTime: 60_000,
     retry: false
   });
-  const currentRole = profileQuery?.data?.user?.roleKey;
+  const currentRole = profileQuery?.data?.user?.Role?.name;
   const isAdmin = currentRole === "Admin";
 
   return (

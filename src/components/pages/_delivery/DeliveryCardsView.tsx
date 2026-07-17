@@ -20,6 +20,8 @@ import { usePathname, useRouter } from "@/lib/navigation";
 import { getEnv } from "@/lib/env";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { fetchHelper } from "@/api/fetch";
 
 type DeliveryCardItem = Record<string, any>;
 
@@ -111,6 +113,15 @@ function DeleteDeliveryButton({ id }: { id: string }) {
 
 export default function DeliveryCardsView({ deliveries }: { deliveries: DeliveryCardItem[] }) {
   const t = useTranslations();
+
+  const { data: profileQuery } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => fetchHelper({ endPoint: ["profile"] }),
+    staleTime: 60_000,
+    retry: false
+  });
+  const currentRole = profileQuery?.data?.user?.Role?.name;
+  const isAdmin = currentRole === "Admin";
 
   if (!deliveries?.length) {
     return (
@@ -206,6 +217,23 @@ export default function DeliveryCardsView({ deliveries }: { deliveries: Delivery
                       endpoint={["delivery"]}
                     />
                   </div>
+
+                  {isAdmin && (
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-semibold">{t("Verified Status")}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(delivery.isVerified ?? delivery.verified) ? t("Verified") : t("Unverified")}
+                        </p>
+                      </div>
+                      <ToggleStatus
+                        id={delivery.id as string | number}
+                        body={{ verified: !(delivery.isVerified ?? delivery.verified) }}
+                        isActive={Boolean(delivery.isVerified ?? delivery.verified)}
+                        endpoint={["delivery"]}
+                      />
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between gap-4">
                     <div>
