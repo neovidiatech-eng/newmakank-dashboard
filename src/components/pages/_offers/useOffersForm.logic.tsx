@@ -61,7 +61,7 @@ export default function useOffersLogic({ data }: { data?: OffersType }) {
         maxFreeItemValue: (data as any).maxFreeItemValue !== undefined && (data as any).maxFreeItemValue !== null ? String((data as any).maxFreeItemValue) : "",
       } as OffersType);
     }
-  }, [data, reset, inputs]);
+  }, [data, reset]);
 
   const onSubmit = async (formData: OffersType) => {
     let finalImage: unknown = (formData as any).image;

@@ -213,7 +213,7 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
       sizesReplace(mappedSizes);
       addonsReplace(mappedAddons);
     }
-  }, [data, reset, inputs, sizesReplace, addonsReplace]);
+  }, [data, reset]);
   const importServiceData = async (serviceData: any) => {
     // If there is an image path, resolve it to a binary File object so it can be re-uploaded.
     let resolvedImageFile: File | undefined = undefined;
