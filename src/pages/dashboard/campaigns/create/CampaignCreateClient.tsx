@@ -241,13 +241,27 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
     body.append("targetType", form.targetType);
 
     if (requiresUsers) {
-      form.targetUserIds.map(Number).filter(Boolean).forEach(id => {
-        body.append("targetUserIds", String(id));
-      });
+      const userIds = form.targetUserIds.map(Number).filter(Boolean).join(",");
+      if (userIds) {
+        body.append("targetUserIds", userIds);
+      }
     }
 
     if (requiresStore) body.append("storeId", form.storeId);
     if (requiresService) body.append("serviceId", form.serviceId);
+    
+    // Append Click Action fields for OFFER type as requested
+    body.append("clickTargetType", form.clickTargetType);
+    if (form.clickStoreId) body.append("clickStoreId", form.clickStoreId);
+    if (form.clickCategoryId) body.append("clickCategoryId", form.clickCategoryId);
+    if (form.clickServiceId) body.append("clickServiceId", form.clickServiceId);
+    if (form.clickTargetType === "SPECIAL_DRIVER" && form.clickDeliveryId) {
+      body.append("clickDeliveryId", form.clickDeliveryId);
+    }
+    if (form.clickTargetType === "URL" && form.clickUrl) {
+      body.append("clickUrl", form.clickUrl);
+    }
+
     if (form.startAt) body.append("startAt", toIsoDate(form.startAt));
     if (form.endAt) body.append("endAt", toIsoDate(form.endAt));
     if (form.displayIntervalHours !== "") body.append("displayIntervalHours", form.displayIntervalHours);
@@ -263,7 +277,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
     if (requiresStore && !form.storeId) return t("campaignStoreRequired");
     if (requiresService && !form.serviceId) return t("campaignServiceRequired");
     if (requiresUsers && form.targetUserIds.length === 0) return t("campaignUsersRequired");
-    if (form.type === "NOTIFICATION" && form.clickTargetType === "SPECIAL_DRIVER" && !form.clickDeliveryId) return t("campaignDeliveryRequired");
+    if (form.clickTargetType === "SPECIAL_DRIVER" && !form.clickDeliveryId) return t("campaignDeliveryRequired");
     if (form.startAt && form.endAt && new Date(form.endAt).getTime() <= new Date(form.startAt).getTime()) return t("campaignEndAfterStartRequired");
     return "";
   };
@@ -286,9 +300,10 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
       body.append("title", JSON.stringify({ ar: form.titleAr, en: form.titleEn }));
       body.append("body", JSON.stringify({ ar: form.descriptionAr, en: form.descriptionEn }));
       body.append("targetType", form.targetType);
-      form.targetUserIds.map(Number).filter(Boolean).forEach(id => {
-        body.append("targetUserIds", String(id));
-      });
+      const userIds = form.targetUserIds.map(Number).filter(Boolean).join(",");
+      if (userIds) {
+        body.append("targetUserIds", userIds);
+      }
       if (form.storeId) body.append("storeId", form.storeId);
       body.append("clickTargetType", form.clickTargetType);
       if (form.clickStoreId) body.append("clickStoreId", form.clickStoreId);
@@ -510,99 +525,102 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
           </div>
         </div>
 
-        {form.type === "NOTIFICATION" && (
-          <div className="grid gap-5 rounded-2xl border bg-muted/20 p-5">
-            <h3 className="font-semibold">{t("clickAction") || "Click Action"}</h3>
-            <div className="grid gap-4 md:grid-cols-3 items-end">
-              <div className="grid gap-2">
-                <Label>{t("clickTargetTypeLabel")}</Label>
-                <Select 
-                  value={form.clickTargetType} 
-                  onValueChange={value => handleClickTargetChange(value)}
-                >
-                  <SelectTrigger><SelectValue placeholder={t("clickTargetType") || "Select Type"} /></SelectTrigger>
-                  <SelectContent>
-                    {["GENERAL", "STORE", "CATEGORY", "SERVICE", "SPECIAL_DRIVER", "URL"].map(type => (
-                      <SelectItem key={type} value={type}>
-                        {t(`clickTargetType.${type}`) || type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+        <div className="grid gap-5 rounded-2xl border bg-muted/20 p-5">
+          <h3 className="font-semibold">{t("clickAction") || "Click Action"}</h3>
+          <div className="grid gap-4 md:grid-cols-3 items-end">
+            <div className="grid gap-2">
+              <Label>{t("clickTargetTypeLabel")}</Label>
+              <Select 
+                value={form.clickTargetType} 
+                onValueChange={value => handleClickTargetChange(value)}
+              >
+                <SelectTrigger><SelectValue placeholder={t("clickTargetType") || "Select Type"} /></SelectTrigger>
+                <SelectContent>
+                  {["GENERAL", "STORE", "CATEGORY", "SERVICE", "SPECIAL_DRIVER", "URL"].map(type => (
+                    <SelectItem key={type} value={type}>
+                      {t(`clickTargetType.${type}`) || type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              {form.clickTargetType === "STORE" && (
+            {form.clickTargetType === "STORE" && (
+              <div className="grid gap-2">
+                <Label>{t("store")} *</Label>
+                <SelectPaginated
+                  name="clickStoreId"
+                  apiUrl={storesApiUrl}
+                  value={form.clickStoreId}
+                  onChange={value => updateForm("clickStoreId", value ? String(value) : "")}
+                  placeholder={t("store")}
+                />
+              </div>
+            )}
+
+            {form.clickTargetType === "CATEGORY" && (
+              <div className="grid gap-2">
+                <Label>{t("category")} *</Label>
+                <SelectPaginated
+                  name="clickCategoryId"
+                  apiUrl={["categories"]}
+                  value={form.clickCategoryId}
+                  onChange={value => updateForm("clickCategoryId", value ? String(value) : "")}
+                  placeholder={t("category")}
+                />
+              </div>
+            )}
+
+            {form.clickTargetType === "SERVICE" && (
+              <>
                 <div className="grid gap-2">
                   <Label>{t("store")} *</Label>
                   <SelectPaginated
                     name="clickStoreId"
                     apiUrl={storesApiUrl}
                     value={form.clickStoreId}
-                    onChange={value => updateForm("clickStoreId", value ? String(value) : "")}
+                    onChange={value => {
+                      setForm(prev => ({
+                        ...prev,
+                        clickStoreId: value ? String(value) : "",
+                        clickServiceId: ""
+                      }));
+                    }}
                     placeholder={t("store")}
                   />
                 </div>
-              )}
-
-              {form.clickTargetType === "CATEGORY" && (
                 <div className="grid gap-2">
-                  <Label>{t("category")} *</Label>
+                  <Label>{t("products")} *</Label>
                   <SelectPaginated
-                    name="clickCategoryId"
-                    apiUrl={["categories"]}
-                    value={form.clickCategoryId}
-                    onChange={value => updateForm("clickCategoryId", value ? String(value) : "")}
-                    placeholder={t("category")}
+                    name="clickServiceId"
+                    apiUrl={servicesApiUrl}
+                    value={form.clickServiceId}
+                    disabled={!form.clickStoreId}
+                    searchFilters={clickServiceSearchFilters}
+                    labelFormat="serviceStore"
+                    onChange={value => updateForm("clickServiceId", value ? String(value) : "")}
+                    placeholder={t("products")}
                   />
                 </div>
-              )}
+              </>
+            )}
 
-              {form.clickTargetType === "SERVICE" && (
-                <>
-                  <div className="grid gap-2">
-                    <Label>{t("store")} *</Label>
-                    <SelectPaginated
-                      name="clickStoreId"
-                      apiUrl={storesApiUrl}
-                      value={form.clickStoreId}
-                      onChange={value => {
-                        setForm(prev => ({
-                          ...prev,
-                          clickStoreId: value ? String(value) : "",
-                          clickServiceId: ""
-                        }));
-                      }}
-                      placeholder={t("store")}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>{t("products")} *</Label>
-                    <SelectPaginated
-                      name="clickServiceId"
-                      apiUrl={servicesApiUrl}
-                      value={form.clickServiceId}
-                      disabled={!form.clickStoreId}
-                      searchFilters={clickServiceSearchFilters}
-                      labelFormat="serviceStore"
-                      onChange={value => updateForm("clickServiceId", value ? String(value) : "")}
-                      placeholder={t("products")}
-                    />
-                  </div>
-                </>
-              )}
-
-              {form.clickTargetType === "SPECIAL_DRIVER" && (
-                <div className="grid gap-2">
-                  <Label>{t("Delivery")} *</Label>
-                  <SelectPaginated
-                    name="clickDeliveryId"
-                    apiUrl={deliveryApiUrl}
-                    value={form.clickDeliveryId}
-                    onChange={value => updateForm("clickDeliveryId", value ? String(value) : "")}
-                    placeholder={t("Delivery")}
-                  />
-                </div>
-              )}
+            {form.clickTargetType === "SPECIAL_DRIVER" && (
+              <div className="grid gap-2">
+                <Label>{t("Delivery")} *</Label>
+                <Select
+                  value={form.clickDeliveryId}
+                  onValueChange={value => updateForm("clickDeliveryId", value)}
+                >
+                  <SelectTrigger><SelectValue placeholder={t("Delivery") || "Select Delivery Type"} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="RESTAURANT">{t("RESTAURANT") || "Restaurant Delivery"}</SelectItem>
+                    <SelectItem value="PURCHASE">{t("PURCHASE") || "Purchase Delivery"}</SelectItem>
+                    <SelectItem value="ONLINE">{t("ONLINE") || "Online Delivery"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
               {form.clickTargetType === "URL" && (
                 <div className="grid gap-2 md:col-span-2">
@@ -616,7 +634,6 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
               )}
             </div>
           </div>
-        )}
 
         {isOffer && (
           <div className="grid gap-5 rounded-2xl border bg-muted/20 p-5">

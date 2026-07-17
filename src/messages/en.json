@@ -2427,6 +2427,7 @@
     "STORE": "Store",
     "CATEGORY": "Category",
     "SERVICE": "Product",
+    "SPECIAL_DRIVER": "Special Driver Profile",
     "URL": "External URL"
   },
   "url": "External URL",
