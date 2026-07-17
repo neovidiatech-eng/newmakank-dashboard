@@ -1,9 +1,11 @@
 import ToggleStatus from "@/components/common/table/tableActions/ToggleStatus";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, User as UserIcon, Zap } from "lucide-react";
+import { Mail, Phone, User as UserIcon, Zap, BadgeCheck } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import Image from "@/lib/Image";
 import { getEnv } from "@/lib/env";
+import { useQuery } from "@tanstack/react-query";
+import { fetchHelper } from "@/api/fetch";
 
 const imgUrl = getEnv("VITE_API_URL");
 
@@ -32,6 +34,15 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
   const avatar = data.avatar ?? data.image;
   const isVerified = data.isVerified ?? data.verified;
   const isActiveStatus = Boolean(data.isActive ?? data.active ?? true);
+
+  const { data: profileQuery } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => fetchHelper({ endPoint: ["profile"] }),
+    staleTime: 60_000,
+    retry: false
+  });
+  const currentRole = profileQuery?.data?.user?.roleKey;
+  const isAdmin = currentRole === "Admin";
 
   return (
     <div className="bg-card/50 border rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center">
@@ -88,6 +99,25 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
       </div>
 
       <div className="flex flex-col items-end gap-2 pr-2">
+        {isAdmin && (
+          <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-2xl border border-primary/10">
+            <div className="flex flex-col items-end mr-2">
+              <span className="text-sm font-bold text-primary flex items-center gap-1">
+                <BadgeCheck className="size-3 fill-primary text-primary" />
+                {t("Verified Status")}
+              </span>
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                {isVerified ? t("Verified") : t("Unverified")}
+              </span>
+            </div>
+            <ToggleStatus
+              id={data.id}
+              body={{ verified: !isVerified }}
+              isActive={isVerified}
+              endpoint={["delivery"]}
+            />
+          </div>
+        )}
         <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-2xl border border-primary/10">
           <div className="flex flex-col items-end mr-2">
             <span className="text-sm font-bold text-primary flex items-center gap-1">

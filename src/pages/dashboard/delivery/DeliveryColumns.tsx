@@ -21,6 +21,23 @@ export default function DeliveryColumns(): ColumnDef<Record<string, unknown>>[] 
       )
     },
     {
+      id: "verifiedToggle",
+      header: () => <IconHeader columnKey="Verified Status" />,
+      cell: ({ row }) => {
+        const isVerified = Boolean(row.original.isVerified ?? row.original.verified);
+        return (
+          <ToggleStatus
+            id={row.original.id as string | number}
+            body={{
+              verified: !isVerified
+            }}
+            isActive={isVerified}
+            endpoint={["delivery"]}
+          />
+        );
+      }
+    },
+    {
       id: "statusToggle",
       header: () => <IconHeader columnKey="Forced Availability" />,
       cell: ({ row }) => {
