@@ -97,8 +97,23 @@ export default function useOffersLogic({ data }: { data?: OffersType }) {
     body.append("requiredPaidQuantity", String(formData.requiredPaidQuantity));
     body.append("freeQuantity", String(formData.freeQuantity));
 
-    toArray(formData.paidServiceIds).forEach(id => body.append("paidServiceIds", id));
-    toArray(formData.freeServiceIds).forEach(id => body.append("freeServiceIds", id));
+    const paidServiceIds = toArray(formData.paidServiceIds);
+    if (paidServiceIds.length > 0) {
+      paidServiceIds.forEach(id => body.append("paidServiceIds", id));
+    } else {
+      body.append("paidServiceIds", ",");
+    }
+
+    const freeServiceIds = toArray(formData.freeServiceIds);
+    if (freeServiceIds.length > 0) {
+      freeServiceIds.forEach(id => body.append("freeServiceIds", id));
+    } else {
+      body.append("freeServiceIds", ",");
+    }
+
+    // Always append empty category scopes so the backend sees all 4 scope fields as defined
+    body.append("paidCategoryIds", ",");
+    body.append("freeCategoryIds", ",");
 
     body.append("paidSizeRule", String(formData.paidSizeRule ?? "ANY"));
     if (formData.paidSizeRule === "NAME" && formData.paidRequiredSizeName) {
