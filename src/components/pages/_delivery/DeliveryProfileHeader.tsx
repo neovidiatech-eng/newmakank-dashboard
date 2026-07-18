@@ -41,7 +41,7 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
     staleTime: 60_000,
     retry: false
   });
-  const currentRole = (
+  const roleVal =
     profileQuery?.data?.data?.user?.Role?.name ||
     profileQuery?.data?.data?.user?.Role?.roleKey ||
     profileQuery?.data?.data?.user?.roleKey ||
@@ -49,9 +49,8 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
     profileQuery?.data?.user?.Role?.name ||
     profileQuery?.data?.user?.Role?.roleKey ||
     profileQuery?.data?.user?.roleKey ||
-    profileQuery?.data?.user?.roleId ||
-    ""
-  ).toLowerCase();
+    profileQuery?.data?.user?.roleId;
+  const currentRole = roleVal ? String(roleVal).toLowerCase() : "";
   const isAdmin = currentRole === "admin";
 
   return (
