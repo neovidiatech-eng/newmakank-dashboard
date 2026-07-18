@@ -274,3 +274,53 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+/* ============================================================
+   LEAFLET MAP Z-INDEX FIX
+   Leaflet internally uses z-index: 400–1000 which causes the
+   map to float above dropdowns, dialogs, and popovers.
+   Solution: isolate the map container stacking context so its
+   internal z-indices are scoped, while UI overlays (z-50+)
+   still render on top at the document level.
+   ============================================================ */
+
+/* Wrap every leaflet map in its own stacking context */
+.leaflet-container {
+  isolation: isolate;
+  position: relative;
+  z-index: 0;
+}
+
+/* Tighten internal leaflet pane z-indices to stay inside the container */
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-pane,
+.leaflet-overlay-pane,
+.leaflet-shadow-pane,
+.leaflet-marker-pane,
+.leaflet-tooltip-pane,
+.leaflet-popup-pane {
+  z-index: auto;
+}
+
+.leaflet-tile-pane    { z-index: 2; }
+.leaflet-overlay-pane { z-index: 4; }
+.leaflet-shadow-pane  { z-index: 5; }
+.leaflet-marker-pane  { z-index: 6; }
+.leaflet-tooltip-pane { z-index: 7; }
+.leaflet-popup-pane   { z-index: 8; }
+
+/* Controls (zoom buttons etc.) — keep them above tiles but still inside container */
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 10;
+}
+
+/* Google Maps iframe fix — prevent it from leaking above dialogs */
+.gm-style iframe + div,
+.pac-container {
+  z-index: 50 !important;
+}
+
