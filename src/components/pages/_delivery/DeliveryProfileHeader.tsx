@@ -50,8 +50,17 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
     profileQuery?.data?.user?.Role?.roleKey ||
     profileQuery?.data?.user?.roleKey ||
     profileQuery?.data?.user?.roleId;
-  const currentRole = roleVal ? String(roleVal).toLowerCase() : "";
+  const getRoleString = (val: any): string => {
+    if (!val) return "";
+    if (typeof val === "string") return val;
+    if (typeof val === "object") {
+      return val.en || val.ar || "";
+    }
+    return String(val);
+  };
+  const currentRole = getRoleString(roleVal).toLowerCase();
   const isAdmin = currentRole === "admin";
+  console.log("DEBUG PROFILE HEADER ROLE:", { roleVal, currentRole, isAdmin, userObj: profileQuery?.data });
 
   return (
     <div className="bg-card/50 border rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center">

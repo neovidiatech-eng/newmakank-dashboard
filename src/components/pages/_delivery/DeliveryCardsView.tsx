@@ -129,8 +129,17 @@ export default function DeliveryCardsView({ deliveries }: { deliveries: Delivery
     profileQuery?.data?.user?.Role?.roleKey ||
     profileQuery?.data?.user?.roleKey ||
     profileQuery?.data?.user?.roleId;
-  const currentRole = roleVal ? String(roleVal).toLowerCase() : "";
+  const getRoleString = (val: any): string => {
+    if (!val) return "";
+    if (typeof val === "string") return val;
+    if (typeof val === "object") {
+      return val.en || val.ar || "";
+    }
+    return String(val);
+  };
+  const currentRole = getRoleString(roleVal).toLowerCase();
   const isAdmin = currentRole === "admin";
+  console.log("DEBUG ROLE:", { roleVal, currentRole, isAdmin, userObj: profileQuery?.data });
 
   if (!deliveries?.length) {
     return (
