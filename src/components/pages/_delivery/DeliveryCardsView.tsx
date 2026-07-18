@@ -139,7 +139,6 @@ export default function DeliveryCardsView({ deliveries }: { deliveries: Delivery
   };
   const currentRole = getRoleString(roleVal).toLowerCase();
   const isAdmin = currentRole === "admin";
-  console.log("DEBUG ROLE:", { roleVal, currentRole, isAdmin, userObj: profileQuery?.data });
 
   if (!deliveries?.length) {
     return (
