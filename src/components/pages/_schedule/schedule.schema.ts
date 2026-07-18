@@ -13,7 +13,7 @@ import { z } from "zod";
     branchId: !!branchId || !!deliveryId ? noSchema() : SelectReq(t),
     // deliveryId is accepted for delivery schedules (hidden when provided)
     deliveryId: !!deliveryId ? noSchema() : noSchema(),
-    day: SelectReq(t),
+    days: z.array(z.string()).min(1, t("Required")),
     openingTime: noSchema(),
     closingTime: noSchema(),
     is24Hours: z.array(z.string()).optional()

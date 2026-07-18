@@ -57,7 +57,9 @@ function getLocalizedText(value: LocalizedText, locale: string = "ar") {
 function getImageUrl(path?: string | null) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return `${getEnv("VITE_API_URL")}${path}`;
+  const cleanPath = path.replace(/\.(jpg|jpeg|png|webp|gif|svg|bmp|avif)test$/i, ".$1");
+  const baseUrl = getEnv("VITE_API_IMG_URL");
+  return `${baseUrl}${cleanPath}`;
 }
 
 function getStationLatLng(station?: CustomDeliveryStation) {

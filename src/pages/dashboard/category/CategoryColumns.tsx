@@ -3,6 +3,28 @@ import { ImageCell } from "@/components/common/table/columns/img-cell";
 import LocaleViewColumn from "@/components/common/table/columns/locale-view.column";
 import { type ColumnDef } from "@tanstack/react-table";
 
+import { useApiQuery } from "@/hooks/useApiQuery";
+
+function StoreNameCell({ storeId, fallback }: { storeId: number; fallback: React.ReactNode }) {
+  const { data, isLoading } = useApiQuery({
+    queryKey: ["stores", storeId],
+    endPoint: ["stores", storeId],
+    enabled: !!storeId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (isLoading) {
+    return <span className="text-muted-foreground text-xs animate-pulse">جاري التحميل...</span>;
+  }
+
+  const store = data?.data;
+  if (store?.name) {
+    return <LocaleViewColumn value={store.name} />;
+  }
+
+  return <>{fallback}</>;
+}
+
 export default function Columns(): ColumnDef<Record<string, unknown>>[] {
   const columns = [
     {
@@ -64,16 +86,15 @@ export default function Columns(): ColumnDef<Record<string, unknown>>[] {
       header: () => <IconHeader columnKey="Store" />,
       cell: ({ row }) => {
         const isCustom = row.original.isCustomStoreCategory as boolean;
-        const store = row.original.Store as { name?: { ar?: string; en?: string } } | undefined;
-        const storeName = row.original.storeName as string | undefined;
-        const storeId = row.original.storeId as number | undefined;
+        const store = (row.original.Store || row.original.store || row.original.restaurant) as { name?: { ar?: string; en?: string } } | undefined;
+        const storeName = (row.original.storeName || row.original.restaurantName) as string | undefined;
+        const storeId = (row.original.storeId || row.original.restaurantId) as number | undefined;
 
         if (!isCustom) {
-          return <span className="text-muted-foreground text-xs">—</span>;
+          return <span className="text-muted-foreground text-xs"> -</span>;
         }
 
-        // Backend may embed the relation (Store.name = {ar,en}) or return a flat storeName
-        // string, or (as a last resort) only the raw storeId — handle all three.
+        // If backend embeds relation
         if (store?.name) {
           return (
             <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
@@ -82,11 +103,25 @@ export default function Columns(): ColumnDef<Record<string, unknown>>[] {
           );
         }
 
-        return (
-          <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-            {storeName ?? (storeId ? `#${storeId}` : "—")}
-          </span>
-        );
+        // If flat storeName provided
+        if (storeName) {
+           return (
+            <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+              {storeName}
+            </span>
+          );
+        }
+
+        // Fallback to fetch by storeId if missing in current row
+        if (storeId) {
+          return (
+            <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+               <StoreNameCell storeId={storeId} fallback={`#${storeId}`} />
+            </span>
+          );
+        }
+
+        return <span className="text-sm font-medium text-blue-600 dark:text-blue-400">—</span>;
       }
     },
   ];

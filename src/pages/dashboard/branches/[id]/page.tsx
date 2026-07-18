@@ -13,15 +13,12 @@ const page = async ({ params }: { params: Params }): Promise<JSX.Element> => {
   const t = await getTranslations();
   const locale = await getLocale();
   const branchId = Number((await params).id);
-  const [response, scheduleResponse, ordersResponse] = await Promise.all([
+  const [response, ordersResponse] = await Promise.all([
     fetchHelper({
       endPoint: ["branches", branchId],
       method: "GET",
     }),
-    fetchHelper({
-      endPoint: ["schedule", branchId],
-      method: "GET",
-    }),
+
     fetchHelper({
       endPoint: ["orders"],
       method: "GET",
@@ -34,7 +31,7 @@ const page = async ({ params }: { params: Params }): Promise<JSX.Element> => {
   }
 
   const branch = response.data as branches;
-  const scheduleData = Array.isArray(scheduleResponse?.data) ? scheduleResponse?.data : [];
+  const scheduleData = Array.isArray(branch?.storeSchedule) ? branch.storeSchedule : [];
   const ordersData = Array.isArray(ordersResponse?.data) ? ordersResponse?.data : [];
   const branchName = getLocalizedName(branch?.name, locale);
 

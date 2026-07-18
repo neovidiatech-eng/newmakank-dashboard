@@ -5,6 +5,15 @@ import Image from "@/lib/Image";
 import { getEnv } from "@/lib/env";
 import React, { useEffect, useState, useRef } from "react";
 const API_IMG_URL = getEnv("VITE_API_IMG_URL");
+
+/**
+ * Temporary workaround: backend incorrectly appends "test" to image extensions
+ * e.g. "uploads/image/abc.jpgtest" → "uploads/image/abc.jpg"
+ */
+function sanitizeImagePath(path: string): string {
+  return path.replace(/\.(jpg|jpeg|png|webp|gif|svg|bmp|avif)test$/i, ".$1");
+}
+
 interface ImgInputProps {
   alt?: string;
   name?: string;
@@ -31,7 +40,7 @@ export default function ImgInput({
 
   useEffect(() => {
     if (value && typeof value === "string") {
-      setPreviewUrl(API_IMG_URL + value);
+      setPreviewUrl(API_IMG_URL + sanitizeImagePath(value));
       setFileName(value.split("/").pop() || "");
     } else if (!value) {
       setPreviewUrl("");

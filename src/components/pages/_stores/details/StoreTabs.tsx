@@ -1,5 +1,5 @@
 import BranchesColumns from "@/pages/dashboard/branches/BranchesColumns";
-import CategoryColumns from "@/pages/dashboard/category/CategoryColumns";
+import StoreCategoryColumns from "./StoreCategoryColumns";
 import OrdersColumns from "@/pages/dashboard/orders/OrdersColumns";
 import ServicesColumns from "@/pages/dashboard/services/ServicesColumns";
 import CustomTabs, { TabItem } from "@/components/common/CustomTabs/custom-tab";
@@ -145,7 +145,7 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
       content: (
         <TableBasic
           data={sortedCategories}
-          columns={CategoryColumns}
+          columns={StoreCategoryColumns(t)}
           cardHeader={t("Store Categories")}
           createNewLink={`/stores/${storeId}/categories/create`}
           hideCreateNew={false}

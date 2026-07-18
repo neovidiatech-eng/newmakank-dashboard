@@ -8,24 +8,35 @@ import { getEnv } from "@/lib/env";
 import { useState } from "react";
 const API_IMG_URL = getEnv("VITE_API_IMG_URL");
 
+/**
+ * Temporary workaround: backend incorrectly appends "test" to image extensions
+ * e.g. "uploads/image/abc.jpgtest" → "uploads/image/abc.jpg"
+ */
+function sanitizeImagePath(path: string): string {
+  return path.replace(/\.(jpg|jpeg|png|webp|gif|svg|bmp|avif)test$/i, ".$1");
+}
+
 export function ImageCell({ cell, className, openImgWhenClickType = 'view' }: {
   openImgWhenClickType?: "new_tab" | "download" | 'view' | 'none';
   cell: string; className?: string
 }): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
-  // Handle missing API_IMG_URL or empty/invalid cell values
-  if (!API_IMG_URL || !cell || cell.trim() === '') {
-    return (
-      <div className="flex justify-center">
-        <div className={cn("w-16 h-16 rounded-md bg-muted flex items-center justify-center", className)}>
-          <Img className="w-8 h-8 text-muted-foreground" />
-        </div>
+  const placeholder = (
+    <div className="flex justify-center">
+      <div className={cn("w-16 h-16 rounded-md bg-muted flex items-center justify-center", className)}>
+        <Img className="w-8 h-8 text-muted-foreground" />
       </div>
-    );
+    </div>
+  );
+
+  // Handle missing API_IMG_URL or empty/invalid cell values or load error
+  if (!API_IMG_URL || !cell || cell.trim() === '' || imgError) {
+    return placeholder;
   }
 
-  const imageUrl = `${API_IMG_URL}${cell}`;
+  const imageUrl = `${API_IMG_URL}${sanitizeImagePath(cell)}`;
 
   if (openImgWhenClickType === 'view') {
     return (
@@ -38,6 +49,7 @@ export function ImageCell({ cell, className, openImgWhenClickType = 'view' }: {
                 fill
                 alt="Data image"
                 className="object-cover"
+                onError={() => setImgError(true)}
               />
             </button>
           </DialogTrigger>
@@ -61,12 +73,6 @@ export function ImageCell({ cell, className, openImgWhenClickType = 'view' }: {
                     View in New Tab
                   </Link>
                 </Button>
-                {/* <Button asChild variant="outline">
-                  <Link href={imageUrl} download>
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Link>
-                </Button> */}
               </div>
             </div>
           </DialogContent>
@@ -84,6 +90,7 @@ export function ImageCell({ cell, className, openImgWhenClickType = 'view' }: {
             fill
             alt="Data image"
             className="object-cover"
+            onError={() => setImgError(true)}
           />
         </div>
       </div>
@@ -103,6 +110,7 @@ export function ImageCell({ cell, className, openImgWhenClickType = 'view' }: {
           fill
           alt="Data image"
           className="object-cover"
+          onError={() => setImgError(true)}
         />
       </Link>
     </div>

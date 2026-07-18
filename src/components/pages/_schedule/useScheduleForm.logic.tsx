@@ -38,8 +38,16 @@ export default function useScheduleLogic({
     deliveryId
   });
   const defaultValues = extractFormDefaultInputs(inputs, data) as any;
+  if (!Array.isArray(defaultValues.days)) {
+    defaultValues.days = (data as any)?.day ? [(data as any).day] : [];
+  } else if ((data as any)?.day) {
+    defaultValues.days = [(data as any).day];
+  }
+
   if (data?.openingTime === "00:00" && data?.closingTime === "23:59") {
     defaultValues.is24Hours = ["true"];
+  } else if (!Array.isArray(defaultValues.is24Hours)) {
+    defaultValues.is24Hours = [];
   }
 
   const {
@@ -125,19 +133,7 @@ export default function useScheduleLogic({
       formData.closingTime = "23:59";
     }
 
-    // Remove is24Hours from formData before sending to API
     delete (formData as any).is24Hours;
-
-    let payloadToSubmit = extractFormNameInputs({ inputs, data: formData });
-
-    if (deliveryId) {
-      payloadToSubmit = {
-        ...payloadToSubmit,
-        requiredLat: 0,
-        requiredLng: 0,
-        requiredRadius: 0
-      };
-    }
 
     if (data?.id) {
       await fetchHelper({
@@ -146,17 +142,39 @@ export default function useScheduleLogic({
       });
     }
 
-    const response = await FormAction({
-      data: undefined,
-      formData: payloadToSubmit,
-      endpoint: deliveryId ? ["deliverySchedule"] : ["schedule"],
-      reset: reset,
+    const daysArray = formData.days || [];
+    let allSuccess = true;
 
-      t
-    });
+    for (const singleDay of daysArray) {
+      let payloadToSubmit: any = extractFormNameInputs({ inputs, data: formData });
+      payloadToSubmit.day = singleDay;
+      delete payloadToSubmit.days;
 
-    if (response?.success && onSuccess) {
-      onSuccess();
+      if (deliveryId) {
+        payloadToSubmit = {
+          ...payloadToSubmit,
+          requiredLat: 0,
+          requiredLng: 0,
+          requiredRadius: 0
+        };
+      }
+
+      const response = await FormAction({
+        data: undefined,
+        formData: payloadToSubmit,
+        endpoint: deliveryId ? ["deliverySchedule"] : ["schedule"],
+        reset: () => {},
+        t
+      });
+
+      if (!response?.success) {
+        allSuccess = false;
+      }
+    }
+
+    if (allSuccess) {
+      reset();
+      if (onSuccess) onSuccess();
     }
   };
 

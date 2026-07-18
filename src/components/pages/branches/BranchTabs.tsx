@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Link } from "@/lib/navigation";
 import { useLocale, useTranslations } from "@/lib/i18n";
+import BranchStatusControl from "./BranchStatusControl";
 
 type BranchTabsProps = {
   branch: branches;
@@ -43,6 +44,7 @@ export default function BranchTabs({
     value: "overview",
     label: t("Overview"),
     content: (
+      <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>{t("Branch Overview")}</CardTitle>
@@ -83,6 +85,8 @@ export default function BranchTabs({
           </div>
         </CardContent>
       </Card>
+      <BranchStatusControl branchId={branchId} initialStatus={branch?.status as string | undefined} />
+    </div>
     )
   };
 

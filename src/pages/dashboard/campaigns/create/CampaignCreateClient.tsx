@@ -24,7 +24,7 @@ import { toast } from "sonner";
 
 type CampaignFormType = "NOTIFICATION" | "OFFER";
 type IncentiveType = "none" | "freeDelivery" | "discount";
-type CampaignTargetType = "ALL" | "CUSTOMER" | "STORE" | "SERVICE" | "SELECTED_USERS" | "DELIVERY";
+type CampaignTargetType = "ALL" | "CUSTOMER" | "STORE" | "SERVICE" | "SELECTED_USERS" | "DELIVERY" | "SPECIAL_DRIVER";
 
 type LocalizedText = string | { ar?: string; en?: string } | null | undefined;
 
@@ -49,6 +49,7 @@ type CampaignData = {
   clickServiceId?: string | number | null;
   clickDeliveryId?: string | number | null;
   clickUrl?: string;
+  deliveryId?: string | null;
 };
 
 type CampaignFormState = {
@@ -74,6 +75,7 @@ type CampaignFormState = {
   clickServiceId: string;
   clickDeliveryId: string;
   clickUrl: string;
+  deliveryId: string;
 };
 
 const incentiveTypes: IncentiveType[] = ["none", "freeDelivery", "discount"];
@@ -144,7 +146,8 @@ function getInitialForm(data?: CampaignData | null, locale = "ar"): CampaignForm
     clickCategoryId: data?.clickCategoryId ? String(data.clickCategoryId) : "",
     clickServiceId: data?.clickServiceId ? String(data.clickServiceId) : "",
     clickDeliveryId: data?.clickDeliveryId ? String(data.clickDeliveryId) : "",
-    clickUrl: data?.clickUrl ?? ""
+    clickUrl: data?.clickUrl ?? "",
+    deliveryId: data?.deliveryId ? String(data.deliveryId) : ""
   };
 }
 
@@ -194,7 +197,8 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
       targetType,
       storeId: targetType === "STORE" || targetType === "SERVICE" ? prev.storeId : "",
       serviceId: targetType === "SERVICE" ? prev.serviceId : "",
-      targetUserIds: targetType === "SELECTED_USERS" ? prev.targetUserIds : []
+      targetUserIds: targetType === "SELECTED_USERS" ? prev.targetUserIds : [],
+      deliveryId: targetType === "SPECIAL_DRIVER" ? prev.deliveryId : ""
     }));
   };
 
@@ -241,26 +245,15 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
     body.append("targetType", form.targetType);
 
     if (requiresUsers) {
-      const userIds = form.targetUserIds.map(Number).filter(Boolean).join(",");
-      if (userIds) {
-        body.append("targetUserIds", userIds);
+      const userIds = form.targetUserIds.map(Number).filter(Boolean);
+      if (userIds.length > 0) {
+        body.append("targetUserIds", JSON.stringify(userIds));
       }
     }
 
     if (requiresStore) body.append("storeId", form.storeId);
     if (requiresService) body.append("serviceId", form.serviceId);
-    
-    // Append Click Action fields for OFFER type as requested
-    body.append("clickTargetType", form.clickTargetType);
-    if (form.clickStoreId) body.append("clickStoreId", form.clickStoreId);
-    if (form.clickCategoryId) body.append("clickCategoryId", form.clickCategoryId);
-    if (form.clickServiceId) body.append("clickServiceId", form.clickServiceId);
-    if (form.clickTargetType === "SPECIAL_DRIVER" && form.clickDeliveryId) {
-      body.append("clickDeliveryId", form.clickDeliveryId);
-    }
-    if (form.clickTargetType === "URL" && form.clickUrl) {
-      body.append("clickUrl", form.clickUrl);
-    }
+    if (form.targetType === "SPECIAL_DRIVER" && form.deliveryId) body.append("deliveryId", form.deliveryId);
 
     if (form.startAt) body.append("startAt", toIsoDate(form.startAt));
     if (form.endAt) body.append("endAt", toIsoDate(form.endAt));
@@ -300,9 +293,9 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
       body.append("title", JSON.stringify({ ar: form.titleAr, en: form.titleEn }));
       body.append("body", JSON.stringify({ ar: form.descriptionAr, en: form.descriptionEn }));
       body.append("targetType", form.targetType);
-      const userIds = form.targetUserIds.map(Number).filter(Boolean).join(",");
-      if (userIds) {
-        body.append("targetUserIds", userIds);
+      const userIds = form.targetUserIds.map(Number).filter(Boolean);
+      if (userIds.length > 0) {
+        body.append("targetUserIds", JSON.stringify(userIds));
       }
       if (form.storeId) body.append("storeId", form.storeId);
       body.append("clickTargetType", form.clickTargetType);
@@ -475,7 +468,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                 <SelectContent>
                   {(form.type === "NOTIFICATION" 
                     ? ["ALL", "CUSTOMER", "STORE", "DELIVERY", "SELECTED_USERS"] 
-                    : ["ALL", "CUSTOMER", "STORE", "SERVICE", "SELECTED_USERS"]
+                    : ["ALL", "CUSTOMER", "STORE", "SERVICE", "SELECTED_USERS", "SPECIAL_DRIVER"]
                   ).map(type => (
                     <SelectItem key={type} value={type}>
                       {t(`campaignTargetType.${type}`) || t(type) || type}
@@ -484,30 +477,56 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-2">
-              <Label>{t("store")} {requiresStore ? "*" : `(${t("optional")})`}</Label>
-              <SelectPaginated
-                name="storeId"
-                apiUrl={storesApiUrl}
-                value={form.storeId}
-                disabled={!requiresStore}
-                onChange={value => updateForm("storeId", value ? String(value) : "")}
-                placeholder={t("store")}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>{t("products")} {requiresService ? "*" : `(${t("optional")})`}</Label>
-              <SelectPaginated
-                name="serviceId"
-                apiUrl={servicesApiUrl}
-                value={form.serviceId}
-                disabled={!requiresService || !form.storeId}
-                searchFilters={serviceSearchFilters}
-                labelFormat="serviceStore"
-                onChange={value => updateForm("serviceId", value ? String(value) : "")}
-                placeholder={t("products")}
-              />
-            </div>
+
+            {form.targetType !== "SPECIAL_DRIVER" && (
+              <div className="grid gap-2">
+                <Label>{t("store")} {requiresStore ? "*" : `(${t("optional")})`}</Label>
+                <SelectPaginated
+                  name="storeId"
+                  apiUrl={storesApiUrl}
+                  value={form.storeId}
+                  disabled={!requiresStore}
+                  onChange={value => updateForm("storeId", value ? String(value) : "")}
+                  placeholder={t("store")}
+                />
+              </div>
+            )}
+
+            {form.targetType !== "SPECIAL_DRIVER" && (
+              <div className="grid gap-2">
+                <Label>{t("products")} {requiresService ? "*" : `(${t("optional")})`}</Label>
+                <SelectPaginated
+                  name="serviceId"
+                  apiUrl={servicesApiUrl}
+                  value={form.serviceId}
+                  disabled={!requiresService || !form.storeId}
+                  searchFilters={serviceSearchFilters}
+                  labelFormat="serviceStore"
+                  onChange={value => updateForm("serviceId", value ? String(value) : "")}
+                  placeholder={t("products")}
+                />
+              </div>
+            )}
+
+            {form.targetType === "SPECIAL_DRIVER" && (
+              <div className="grid gap-2">
+                <Label>{t("Delivery")} *</Label>
+                <Select
+                  value={form.deliveryId}
+                  onValueChange={value => updateForm("deliveryId", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("Delivery") || "اختر نوع التوصيل"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="RESTAURANT">{t("RESTAURANT") || "مندوب مطاعم"}</SelectItem>
+                    <SelectItem value="PURCHASE">{t("PURCHASE") || "مندوب مشتريات"}</SelectItem>
+                    <SelectItem value="ONLINE">{t("ONLINE") || "مندوب أونلاين"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {requiresUsers && (
               <div className="grid gap-2 md:col-span-3">
                 <Label>{t("selectedCustomers")} *</Label>
@@ -525,115 +544,117 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
           </div>
         </div>
 
-        <div className="grid gap-5 rounded-2xl border bg-muted/20 p-5">
-          <h3 className="font-semibold">{t("clickAction") || "Click Action"}</h3>
-          <div className="grid gap-4 md:grid-cols-3 items-end">
-            <div className="grid gap-2">
-              <Label>{t("clickTargetTypeLabel")}</Label>
-              <Select 
-                value={form.clickTargetType} 
-                onValueChange={value => handleClickTargetChange(value)}
-              >
-                <SelectTrigger><SelectValue placeholder={t("clickTargetType") || "Select Type"} /></SelectTrigger>
-                <SelectContent>
-                  {["GENERAL", "STORE", "CATEGORY", "SERVICE", "SPECIAL_DRIVER", "URL"].map(type => (
-                    <SelectItem key={type} value={type}>
-                      {t(`clickTargetType.${type}`) || type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {form.clickTargetType === "STORE" && (
+        {form.type === "NOTIFICATION" && (
+          <div className="grid gap-5 rounded-2xl border bg-muted/20 p-5">
+            <h3 className="font-semibold">{t("clickAction") || "Click Action"}</h3>
+            <div className="grid gap-4 md:grid-cols-3 items-end">
               <div className="grid gap-2">
-                <Label>{t("store")} *</Label>
-                <SelectPaginated
-                  name="clickStoreId"
-                  apiUrl={storesApiUrl}
-                  value={form.clickStoreId}
-                  onChange={value => updateForm("clickStoreId", value ? String(value) : "")}
-                  placeholder={t("store")}
-                />
+                <Label>{t("clickTargetTypeLabel")}</Label>
+                <Select
+                  value={form.clickTargetType}
+                  onValueChange={value => handleClickTargetChange(value)}
+                >
+                  <SelectTrigger><SelectValue placeholder={t("clickTargetType") || "Select Type"} /></SelectTrigger>
+                  <SelectContent>
+                    {["GENERAL", "STORE", "CATEGORY", "SERVICE", "SPECIAL_DRIVER", "URL"].map(type => (
+                      <SelectItem key={type} value={type}>
+                        {t(`clickTargetType.${type}`) || type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            )}
 
-            {form.clickTargetType === "CATEGORY" && (
-              <div className="grid gap-2">
-                <Label>{t("category")} *</Label>
-                <SelectPaginated
-                  name="clickCategoryId"
-                  apiUrl={["categories"]}
-                  value={form.clickCategoryId}
-                  onChange={value => updateForm("clickCategoryId", value ? String(value) : "")}
-                  placeholder={t("category")}
-                />
-              </div>
-            )}
-
-            {form.clickTargetType === "SERVICE" && (
-              <>
+              {form.clickTargetType === "STORE" && (
                 <div className="grid gap-2">
                   <Label>{t("store")} *</Label>
                   <SelectPaginated
                     name="clickStoreId"
                     apiUrl={storesApiUrl}
                     value={form.clickStoreId}
-                    onChange={value => {
-                      setForm(prev => ({
-                        ...prev,
-                        clickStoreId: value ? String(value) : "",
-                        clickServiceId: ""
-                      }));
-                    }}
+                    onChange={value => updateForm("clickStoreId", value ? String(value) : "")}
                     placeholder={t("store")}
                   />
                 </div>
+              )}
+
+              {form.clickTargetType === "CATEGORY" && (
                 <div className="grid gap-2">
-                  <Label>{t("products")} *</Label>
+                  <Label>{t("category")} *</Label>
                   <SelectPaginated
-                    name="clickServiceId"
-                    apiUrl={servicesApiUrl}
-                    value={form.clickServiceId}
-                    disabled={!form.clickStoreId}
-                    searchFilters={clickServiceSearchFilters}
-                    labelFormat="serviceStore"
-                    onChange={value => updateForm("clickServiceId", value ? String(value) : "")}
-                    placeholder={t("products")}
+                    name="clickCategoryId"
+                    apiUrl={["categories"]}
+                    value={form.clickCategoryId}
+                    onChange={value => updateForm("clickCategoryId", value ? String(value) : "")}
+                    placeholder={t("category")}
                   />
                 </div>
-              </>
-            )}
+              )}
 
-            {form.clickTargetType === "SPECIAL_DRIVER" && (
-              <div className="grid gap-2">
-                <Label>{t("Delivery")} *</Label>
-                <Select
-                  value={form.clickDeliveryId}
-                  onValueChange={value => updateForm("clickDeliveryId", value)}
-                >
-                  <SelectTrigger><SelectValue placeholder={t("Delivery") || "Select Delivery Type"} /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="RESTAURANT">{t("RESTAURANT") || "Restaurant Delivery"}</SelectItem>
-                    <SelectItem value="PURCHASE">{t("PURCHASE") || "Purchase Delivery"}</SelectItem>
-                    <SelectItem value="ONLINE">{t("ONLINE") || "Online Delivery"}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+              {form.clickTargetType === "SERVICE" && (
+                <>
+                  <div className="grid gap-2">
+                    <Label>{t("store")} *</Label>
+                    <SelectPaginated
+                      name="clickStoreId"
+                      apiUrl={storesApiUrl}
+                      value={form.clickStoreId}
+                      onChange={value => {
+                        setForm(prev => ({
+                          ...prev,
+                          clickStoreId: value ? String(value) : "",
+                          clickServiceId: ""
+                        }));
+                      }}
+                      placeholder={t("store")}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>{t("products")} *</Label>
+                    <SelectPaginated
+                      name="clickServiceId"
+                      apiUrl={servicesApiUrl}
+                      value={form.clickServiceId}
+                      disabled={!form.clickStoreId}
+                      searchFilters={clickServiceSearchFilters}
+                      labelFormat="serviceStore"
+                      onChange={value => updateForm("clickServiceId", value ? String(value) : "")}
+                      placeholder={t("products")}
+                    />
+                  </div>
+                </>
+              )}
+
+              {form.clickTargetType === "SPECIAL_DRIVER" && (
+                <div className="grid gap-2">
+                  <Label>{t("Delivery")} *</Label>
+                  <Select
+                    value={form.clickDeliveryId}
+                    onValueChange={value => updateForm("clickDeliveryId", value)}
+                  >
+                    <SelectTrigger><SelectValue placeholder={t("Delivery") || "Select Delivery Type"} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="RESTAURANT">{t("RESTAURANT") || "مندوب مطاعم"}</SelectItem>
+                      <SelectItem value="PURCHASE">{t("PURCHASE") || "مندوب مشتريات"}</SelectItem>
+                      <SelectItem value="ONLINE">{t("ONLINE") || "مندوب أونلاين"}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {form.clickTargetType === "URL" && (
                 <div className="grid gap-2 md:col-span-2">
                   <Label>{t("url")} *</Label>
-                  <Input 
-                    value={form.clickUrl} 
-                    onChange={event => updateForm("clickUrl", event.target.value)} 
-                    placeholder="https://..." 
+                  <Input
+                    value={form.clickUrl}
+                    onChange={event => updateForm("clickUrl", event.target.value)}
+                    placeholder="https://..."
                   />
                 </div>
               )}
             </div>
           </div>
+        )}
 
         {isOffer && (
           <div className="grid gap-5 rounded-2xl border bg-muted/20 p-5">

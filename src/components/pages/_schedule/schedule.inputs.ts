@@ -27,8 +27,8 @@ export const ScheduleInputs = (
       // onChange: onBranchChange
     },
     {
-      name: "day",
-      type: "radioGroup",
+      name: "days",
+      type: "checkbox",
       required: true,
       options:  daysOptions(t)
     },
