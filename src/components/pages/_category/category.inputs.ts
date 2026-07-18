@@ -12,10 +12,14 @@ export const CategoryInputs = (
       type: "selectPaginated",
       apiUrl: ["storeTemplates"],
       cardId: "lang",
-      required: !hasStoreId,
-      isHidden: hasStoreId
+      required: !hasStoreId && !isEdit,
+      // Show for template categories (hasStoreId = false), hide for custom store categories
+      isHidden: hasStoreId,
+      // In edit mode: disable the field — the template assignment cannot be changed
+      // (backend does not accept templateId on PATCH /store-templates/categories/:id)
+      disabled: isEdit
     },
-    { name: "order", type: "number", required: true }
+    { name: "order", type: "number", required: true, cardId: "lang" }
   ];
   return inputs;
 };

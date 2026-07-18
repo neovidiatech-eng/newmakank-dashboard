@@ -46,7 +46,12 @@ export default function TableWithQuery({
   const searchParams = useSearchParams();
 
   // Build params from URL searchParams + extraParams
-  const params: Record<string, unknown> = { ...extraParams };
+  // Always include page & limit so the API applies server-side pagination
+  const params: Record<string, unknown> = {
+    page: 1,
+    limit: 10,
+    ...extraParams
+  };
   searchParams.forEach((value, key) => {
     params[key] = value;
   });

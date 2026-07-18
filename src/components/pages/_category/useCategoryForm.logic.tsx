@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { CategoryInputs } from "./category.inputs";
 import { CategorySchema, type CategoryType } from "./category.schema";
+
 export default function useCategoryLogic({
   data,
   endpoint
@@ -40,14 +41,26 @@ export default function useCategoryLogic({
 
   const onSubmit = async (formData: CategoryType) => {
     if (data?.storeId) formData.storeId = data.storeId;
-    
-    // Resolve dynamic endpoint for templates categories
+
+    // Resolve dynamic endpoint
+    // isCustomStoreCategory: true  → lives in Category table → use storeCategories
+    // isCustomStoreCategory: false → lives in TemplateCategory table → use storeTemplatesCategories
+    // Fall back to storeId presence (same signal CategoryInputs/CategoryColumns use) in case
+    // isCustomStoreCategory is ever missing from the fetched item, so a store category can
+    // never be accidentally PATCHed to the template-categories endpoint (or vice versa).
+    const isCustom = (data as any)?.isCustomStoreCategory === true || hasStoreId;
+    const isTemplateFlow = !endpoint;
+
     let finalEndpoint = endpoint;
-    const isTemplateFlow = !finalEndpoint;
     if (!finalEndpoint) {
       if (!isEdit && formData.templateId) {
+        // Create: POST /api/store-templates/:templateId/categories
         finalEndpoint = ["storeTemplates", Number(formData.templateId), "/categories" as any];
+      } else if (isEdit && isCustom) {
+        // Edit custom store category (Category table): PATCH /api/store-categories/:id
+        finalEndpoint = ["storeCategories"];
       } else {
+        // Edit real template category (TemplateCategory table): PATCH /api/store-templates/categories/:id
         finalEndpoint = ["storeTemplatesCategories"];
       }
     }
@@ -58,14 +71,13 @@ export default function useCategoryLogic({
       const imageIsFile = formData.image instanceof File;
 
       if (imageIsFile || formData.image === "") {
-        // Send as FormData so the file is uploaded correctly or removed
         const fd = new FormData();
         fd.append("name", JSON.stringify({ ar: formData.nameAr, en: formData.nameEn }));
         fd.append("order", String(Number(formData.order)));
         if (imageIsFile) {
           fd.append("image", formData.image as unknown as File);
         } else if (formData.image === "") {
-          fd.append("image", "null"); // Send the string "null" in case the backend explicitly checks for this
+          fd.append("image", "null");
         }
         payload = fd;
       } else {
@@ -75,8 +87,8 @@ export default function useCategoryLogic({
             en: formData.nameEn
           },
           image: formData.image === "" ? null : (typeof formData.image === "string" ? formData.image : null),
-          order: Number(formData.order),
-         };
+          order: Number(formData.order)
+        };
       }
     } else {
       payload = extractFormNameInputs({ inputs, data: formData });

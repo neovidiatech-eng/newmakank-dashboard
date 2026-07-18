@@ -20,9 +20,20 @@ export default async function page({ searchParams }: { searchParams: SearchParam
         tableActions={{
           onEdit: permission?.put || permission?.patch,
           onDelete: permission?.delete ? ["storeTemplatesCategories"] : undefined,
-          //onInfo: true,
         }}
-        filters={[{ "name": "name", "type": "text", "width": 3 }]}
+        filters={[
+          { name: "name", type: "text", width: 3 },
+          {
+            name: "isCustomStoreCategory",
+            type: "select",
+            width: 3,
+            options: [
+              { label: t("All"), value: "" },
+              { label: t("Template Category"), value: "false" },
+              { label: t("Store Category"), value: "true" },
+            ]
+          }
+        ]}
       />
     </>
   );

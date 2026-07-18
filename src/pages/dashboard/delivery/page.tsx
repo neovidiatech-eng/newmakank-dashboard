@@ -80,7 +80,7 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
         </div>
         {data?.total ? (
           <div className="border-t border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-950 p-6">
-            <TablePagination pagination={{ total: filteredData.length }} />
+            <TablePagination pagination={{ total: data?.total ?? filteredData.length }} />
           </div>
         ) : null}
       </Card>
