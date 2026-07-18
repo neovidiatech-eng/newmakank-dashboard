@@ -74,6 +74,10 @@ export default function useCategoryLogic({
         const fd = new FormData();
         fd.append("name", JSON.stringify({ ar: formData.nameAr, en: formData.nameEn }));
         fd.append("order", String(Number(formData.order)));
+        // Include templateId if changed (allows moving category to a different template)
+        if (formData.templateId) {
+          fd.append("templateId", String(Number(formData.templateId)));
+        }
         if (imageIsFile) {
           fd.append("image", formData.image as unknown as File);
         } else if (formData.image === "") {
@@ -87,7 +91,9 @@ export default function useCategoryLogic({
             en: formData.nameEn
           },
           image: formData.image === "" ? null : (typeof formData.image === "string" ? formData.image : null),
-          order: Number(formData.order)
+          order: Number(formData.order),
+          // Include templateId if set (allows moving category to a different template)
+          ...(formData.templateId ? { templateId: Number(formData.templateId) } : {})
         };
       }
     } else {
