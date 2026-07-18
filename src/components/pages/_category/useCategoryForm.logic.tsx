@@ -69,27 +69,17 @@ export default function useCategoryLogic({
 
     if (isTemplateFlow) {
       const imageIsFile = formData.image instanceof File;
-
-      if (imageIsFile || formData.image === "") {
-        const fd = new FormData();
-        fd.append("name", JSON.stringify({ ar: formData.nameAr, en: formData.nameEn }));
-        fd.append("order", String(Number(formData.order)));
-        if (imageIsFile) {
-          fd.append("image", formData.image as unknown as File);
-        } else if (formData.image === "") {
-          fd.append("image", "null");
-        }
-        payload = fd;
-      } else {
-        payload = {
-          name: {
-            ar: formData.nameAr,
-            en: formData.nameEn
-          },
-          image: formData.image === "" ? null : (typeof formData.image === "string" ? formData.image : null),
-          order: Number(formData.order)
-        };
+      const fd = new FormData();
+      fd.append("name", JSON.stringify({ ar: formData.nameAr, en: formData.nameEn }));
+      fd.append("order", String(Number(formData.order)));
+      
+      if (imageIsFile) {
+        fd.append("image", formData.image as unknown as File);
+      } else if (formData.image === "") {
+        fd.append("image", "null");
       }
+      
+      payload = fd;
     } else {
       payload = extractFormNameInputs({ inputs, data: formData });
     }
