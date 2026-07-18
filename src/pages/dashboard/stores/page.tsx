@@ -4,7 +4,7 @@ import getPermissions from "@/api/permissions";
 import { getTranslations } from "@/lib/i18n";
 import { Link } from "@/lib/navigation";
 import { Badge } from "@/components/ui/badge";
-import StoresColumns from "./StoresColumns";
+import StoresTable from "@/components/pages/_stores/StoresTable";
 
 export default async function page({ searchParams }: { searchParams: SearchParams }): Promise<JSX.Element> {
   const t = await getTranslations();
@@ -27,32 +27,26 @@ export default async function page({ searchParams }: { searchParams: SearchParam
           </Badge>
         </Link>
       </div>
-      <TableWithQuery
-        endPoint={["stores"]}
-        columns={StoresColumns}
-        hideCreateNew={!permission?.post}
+      <StoresTable
+        permission={permission}
         cardHeader={t("Stores")}
-        tableActions={{
-          onEdit: permission?.put || permission?.patch,
-          onDelete: permission?.delete ? ["stores"] : undefined,
-          onInfo: true,
-          fixedActions: true,
-        }}
-        filters={[{ name: "name", type: "text", width: 3 }, {
-          name: 'categoryId',
-          type: 'selectPaginated',
-          isMulti: true,
-          apiUrl: ["categories"]
-        },
-        {
-          name: "isStoreAccepted",
-          type: "select",
-          width: 3,
-          options: [
-            { label: t("Approve"), value: "true" },
-            { label: t("Pending Review"), value: "false" }
-          ]
-        }
+        filters={[
+          { name: "name", type: "text", width: 3 },
+          {
+            name: 'categoryId',
+            type: 'selectPaginated',
+            isMulti: true,
+            apiUrl: ["categories"]
+          },
+          {
+            name: "isStoreAccepted",
+            type: "select",
+            width: 3,
+            options: [
+              { label: t("Approve"), value: "true" },
+              { label: t("Pending Review"), value: "false" }
+            ]
+          }
         ]}
       />
     </>
