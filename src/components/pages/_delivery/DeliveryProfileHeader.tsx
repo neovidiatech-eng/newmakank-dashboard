@@ -41,8 +41,18 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
     staleTime: 60_000,
     retry: false
   });
-  const currentRole = profileQuery?.data?.user?.Role?.name;
-  const isAdmin = currentRole === "Admin";
+  const currentRole = (
+    profileQuery?.data?.data?.user?.Role?.name ||
+    profileQuery?.data?.data?.user?.Role?.roleKey ||
+    profileQuery?.data?.data?.user?.roleKey ||
+    profileQuery?.data?.data?.user?.roleId ||
+    profileQuery?.data?.user?.Role?.name ||
+    profileQuery?.data?.user?.Role?.roleKey ||
+    profileQuery?.data?.user?.roleKey ||
+    profileQuery?.data?.user?.roleId ||
+    ""
+  ).toLowerCase();
+  const isAdmin = currentRole === "admin";
 
   return (
     <div className="bg-card/50 border rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center">
