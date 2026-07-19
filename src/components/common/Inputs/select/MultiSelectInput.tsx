@@ -1,6 +1,7 @@
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { useTranslations } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
+import { useState, useCallback } from "react";
 import Select, { type MultiValue } from "react-select";
 import { Option } from "../../Form/CustomFormTypes.types";
 import { customStyles } from "./select.config";
@@ -25,8 +26,24 @@ export default function MultiSelectInput({
   const t = useTranslations();
   const { resolvedTheme } = useTheme();
 
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | undefined>(undefined);
+
+  const containerRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      const isInsideDialog = !!node.closest('[role="dialog"]') || 
+                            !!node.closest('.DialogContent') || 
+                            !!node.closest('[data-radix-focus-guard]') ||
+                            !!node.closest('.fixed');
+      if (!isInsideDialog) {
+        setPortalTarget(document.body);
+      } else {
+        setPortalTarget(undefined);
+      }
+    }
+  }, []);
+
   return (
-    <div className="flex flex-col w-full gap-2">
+    <div ref={containerRef} className="flex flex-col w-full gap-2">
       <Select
         value={value}
         isMulti={true}
@@ -40,8 +57,8 @@ export default function MultiSelectInput({
         placeholder={placeholder ? placeholder : t("select")}
         name={name}
         styles={customStyles(resolvedTheme === "dark")}
-        menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-        menuPosition="fixed"
+        menuPortalTarget={portalTarget}
+        menuPosition={portalTarget ? "fixed" : "absolute"}
       />
       <ErrorMessage error={error || ""} />
     </div>

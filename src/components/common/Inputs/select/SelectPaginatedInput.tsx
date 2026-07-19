@@ -347,8 +347,24 @@ export default function SelectPaginated({
     // Only run on mount
   }, []);
 
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | undefined>(undefined);
+
+  const containerRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      const isInsideDialog = !!node.closest('[role="dialog"]') || 
+                            !!node.closest('.DialogContent') || 
+                            !!node.closest('[data-radix-focus-guard]') ||
+                            !!node.closest('.fixed');
+      if (!isInsideDialog) {
+        setPortalTarget(document.body);
+      } else {
+        setPortalTarget(undefined);
+      }
+    }
+  }, []);
+
   return (
-    <div className="flex flex-col w-full gap-3">
+    <div ref={containerRef} className="flex flex-col w-full gap-3">
       <SelectComponent
         isClearable
         isDisabled={disabled}
@@ -370,8 +386,8 @@ export default function SelectPaginated({
         }}
         isLoading={isLoading}
         onInputChange={inputValue => setSearchTerm(inputValue)}
-        menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-        menuPosition="fixed"
+        menuPortalTarget={portalTarget}
+        menuPosition={portalTarget ? "fixed" : "absolute"}
       />
     </div>
   );
