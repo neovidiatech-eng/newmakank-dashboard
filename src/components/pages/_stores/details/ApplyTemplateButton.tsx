@@ -38,7 +38,7 @@ export function ApplyTemplateButton({ storeId }: ApplyTemplateButtonProps) {
   // Fetch templates when modal opens
   const { data: templatesRes, isLoading } = useQuery({
     queryKey: ["storeTemplates"],
-    queryFn: () => fetchHelper({ endPoint: ["storeTemplates"] }),
+    queryFn: () => fetchHelper({ endPoint: ["storeTemplates"], params: { limit: 1000 } }),
     enabled: open
   });
 

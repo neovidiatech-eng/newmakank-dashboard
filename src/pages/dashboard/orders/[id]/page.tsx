@@ -395,7 +395,8 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
             </div>
             <AddressInfo
               address={data?.Address}
-              zoneId={(data as any)?.customerSelectedZoneId ?? (data as any)?.zoneId}
+              zoneId={(data as any)?.customerSelectedZoneId}
+              zoneLabel={t("customerSelectedZone")}
             />
           </div>
 

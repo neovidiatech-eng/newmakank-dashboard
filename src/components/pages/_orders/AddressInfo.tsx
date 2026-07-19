@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge";
 
 export default function AddressInfo({
     address,
-    zoneId
+    zoneId,
+    zoneLabel
 }: {
     address: ApiResponseAddress | null | undefined;
     zoneId?: number | null;
+    zoneLabel?: string;
 }) {
     const t = useTranslations();
     const locale = useLocale();
@@ -45,7 +47,7 @@ export default function AddressInfo({
             {zoneId && (
                 <div className="flex items-center gap-1.5 pl-6 mt-2">
                     <LocateFixed className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">{t("customerSelectedZone")}:</span>
+                    <span className="text-xs text-muted-foreground">{zoneLabel || t("zone")}:</span>
                     <Badge variant="outline" className="text-xs font-medium">
                         {zoneName || `#${zoneId}`}
                     </Badge>
