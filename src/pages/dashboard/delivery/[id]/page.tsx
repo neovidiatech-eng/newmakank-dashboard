@@ -121,11 +121,16 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
     return <div className="p-8 text-center text-muted-foreground">{t("No Data Available")}</div>;
   }
 
-  // Extract schedules from DeliveryDetails
-  const scheduleData = (scheduleResponse as any)?.DeliveryDetails?.[0]?.Schedule ||
-                       scheduleResponse?.data?.DeliveryDetails?.[0]?.Schedule || 
-                       scheduleResponse?.data?.data?.DeliveryDetails?.[0]?.Schedule || 
-                       [];
+  // Extract schedules from DeliveryDetails (handles both object & array structures safely)
+  const deliveryDetails = (scheduleResponse as any)?.DeliveryDetails || 
+                          (scheduleResponse as any)?.data?.DeliveryDetails || 
+                          (scheduleResponse as any)?.data?.data?.DeliveryDetails ||
+                          (scheduleResponse as any)?.data ||
+                          scheduleResponse;
+
+  const scheduleData = Array.isArray(deliveryDetails)
+    ? (deliveryDetails[0]?.Schedule || [])
+    : (deliveryDetails?.Schedule || (scheduleResponse as any)?.Schedule || []);
 
   const statistics = dashboard.statistics ?? {};
   const financialSummary = dashboard.financialSummary ?? {};

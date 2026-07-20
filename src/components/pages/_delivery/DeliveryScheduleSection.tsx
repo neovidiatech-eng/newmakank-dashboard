@@ -169,12 +169,13 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
 
   const saveGlobalLocation = async () => {
     if (!isValidDeliveryId) return;
-    if (data.length === 0) {
-      toast.error("يرجى إضافة مواعيد عمل أولاً قبل حفظ نطاق التواجد");
-      return;
-    }
     if (Number(globalRadius) <= 0) {
       toast.error("يرجى تحديد نطاق التواجد بشكل صحيح");
+      return;
+    }
+
+    if (data.length === 0) {
+      toast.info("تم اختيار الموقع والنطاق، وسيتم تطبيقهما تلقائياً عند إضافة أي وردية جديدة");
       return;
     }
 
@@ -221,12 +222,12 @@ export default function DeliveryScheduleSection({ data = [], deliveryId }: { dat
     }
   };
 
-  const toHHMM = (timeStr: string) => {
-    if (!timeStr) return "00:00";
+  const toHHMM = (timeVal: any) => {
+    if (!timeVal) return "00:00";
+    const timeStr = String(timeVal);
     if (timeStr.includes("T")) {
-      const date = new Date(timeStr);
-      // Format correctly, ignoring the 1970 part and just extracting HH:MM in UTC
-      return timeStr.substring(timeStr.indexOf("T") + 1, timeStr.indexOf("T") + 6);
+      const tIdx = timeStr.indexOf("T");
+      return timeStr.substring(tIdx + 1, tIdx + 6);
     }
     return timeStr.substring(0, 5);
   };
