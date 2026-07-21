@@ -2777,5 +2777,44 @@
   "Status updated successfully": "Status updated successfully",
   "Store Category": "Store Category",
   "From Template": "From Template",
-  "manualStatusOverrideWarning": "Choosing open/close manually overrides the schedule temporarily. It will automatically revert to NORMAL at 4:00 AM daily."
+  "manualStatusOverrideWarning": "Choosing open/close manually overrides the schedule temporarily. It will automatically revert to NORMAL at 4:00 AM daily.",
+
+  "requiredPaidQuantity": "Paid Items Count",
+  "freeQuantity": "Free Gift Items Count",
+  "paidServiceIds": "Paid Products",
+  "freeServiceIds": "Free Gift Products",
+  "paidServiceIdsTooltip": "Select the products the customer must purchase to activate this offer",
+  "freeServiceIdsTooltip": "Select the products the customer can receive as free gifts in this offer",
+
+  "pricingMode": "Pricing Mode",
+  "pricingModeTooltip": "Dynamic = price calculated from menu. Fixed = you set the offer price manually",
+  "pricingModeDynamic": "Dynamic (from menu prices)",
+  "pricingModeFixed": "Fixed Custom Price",
+  "priceBeforeDiscount": "Price Before Discount (Display)",
+  "priceAfterDiscount": "Final Offer Price",
+  "priceAfterDiscountRequired": "Final offer price is required when using fixed pricing",
+
+  "paidSizeRule": "Paid Items Size Restriction",
+  "paidSizeRuleTooltip": "Should the offer apply to any size, or a specific size only?",
+  "freeSizeRule": "Gift Items Size Restriction",
+  "freeSizeRuleTooltip": "Should the gift apply to any size, or a specific size only?",
+  "sizeRuleAny": "Any Size",
+  "sizeRuleName": "Specific Size by Name",
+  "paidRequiredSizeName": "Required Size Name (Paid)",
+  "freeRequiredSizeName": "Required Size Name (Gift)",
+
+  "freeValueRule": "Gift Item Value Cap",
+  "freeValueRuleTooltip": "Set the price cap for the free gift: cheapest paid item, no cap, or a fixed number?",
+  "freeValueCapToCheapestPaid": "Capped to cheapest paid item (default)",
+  "freeValueNoCap": "No cap (full price)",
+  "freeValueMaxFreeValue": "Fixed price cap for gift",
+  "maxFreeItemValue": "Max Gift Item Value (EGP)",
+
+  "startDate": "Offer Start Date",
+  "endDate": "Offer End Date",
+  "paidServicesRequired": "At least one paid product must be selected",
+  "freeServicesRequired": "At least one gift product must be selected",
+  "paidRequiredSizeNameRequired": "Size name is required when restricting by name",
+  "freeRequiredSizeNameRequired": "Gift size name is required when restricting by name",
+  "maxFreeItemValueRequired": "Gift price cap is required when using fixed cap"
 }

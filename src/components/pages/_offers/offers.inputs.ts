@@ -21,8 +21,11 @@ export const OffersInputs = ({
   const serviceSearchFilters = selectedStore ? [{ key: "storeId", value: Number(selectedStore) }] : [];
 
   const inputs: FormInput[] = [
+    // ── اللغة والوصف ──────────────────────────────────────────
     { name: "title", type: "text", multiLang: true, cardId: "lang", required: true },
     { name: "description", type: "textarea", multiLang: true, cardId: "lang", required: true },
+
+    // ── البيانات الأساسية ──────────────────────────────────────
     { name: "image", type: "img", cardId: "basic", width: 12, required: true },
     {
       name: "storeId",
@@ -33,14 +36,30 @@ export const OffersInputs = ({
       width: 6,
       required: true
     },
-    { name: "isActive", label: t("isActiveLabel", "الحالة"), type: "radioGroup", options: booleanOptions(t), cardId: "basic", width: 6 },
-    { name: "requiredPaidQuantity", label: t("requiredPaidQuantityLabel", "عدد القطع المدفوعة المطلوبة"), type: "number", cardId: "basic", width: 6, required: true, min: 1 },
-    { name: "freeQuantity", label: t("freeQuantityLabel", "عدد القطع الهدية المجانية"), type: "number", cardId: "basic", width: 6, required: true, min: 1 },
+    { name: "isActive", label: "Status", type: "radioGroup", options: booleanOptions(t), cardId: "basic", width: 6 },
+    {
+      name: "requiredPaidQuantity",
+      label: "requiredPaidQuantity",
+      type: "number",
+      cardId: "basic",
+      width: 6,
+      required: true,
+      min: 1
+    },
+    {
+      name: "freeQuantity",
+      label: "freeQuantity",
+      type: "number",
+      cardId: "basic",
+      width: 6,
+      required: true,
+      min: 1
+    },
 
-    // Paid Section Associations
+    // ── المنتجات المرتبطة ──────────────────────────────────────
     {
       name: "paidServiceIds",
-      label: t("paidServiceIdsLabel", "المنتجات المتاحة للشراء في العرض"),
+      label: "paidServiceIds",
       type: "selectPaginated",
       isMulti: true,
       apiUrl: ["services"],
@@ -48,13 +67,11 @@ export const OffersInputs = ({
       cardId: "associations",
       width: 6,
       required: true,
-      toolTip: t("paidServiceIdsTooltip", "حدد المنتجات التي يجب على العملاء شراؤها لتفعيل العرض")
+      toolTip: t("paidServiceIdsTooltip")
     },
-
-    // Free Section Associations
     {
       name: "freeServiceIds",
-      label: t("freeServiceIdsLabel", "المنتجات المتاحة كهدية مجانية"),
+      label: "freeServiceIds",
       type: "selectPaginated",
       isMulti: true,
       apiUrl: ["services"],
@@ -62,25 +79,27 @@ export const OffersInputs = ({
       cardId: "associations",
       width: 6,
       required: true,
-      toolTip: t("freeServiceIdsTooltip", "حدد المنتجات التي يمكن للعملاء اختيارها كهدية")
+      toolTip: t("freeServiceIdsTooltip")
     },
+    { name: "startDate", label: "startDate", type: "date", cardId: "associations", width: 3 },
+    { name: "endDate", label: "endDate", type: "date", cardId: "associations", width: 3 },
 
-    // Pricing Mode (Dynamic vs Fixed Price) - Placed at the very top of Rules
+    // ── طريقة التسعير (أول ما يراه الأدمن في القواعد) ─────────
     {
       name: "pricingMode",
-      label: t("pricingModeLabel", "طريقة تسعير العرض (تلقائي أم بسعر ثابت)"),
+      label: "pricingMode",
       type: "select",
       options: [
-        { label: t("pricingModeDynamic", "تلقائي (يحسب السعر تلقائياً من المنيو بالقطع المدفوعة)"), value: "DYNAMIC" },
-        { label: t("pricingModeFixed", "سعر عرض ثابت مخصص (تحديد سعر مالي محدد للعرض)"), value: "FIXED" }
+        { label: t("pricingModeDynamic"), value: "DYNAMIC" },
+        { label: t("pricingModeFixed"), value: "FIXED" }
       ],
       cardId: "rules",
       width: 12,
-      toolTip: t("pricingModeTooltip", "اختر ما إذا كان العرض يحسب السعر تلقائياً من المنيو أم بسعر ثابت مخصص")
+      toolTip: t("pricingModeTooltip")
     },
     {
       name: "priceBeforeDiscount",
-      label: t("priceBeforeDiscountLabel", "السعر قبل الخصم (اختياري)"),
+      label: "priceBeforeDiscount",
       type: "number",
       cardId: "rules",
       width: 6,
@@ -89,7 +108,7 @@ export const OffersInputs = ({
     },
     {
       name: "priceAfterDiscount",
-      label: t("priceAfterDiscountLabel", "السعر بعد الخصم (سعر العرض الثابت النهائي)"),
+      label: "priceAfterDiscount",
       type: "number",
       cardId: "rules",
       width: 6,
@@ -98,76 +117,73 @@ export const OffersInputs = ({
       required: pricingMode === "FIXED"
     },
 
-    // Size Settings (Paid)
+    // ── تقييد المقاس للقطع المدفوعة ───────────────────────────
     {
       name: "paidSizeRule",
-      label: t("paidSizeRuleLabel", "تقييد مقاس القطع المدفوعة"),
+      label: "paidSizeRule",
       type: "select",
       options: [
-        { label: t("sizeRuleAny", "أي مقاس (مرونة كاملة)"), value: "ANY" },
-        { label: t("sizeRuleName", "مقاس معيّن بالاسم (تحديد مقاس بالاسم)"), value: "NAME" }
+        { label: t("sizeRuleAny"), value: "ANY" },
+        { label: t("sizeRuleName"), value: "NAME" }
       ],
       cardId: "rules",
       width: 6,
-      toolTip: t("paidSizeRuleTooltip", "حدد ما إذا كان ينطبق العرض على أي مقاس أم مقاس محدد")
+      toolTip: t("paidSizeRuleTooltip")
     },
     {
       name: "paidRequiredSizeName",
-      label: t("paidRequiredSizeNameLabel", "اسم المقاس المطلوب للقطع المدفوعة"),
+      label: "paidRequiredSizeName",
       type: "text",
       cardId: "rules",
       width: 6,
       isHidden: paidSizeRule !== "NAME"
     },
 
-    // Size Settings (Free)
+    // ── تقييد المقاس للهدية ───────────────────────────────────
     {
       name: "freeSizeRule",
-      label: t("freeSizeRuleLabel", "تقييد مقاس القطع الهدية"),
+      label: "freeSizeRule",
       type: "select",
       options: [
-        { label: t("sizeRuleAny", "أي مقاس (مرونة كاملة)"), value: "ANY" },
-        { label: t("sizeRuleName", "مقاس معيّن بالاسم (تحديد مقاس بالاسم)"), value: "NAME" }
+        { label: t("sizeRuleAny"), value: "ANY" },
+        { label: t("sizeRuleName"), value: "NAME" }
       ],
       cardId: "rules",
       width: 6,
-      toolTip: t("freeSizeRuleTooltip", "حدد ما إذا كان ينطبق العرض على أي مقاس أم مقاس محدد للهدية")
+      toolTip: t("freeSizeRuleTooltip")
     },
     {
       name: "freeRequiredSizeName",
-      label: t("freeRequiredSizeNameLabel", "اسم المقاس المطلوب للقطع الهدية"),
+      label: "freeRequiredSizeName",
       type: "text",
       cardId: "rules",
       width: 6,
       isHidden: freeSizeRule !== "NAME"
     },
 
-    // Free Value CAP Rule
+    // ── حد قيمة الهدية ───────────────────────────────────────
     {
       name: "freeValueRule",
-      label: t("freeValueRuleLabel", "حد قيمة القطعة الهدية"),
+      label: "freeValueRule",
       type: "select",
       options: [
-        { label: t("freeValueCapToCheapestPaid", "سعر الهدية لا يتعدى أرخص قطعة مدفوعة (الافتراضي)"), value: "CAP_TO_CHEAPEST_PAID" },
-        { label: t("freeValueNoCap", "بدون حد أقصى لقيمة الهدية"), value: "NO_CAP" },
-        { label: t("freeValueMaxFreeValue", "سقف سعر ثابت محدد للهدية"), value: "MAX_FREE_VALUE" }
+        { label: t("freeValueCapToCheapestPaid"), value: "CAP_TO_CHEAPEST_PAID" },
+        { label: t("freeValueNoCap"), value: "NO_CAP" },
+        { label: t("freeValueMaxFreeValue"), value: "MAX_FREE_VALUE" }
       ],
       cardId: "rules",
       width: 6,
-      toolTip: t("freeValueRuleTooltip", "حدد شرط سقف القيمة للقطعة المجانية الهدية")
+      toolTip: t("freeValueRuleTooltip")
     },
     {
       name: "maxFreeItemValue",
-      label: t("maxFreeItemValueLabel", "سقف سعر القطعة الهدية (جنيه)"),
+      label: "maxFreeItemValue",
       type: "number",
       cardId: "rules",
       width: 6,
       isHidden: freeValueRule !== "MAX_FREE_VALUE",
       min: 0
-    },
-
-    { name: "startDate", label: t("startDateLabel", "تاريخ بداية العرض"), type: "date", cardId: "associations", width: 3 },
-    { name: "endDate", label: t("endDateLabel", "تاريخ نهاية العرض"), type: "date", cardId: "associations", width: 3 }
+    }
   ];
   return inputs;
 };

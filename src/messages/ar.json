@@ -2780,5 +2780,44 @@
   "Status updated successfully": "تم تحديث الحالة بنجاح",
   "Store Category": "فئة المطعم",
   "From Template": "من القالب",
-  "manualStatusOverrideWarning": "اختيار الفتح/الإغلاق يدوياً يلغي تفعيل مواعيد العمل مؤقتاً، وسيعود للوضع التلقائي (NORMAL) تلقائياً كل يوم الفجر الساعة 4:00 صباحاً."
+  "manualStatusOverrideWarning": "اختيار الفتح/الإغلاق يدوياً يلغي تفعيل مواعيد العمل مؤقتاً، وسيعود للوضع التلقائي (NORMAL) تلقائياً كل يوم الفجر الساعة 4:00 صباحاً.",
+
+  "requiredPaidQuantity": "عدد القطع المدفوعة",
+  "freeQuantity": "عدد القطع الهدية",
+  "paidServiceIds": "المنتجات المدفوعة",
+  "freeServiceIds": "منتجات الهدية المجانية",
+  "paidServiceIdsTooltip": "اختر المنتجات التي يجب على العميل شراؤها لتفعيل العرض",
+  "freeServiceIdsTooltip": "اختر المنتجات التي يحق للعميل أخذها مجاناً ضمن العرض",
+
+  "pricingMode": "طريقة التسعير",
+  "pricingModeTooltip": "تلقائي = السيستم يحسب من أسعار المنيو. ثابت = أنت تحدد سعر العرض بنفسك",
+  "pricingModeDynamic": "تلقائي (من أسعار المنيو)",
+  "pricingModeFixed": "سعر ثابت مخصص",
+  "priceBeforeDiscount": "السعر قبل الخصم (للعرض)",
+  "priceAfterDiscount": "سعر العرض النهائي",
+  "priceAfterDiscountRequired": "سعر العرض النهائي مطلوب عند اختيار السعر الثابت",
+
+  "paidSizeRule": "تقييد مقاس القطع المدفوعة",
+  "paidSizeRuleTooltip": "هل تريد تطبيق العرض على أي مقاس أم مقاس معين؟",
+  "freeSizeRule": "تقييد مقاس قطع الهدية",
+  "freeSizeRuleTooltip": "هل تريد تطبيق الهدية على أي مقاس أم مقاس معين؟",
+  "sizeRuleAny": "أي مقاس",
+  "sizeRuleName": "مقاس محدد بالاسم",
+  "paidRequiredSizeName": "اسم المقاس للقطعة المدفوعة",
+  "freeRequiredSizeName": "اسم المقاس لقطعة الهدية",
+
+  "freeValueRule": "حد قيمة الهدية",
+  "freeValueRuleTooltip": "حدد سقف سعر الهدية: هل يساوي أرخص مدفوع، بلا حد، أم رقم ثابت؟",
+  "freeValueCapToCheapestPaid": "بسعر أرخص قطعة مدفوعة (افتراضي)",
+  "freeValueNoCap": "بلا حد أقصى",
+  "freeValueMaxFreeValue": "سقف سعر ثابت للهدية",
+  "maxFreeItemValue": "الحد الأقصى لسعر الهدية (جنيه)",
+
+  "startDate": "تاريخ بداية العرض",
+  "endDate": "تاريخ انتهاء العرض",
+  "paidServicesRequired": "يجب اختيار منتج واحد على الأقل للقطع المدفوعة",
+  "freeServicesRequired": "يجب اختيار منتج واحد على الأقل للهدية",
+  "paidRequiredSizeNameRequired": "اسم المقاس مطلوب عند تحديد مقاس معين",
+  "freeRequiredSizeNameRequired": "اسم مقاس الهدية مطلوب عند تحديد مقاس معين",
+  "maxFreeItemValueRequired": "سقف سعر الهدية مطلوب عند اختيار سقف ثابت"
 }
