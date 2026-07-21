@@ -33,8 +33,9 @@ export default function StoreOfferCreatePage({ storeId }: StoreOfferCreatePagePr
   const paidSizeRule = watch("paidSizeRule");
   const freeSizeRule = watch("freeSizeRule");
   const freeValueRule = watch("freeValueRule");
+  const pricingMode = watch("pricingMode");
 
-  const allInputs = OffersInputs({ storeId, paidSizeRule, freeSizeRule, freeValueRule });
+  const allInputs = OffersInputs({ storeId, paidSizeRule, freeSizeRule, freeValueRule, pricingMode });
 
   // Hide the storeId select — it's fixed to this store's context
   const inputs = allInputs.filter(input => input.name !== "storeId");
@@ -92,6 +93,16 @@ export default function StoreOfferCreatePage({ storeId }: StoreOfferCreatePagePr
     body.append("freeValueRule", String(freeValueRule ?? "CAP_TO_CHEAPEST_PAID"));
     if (freeValueRule === "MAX_FREE_VALUE" && (formData as any).maxFreeItemValue) {
       body.append("maxFreeItemValue", String((formData as any).maxFreeItemValue));
+    }
+
+    body.append("pricingMode", String(pricingMode ?? "DYNAMIC"));
+    if (pricingMode === "FIXED") {
+      if ((formData as any).priceBeforeDiscount !== undefined && (formData as any).priceBeforeDiscount !== null && String((formData as any).priceBeforeDiscount).trim() !== "") {
+        body.append("priceBeforeDiscount", String((formData as any).priceBeforeDiscount));
+      }
+      if ((formData as any).priceAfterDiscount !== undefined && (formData as any).priceAfterDiscount !== null && String((formData as any).priceAfterDiscount).trim() !== "") {
+        body.append("priceAfterDiscount", String((formData as any).priceAfterDiscount));
+      }
     }
 
     if ((formData as any).startDate) {

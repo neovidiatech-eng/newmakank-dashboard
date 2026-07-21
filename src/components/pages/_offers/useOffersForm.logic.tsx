@@ -34,18 +34,23 @@ export default function useOffersLogic({ data }: { data?: OffersType }) {
       freeRequiredSizeName: (data as any)?.freeRequiredSizeName || "",
       freeValueRule: (data as any)?.freeValueRule || "CAP_TO_CHEAPEST_PAID",
       maxFreeItemValue: (data as any)?.maxFreeItemValue !== undefined && (data as any)?.maxFreeItemValue !== null ? String((data as any).maxFreeItemValue) : "",
+      pricingMode: (data as any)?.pricingMode || ((data as any)?.priceAfterDiscount ? "FIXED" : "DYNAMIC"),
+      priceBeforeDiscount: (data as any)?.priceBeforeDiscount !== undefined && (data as any)?.priceBeforeDiscount !== null ? String((data as any).priceBeforeDiscount) : "",
+      priceAfterDiscount: (data as any)?.priceAfterDiscount !== undefined && (data as any)?.priceAfterDiscount !== null ? String((data as any).priceAfterDiscount) : "",
     } as OffersType
   });
 
   const paidSizeRule = watch("paidSizeRule");
   const freeSizeRule = watch("freeSizeRule");
   const freeValueRule = watch("freeValueRule");
+  const pricingMode = watch("pricingMode");
 
   const inputs = OffersInputs({
     storeId: data?.storeId as number,
     paidSizeRule,
     freeSizeRule,
-    freeValueRule
+    freeValueRule,
+    pricingMode
   });
 
   useEffect(() => {
@@ -59,6 +64,9 @@ export default function useOffersLogic({ data }: { data?: OffersType }) {
         freeRequiredSizeName: (data as any).freeRequiredSizeName || "",
         freeValueRule: (data as any).freeValueRule || "CAP_TO_CHEAPEST_PAID",
         maxFreeItemValue: (data as any).maxFreeItemValue !== undefined && (data as any).maxFreeItemValue !== null ? String((data as any).maxFreeItemValue) : "",
+        pricingMode: (data as any).pricingMode || ((data as any).priceAfterDiscount ? "FIXED" : "DYNAMIC"),
+        priceBeforeDiscount: (data as any).priceBeforeDiscount !== undefined && (data as any).priceBeforeDiscount !== null ? String((data as any).priceBeforeDiscount) : "",
+        priceAfterDiscount: (data as any).priceAfterDiscount !== undefined && (data as any).priceAfterDiscount !== null ? String((data as any).priceAfterDiscount) : "",
       } as OffersType);
     }
   }, [data, reset]);
@@ -126,6 +134,16 @@ export default function useOffersLogic({ data }: { data?: OffersType }) {
     body.append("freeValueRule", String(formData.freeValueRule ?? "CAP_TO_CHEAPEST_PAID"));
     if (formData.freeValueRule === "MAX_FREE_VALUE" && formData.maxFreeItemValue !== undefined && formData.maxFreeItemValue !== null) {
       body.append("maxFreeItemValue", String(formData.maxFreeItemValue));
+    }
+
+    body.append("pricingMode", String(formData.pricingMode ?? "DYNAMIC"));
+    if (formData.pricingMode === "FIXED") {
+      if (formData.priceBeforeDiscount !== undefined && formData.priceBeforeDiscount !== null && String(formData.priceBeforeDiscount).trim() !== "") {
+        body.append("priceBeforeDiscount", String(formData.priceBeforeDiscount));
+      }
+      if (formData.priceAfterDiscount !== undefined && formData.priceAfterDiscount !== null && String(formData.priceAfterDiscount).trim() !== "") {
+        body.append("priceAfterDiscount", String(formData.priceAfterDiscount));
+      }
     }
 
     if ((formData as any).startDate) {

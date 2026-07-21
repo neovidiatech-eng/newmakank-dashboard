@@ -7,12 +7,14 @@ export const OffersInputs = ({
   storeId: initialStoreId,
   paidSizeRule,
   freeSizeRule,
-  freeValueRule
+  freeValueRule,
+  pricingMode
 }: {
   storeId?: number | string | null;
   paidSizeRule?: string;
   freeSizeRule?: string;
   freeValueRule?: string;
+  pricingMode?: string;
 }) => {
   const t = useTranslations();
   const [selectedStore, setSelectedStore] = useState<string | number | null>(initialStoreId ?? null);
@@ -129,6 +131,39 @@ export const OffersInputs = ({
       width: 6,
       isHidden: freeValueRule !== "MAX_FREE_VALUE",
       min: 0
+    },
+
+    // Pricing Mode (Dynamic vs Fixed Price)
+    {
+      name: "pricingMode",
+      label: "pricingMode",
+      type: "select",
+      options: [
+        { label: t("pricingModeDynamic", "تلقائي (حسب سعر المنتجات بالمنيو)"), value: "DYNAMIC" },
+        { label: t("pricingModeFixed", "سعر عرض ثابت مخصص"), value: "FIXED" }
+      ],
+      cardId: "rules",
+      width: 12,
+      toolTip: t("pricingModeTooltip", "اختر ما إذا كان العرض يحسب السعر تلقائياً من المنيو أم بسعر ثابت مخصص")
+    },
+    {
+      name: "priceBeforeDiscount",
+      label: "priceBeforeDiscount",
+      type: "number",
+      cardId: "rules",
+      width: 6,
+      isHidden: pricingMode !== "FIXED",
+      min: 0
+    },
+    {
+      name: "priceAfterDiscount",
+      label: "priceAfterDiscount",
+      type: "number",
+      cardId: "rules",
+      width: 6,
+      isHidden: pricingMode !== "FIXED",
+      min: 0,
+      required: pricingMode === "FIXED"
     },
 
     { name: "startDate", type: "date", cardId: "associations", width: 3 },

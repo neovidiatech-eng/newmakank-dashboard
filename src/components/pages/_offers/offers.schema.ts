@@ -28,6 +28,10 @@ export const OffersSchema = (t: any) => {
     freeValueRule: z.enum(["CAP_TO_CHEAPEST_PAID", "NO_CAP", "MAX_FREE_VALUE"]).optional().default("CAP_TO_CHEAPEST_PAID"),
     maxFreeItemValue: z.union([z.string(), z.number()]).optional().nullable(),
 
+    pricingMode: z.enum(["DYNAMIC", "FIXED"]).optional().default("DYNAMIC"),
+    priceBeforeDiscount: z.union([z.string(), z.number()]).optional().nullable(),
+    priceAfterDiscount: z.union([z.string(), z.number()]).optional().nullable(),
+
     startDate: noSchema(),
     endDate: noSchema()
   })
@@ -65,6 +69,15 @@ export const OffersSchema = (t: any) => {
   }, {
     message: t("maxFreeItemValueRequired", "سقف سعر الهدية مطلوب عند اختيار حد أقصى ثابت"),
     path: ["maxFreeItemValue"]
+  })
+  .refine(data => {
+    if (data.pricingMode === "FIXED") {
+      return data.priceAfterDiscount !== undefined && data.priceAfterDiscount !== null && String(data.priceAfterDiscount).trim().length > 0;
+    }
+    return true;
+  }, {
+    message: t("priceAfterDiscountRequired", "السعر بعد الخصم (سعر العرض) إجباري عند اختيار سعر ثابت للعرض"),
+    path: ["priceAfterDiscount"]
   });
 };
 
