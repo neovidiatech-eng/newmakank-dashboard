@@ -3,7 +3,7 @@ import type { endpointType } from "@/utils/endpoints";
 import { useLocale, useTranslations } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { useSearchParams } from "@/lib/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import Select, { type MultiValue, type SingleValue } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { toast } from "sonner";
@@ -45,6 +45,8 @@ export default function SelectPaginated({
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const knownOptionsRef = useRef<Map<string, Option>>(new Map());
+
   useEffect(() => {
     setApiOptions([]);
   }, [searchFilters]);
@@ -138,12 +140,16 @@ export default function SelectPaginated({
         data = onLabelAction ? onLabelAction(data) : data;
         const formattedData = Array.isArray(data?.data) ? data.data : data;
         const newOptions = Array.isArray(formattedData)
-          ? formattedData?.map((item: ApiResponseItem) => ({
-            label: getOptionLabel(item),
-            value: item[idKey] || "",
-            icon: item.icon ?? "",
-            group: groupBy ? item[groupBy] : undefined,
-          }))
+          ? formattedData?.map((item: ApiResponseItem) => {
+              const opt = {
+                label: getOptionLabel(item),
+                value: String(item[idKey] || ""),
+                icon: item.icon ?? "",
+                group: groupBy ? item[groupBy] : undefined,
+              };
+              knownOptionsRef.current.set(opt.value, opt);
+              return opt;
+            })
           : [];
 
         // If we're doing a new search, replace options, otherwise append
@@ -234,6 +240,7 @@ export default function SelectPaginated({
       value: `${inputValue}`,
       __isNew__: true,
     };
+    knownOptionsRef.current.set(newOption.value, newOption);
 
     setCustomOptions(prevCustomOptions => [...prevCustomOptions, newOption]);
 
@@ -270,13 +277,13 @@ export default function SelectPaginated({
 
     // For single select
     if (!isMulti) {
-      const exiest = allOptions.find((opt: Option) => String(opt.value) === String(value));
-      return exiest;
+      const exiest = allOptions.find((opt: Option) => String(opt.value) === String(value)) || knownOptionsRef.current.get(String(value));
+      return exiest || null;
     }
 
     // For multi select
     if (Array.isArray(value)) {
-      return value.map(v => allOptions.find((opt: Option) => String(opt.value) === String(v))).filter(Boolean);
+      return value.map(v => allOptions.find((opt: Option) => String(opt.value) === String(v)) || knownOptionsRef.current.get(String(v))).filter(Boolean);
     }
 
     return null;
@@ -304,29 +311,27 @@ export default function SelectPaginated({
 
       const item = data?.data || data;
       if (item && !Array.isArray(item)) {
+        const opt = {
+          label: getOptionLabel(item),
+          value: String(item[idKey]) || "",
+          group: groupBy ? item[groupBy] : undefined,
+        };
+        knownOptionsRef.current.set(opt.value, opt);
         setApiOptions(prev => {
-          if (prev.some(opt => String(opt.value) === String(item[idKey]))) return prev;
-          return [
-            ...prev,
-            {
-              label: getOptionLabel(item),
-              value: String(item[idKey]) || "",
-              group: groupBy ? item[groupBy] : undefined,
-            },
-          ];
+          if (prev.some(o => String(o.value) === String(item[idKey]))) return prev;
+          return [...prev, opt];
         });
       } else if (Array.isArray(item) && item.length >= 1) {
         const firstItem = item[0];
+        const opt = {
+          label: getOptionLabel(firstItem),
+          value: String(firstItem[idKey]) || "",
+          group: groupBy ? firstItem[groupBy] : undefined,
+        };
+        knownOptionsRef.current.set(opt.value, opt);
         setApiOptions(prev => {
-          if (prev.some(opt => String(opt.value) === String(firstItem[idKey]))) return prev;
-          return [
-            ...prev,
-            {
-              label: getOptionLabel(firstItem),
-              value: String(firstItem[idKey]) || "",
-              group: groupBy ? firstItem[groupBy] : undefined,
-            },
-          ];
+          if (prev.some(o => String(o.value) === String(firstItem[idKey]))) return prev;
+          return [...prev, opt];
         });
       }
     };

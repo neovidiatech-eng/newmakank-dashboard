@@ -149,6 +149,7 @@ export const renderInput = (item: FormInput, field: any) => {
           }}
           searchFilters={item.searchFilters}
           idKey={item.idKey}
+          searchTermKey={item.searchTermKey}
         />
       );
     case "checkbox":

@@ -16,6 +16,7 @@ import { useLocale, useTranslations } from "@/lib/i18n";
 import { useRouter } from "@/lib/navigation";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ImageCell } from "@/components/common/table/columns/img-cell";
 
 type CampaignApiType = "NOTIFICATION" | "OFFER";
 type CampaignStatus = "active" | "scheduled" | "expired" | "inactive";
@@ -39,6 +40,7 @@ type CampaignItem = {
   displayIntervalHours?: number | null;
   manualStatus?: "ACTIVE" | "INACTIVE";
   sentAt?: string | null;
+  image?: string | null;
   Store?: { id?: number; name?: LocalizedText } | null;
   Service?: { id?: number; name?: LocalizedText } | null;
 };
@@ -179,6 +181,7 @@ export default function CampaignsListClient({
             <Table>
               <TableHeader className="bg-gray-50 dark:bg-slate-900">
                 <TableRow>
+                  <TableHead className="text-center">{t("Image") || "Image"}</TableHead>
                   <TableHead className="text-center">{t("campaignName")}</TableHead>
                   <TableHead className="text-center">{t("targeting")}</TableHead>
                   <TableHead className="text-center">{t("campaignIncentive")}</TableHead>
@@ -192,7 +195,7 @@ export default function CampaignsListClient({
               <TableBody>
                 {offersData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                    <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
                       {t("No Data")}
                     </TableCell>
                   </TableRow>
@@ -201,6 +204,11 @@ export default function CampaignsListClient({
 
                   return (
                     <TableRow key={campaign.id} className="hover:bg-gray-50 dark:hover:bg-slate-900/50">
+                      <TableCell className="text-center">
+                        <div className="flex justify-center">
+                          {campaign.image ? <ImageCell cell={campaign.image} /> : <span className="text-muted-foreground">-</span>}
+                        </div>
+                      </TableCell>
                       <TableCell className="text-center font-semibold">
                         {getLocalizedText(campaign.title || campaign.name, locale)}
                       </TableCell>
@@ -256,6 +264,7 @@ export default function CampaignsListClient({
             <Table>
               <TableHeader className="bg-gray-50 dark:bg-slate-900">
                 <TableRow>
+                  <TableHead className="text-center">{t("Image") || "Image"}</TableHead>
                   <TableHead className="text-center">{t("Title")}</TableHead>
                   <TableHead className="text-center">{t("Body")}</TableHead>
                   <TableHead className="text-center">{t("targeting")}</TableHead>
@@ -265,12 +274,17 @@ export default function CampaignsListClient({
               <TableBody>
                 {notificationsData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
+                    <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
                       {t("No Data")}
                     </TableCell>
                   </TableRow>
                 ) : notificationsData.map(notification => (
                   <TableRow key={notification.id} className="hover:bg-gray-50 dark:hover:bg-slate-900/50">
+                    <TableCell className="text-center">
+                      <div className="flex justify-center">
+                        {notification.image ? <ImageCell cell={notification.image} /> : <span className="text-muted-foreground">-</span>}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-center font-semibold">
                       {getLocalizedText(notification.title, locale)}
                     </TableCell>

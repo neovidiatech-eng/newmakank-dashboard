@@ -73,6 +73,7 @@ export type FormInput = {
   options?: Option[];
   isHidden?: boolean;
   searchFilters?: { key: string; value: string | number }[];
+  searchTermKey?: string;
 };
 
 export type FormLangs = "Ar" | "En" | "default" | "changeToAr" | "changeToEn" | "changeToDefault";

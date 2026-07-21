@@ -27,6 +27,8 @@ interface TableWithQueryProps {
   };
   dataKey?: string; // optional key to access nested data e.g. "data" or "items"
   extraParams?: Record<string, unknown>;
+  omitParams?: string[];
+  mapParams?: Record<string, string>;
 }
 
 export default function TableWithQuery({
@@ -41,7 +43,9 @@ export default function TableWithQuery({
   isInnerTable,
   rowSelection,
   dataKey,
-  extraParams = {}
+  extraParams = {},
+  omitParams,
+  mapParams
 }: TableWithQueryProps) {
   const searchParams = useSearchParams();
 
@@ -53,7 +57,9 @@ export default function TableWithQuery({
     ...extraParams
   };
   searchParams.forEach((value, key) => {
-    params[key] = value;
+    if (omitParams?.includes(key)) return;
+    const mappedKey = mapParams?.[key] || key;
+    params[mappedKey] = value;
   });
 
   const queryKey = [endPoint.join("/"), JSON.stringify(params)];
@@ -71,11 +77,21 @@ export default function TableWithQuery({
   if (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) {
     actualData = rawData.data || rawData.items || rawData;
   }
-  const tableData: Record<string, unknown>[] = Array.isArray(actualData)
+  let tableData: Record<string, unknown>[] = Array.isArray(actualData)
     ? actualData
     : dataKey && rawData?.[dataKey]
     ? (rawData[dataKey] as Record<string, unknown>[])
     : [];
+
+  const searchQuery = searchParams.get("search");
+  if (searchQuery && omitParams?.includes("search")) {
+    const s = searchQuery.toLowerCase();
+    tableData = tableData.filter((item: any) => {
+      const title = typeof item.title === 'string' ? item.title : JSON.stringify(item.title || '');
+      const name = typeof item.name === 'string' ? item.name : JSON.stringify(item.name || '');
+      return title.toLowerCase().includes(s) || name.toLowerCase().includes(s);
+    });
+  }
 
   const total = response?.total ?? tableData.length;
 

@@ -484,6 +484,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                 <SelectPaginated
                   name="storeId"
                   apiUrl={storesApiUrl}
+                  searchTermKey="name"
                   value={form.storeId}
                   disabled={!requiresStore}
                   onChange={value => updateForm("storeId", value ? String(value) : "")}
@@ -571,6 +572,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                   <SelectPaginated
                     name="clickStoreId"
                     apiUrl={storesApiUrl}
+                    searchTermKey="name"
                     value={form.clickStoreId}
                     onChange={value => updateForm("clickStoreId", value ? String(value) : "")}
                     placeholder={t("store")}
@@ -598,6 +600,7 @@ export default function CampaignCreateClient({ data }: { data?: CampaignData | n
                     <SelectPaginated
                       name="clickStoreId"
                       apiUrl={storesApiUrl}
+                      searchTermKey="name"
                       value={form.clickStoreId}
                       onChange={value => {
                         setForm(prev => ({

@@ -31,6 +31,7 @@ export default function OffersTable({ permission }: { permission?: Auth.Permissi
               apiUrl={["stores"]}
               value=""
               placeholder={t("store")}
+              searchTermKey="name"
               onChange={value => {
                 if (!value) return;
                 const params = new URLSearchParams(searchParams.toString());
@@ -47,6 +48,7 @@ export default function OffersTable({ permission }: { permission?: Auth.Permissi
   return (
     <TableWithQuery
       endPoint={["bundles"]}
+      omitParams={["search"]}
       columns={OffersColumns}
       hideCreateNew={!permission?.post}
       createNewLink={`/stores/${storeId}/offers/create`}
@@ -59,7 +61,8 @@ export default function OffersTable({ permission }: { permission?: Auth.Permissi
         {
           name: "storeId",
           type: "selectPaginated",
-          apiUrl: ["stores"]
+          apiUrl: ["stores"],
+          searchTermKey: "name"
         },
         {
           name: "isActive",
