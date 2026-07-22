@@ -2816,5 +2816,19 @@
   "freeServicesRequired": "At least one gift product must be selected",
   "paidRequiredSizeNameRequired": "Size name is required when restricting by name",
   "freeRequiredSizeNameRequired": "Gift size name is required when restricting by name",
-  "maxFreeItemValueRequired": "Gift price cap is required when using fixed cap"
+  "maxFreeItemValueRequired": "Gift price cap is required when using fixed cap",
+
+  "Delete Selected": "Delete Selected",
+  "Bulk Delete Orders": "Bulk Delete Orders",
+  "Confirm Bulk Delete Title": "Are you sure you want to delete selected orders?",
+  "Bulk Delete Warning": "Warning: This action cannot be undone! The selected orders and all associated data will be permanently deleted and financial adjustments will be settled.",
+  "Selected Orders Count": "Selected Orders Count",
+  "Orders Deleted Successfully": "Orders deleted successfully",
+  "Some Orders Failed To Delete": "Some orders failed to delete",
+  "Reset Wallet": "Reset Wallet",
+  "Reset Driver Wallet": "Reset Driver Wallet",
+  "Confirm Reset Wallet Title": "Confirm Reset Driver Wallet",
+  "Reset Wallet Warning": "Warning: This action cannot be undone! Current balance, cash held, commission, total withdrawn, and pending withdrawals will be zeroed and rejected immediately.",
+  "Driver Wallet Reset Successfully": "Driver wallet reset successfully",
+  "Failed To Reset Wallet": "Failed to reset driver wallet"
 }

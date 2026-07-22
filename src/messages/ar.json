@@ -2819,5 +2819,19 @@
   "freeServicesRequired": "يجب اختيار منتج واحد على الأقل للهدية",
   "paidRequiredSizeNameRequired": "اسم المقاس مطلوب عند تحديد مقاس معين",
   "freeRequiredSizeNameRequired": "اسم مقاس الهدية مطلوب عند تحديد مقاس معين",
-  "maxFreeItemValueRequired": "سقف سعر الهدية مطلوب عند اختيار سقف ثابت"
+  "maxFreeItemValueRequired": "سقف سعر الهدية مطلوب عند اختيار سقف ثابت",
+
+  "Delete Selected": "مسح المحدد",
+  "Bulk Delete Orders": "مسح الطلبات المحددة",
+  "Confirm Bulk Delete Title": "هل أنت تأكد من مسح الطلبات المحددة؟",
+  "Bulk Delete Warning": "تنبيه: هذا الإجراء غير قابل للتراجع! سيتم مسح الطلبات وجميع البيانات المرتبطة بها نهائياً وتسوية المستحقات المالية تلقائياً.",
+  "Selected Orders Count": "عدد الطلبات المحددة",
+  "Orders Deleted Successfully": "تم مسح الطلبات بنجاح",
+  "Some Orders Failed To Delete": "بعض الطلبات تعذر مسحها",
+  "Reset Wallet": "تصفير المحفظة",
+  "Reset Driver Wallet": "تصفير محفظة المندوب",
+  "Confirm Reset Wallet Title": "تأكيد تصفير محفظة المندوب",
+  "Reset Wallet Warning": "تنبيه: هذا الإجراء غير قابل للتراجع! سيتم تصفير: الرصيد، الكاش، العمولة، وطلبات السحب المعلقة فوراً، وسيتم رفض أي طلب سحب معلق تلقائياً.",
+  "Driver Wallet Reset Successfully": "تم تصفير محفظة المندوب بنجاح",
+  "Failed To Reset Wallet": "تعذر تصفير محفظة المندوب"
 }

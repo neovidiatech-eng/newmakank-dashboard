@@ -6,6 +6,7 @@ import Image from "@/lib/Image";
 import { getEnv } from "@/lib/env";
 import { useQuery } from "@tanstack/react-query";
 import { fetchHelper } from "@/api/fetch";
+import ResetWalletAction from "./ResetWalletAction";
 
 const imgUrl = getEnv("VITE_API_URL");
 
@@ -168,6 +169,9 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
             isActive={!!forceAvailable}
             endpoint={["delivery"]}
           />
+        </div>
+        <div className="mt-1">
+          <ResetWalletAction deliveryId={data.id} />
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { fetchHelper } from "@/api/fetch";
 import CustomHeader from "@/components/layouts/header/CustomHeader";
 import DeliveryProfileHeader from "@/components/pages/_delivery/DeliveryProfileHeader";
 import DeliveryScheduleSection from "@/components/pages/_delivery/DeliveryScheduleSection";
+import ResetWalletAction from "@/components/pages/_delivery/ResetWalletAction";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -223,11 +224,12 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
         </div>
 
         <Card className="border-border/60 bg-card/80">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Banknote className="h-5 w-5 text-primary" />
               {t("Delivery Finance")}
             </CardTitle>
+            <ResetWalletAction deliveryId={deliveryId} />
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border bg-muted/20 p-4">
