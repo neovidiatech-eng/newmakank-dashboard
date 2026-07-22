@@ -4,6 +4,7 @@ import TableBasic from "@/components/common/table/TableBasic";
 import { useTranslations } from "@/lib/i18n";
 import { useState } from "react";
 import BulkAssignOrdersAction from "./BulkAssignOrdersAction";
+import SingleOrderDeleteAction from "./SingleOrderDeleteAction";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { useSearchParams } from "@/lib/navigation";
 
@@ -120,7 +121,8 @@ export default function OrdersViewTabs({
         }}
         tableActions={{
           onInfo: true,
-          fixedActions: true
+          fixedActions: true,
+          renderRowActions: row => <SingleOrderDeleteAction orderId={row.id as number | string} />
         }}
         cardHeader={tableTitle}
         filters={resolvedFilters}

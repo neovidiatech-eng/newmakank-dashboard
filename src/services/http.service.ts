@@ -11,7 +11,8 @@ export function buildEndpointUrl(endPoint: endpointType, params?: unknown) {
   const path = endPoint
     .map((item: endpointName | number | string) => {
       if (typeof item === "number" || Boolean(Number(item))) return `/${item}`;
-      return endpoints[item as endpointName] ?? item;
+      const val = String(endpoints[item as endpointName] ?? item);
+      return val.startsWith("/") ? val : `/${val}`;
     })
     .join("");
 
