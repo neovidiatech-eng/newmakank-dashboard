@@ -86,8 +86,10 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
 
     const formattedData = {
       ...rest,
-      lat: map?.lat,
-      lng: map?.lng,
+      logo: formData.logo,
+      cover: formData.cover,
+      lat: map?.lat ?? (isEdit ? (data as any)?.lat : 30.0444),
+      lng: map?.lng ?? (isEdit ? (data as any)?.lng : 31.2357),
       // Required by the backend on create — default to 0 (first/unsorted) if left blank
       // rather than blocking store creation over a manual sort number nobody filled in.
       storeOrder:

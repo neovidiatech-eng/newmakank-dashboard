@@ -16,13 +16,13 @@ export default function StoresFormPage({ data }: { data?: StoresType }) {
 					id: "lang",
 					title: t("Stores Information"),
 					multiLang: true,
-					width: 3,
+					width: 6,
 					icon: <Store className="size-4" />,
 				},
 				{
 					id: "info",
 					title: t("Store Details"),
-					width: 3,
+					width: 6,
 					icon: <Info className="size-4" />,
 				},
 				{
