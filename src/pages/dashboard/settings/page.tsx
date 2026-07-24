@@ -30,7 +30,7 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
     });
   }
 
-  const HIDDEN_SETTINGS = ["filterByZone", "storeNearestByKM", "onlineDeliveryBaseFee"];
+  const HIDDEN_SETTINGS = ["storeNearestByKM", "onlineDeliveryBaseFee"];
   const settings = allSettings.filter((item) => !HIDDEN_SETTINGS.includes(item.setting));
 
   return (
