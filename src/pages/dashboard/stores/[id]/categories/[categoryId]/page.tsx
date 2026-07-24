@@ -15,11 +15,12 @@ async function CategoryServicesPage({
 }) {
   const { id: storeId, categoryId } = await params;
   const sParams = await searchParams;
+  const { tab, ...restParams } = sParams || {};
 
   const [categoryData, servicesData] = await Promise.all([
     fetchData(["storeCategories", Number(categoryId)]),
     fetchData(["services"], {
-      ...sParams,
+      ...restParams,
       storeId: Number(storeId),
       categoryId: Number(categoryId)
     })
