@@ -10,6 +10,7 @@ import { useTranslations } from "@/lib/i18n";
 import { useRouter } from "@/lib/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import StatusOverrideModal from "@/components/common/dialog/StatusOverrideModal";
 
 interface StoreStatusSelectProps {
   storeId: number | string;
@@ -21,17 +22,22 @@ export function StoreStatusSelect({ storeId, initialStatus }: StoreStatusSelectP
   const router = useRouter();
   const [status, setStatus] = useState<string>(initialStatus || "OPEN");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleStatusChange = async (newStatus: string) => {
-    setStatus(newStatus);
+  const performStatusChange = async (newStatus: string, extraData?: { statusReason?: string; busyMinutes?: number }) => {
     setIsUpdating(true);
     try {
       const response = await fetchHelper({
         endPoint: ["stores", Number(storeId), "status"],
         method: "PATCH",
-        body: { status: newStatus }
+        body: {
+          status: newStatus,
+          ...extraData
+        }
       });
       if (!response?.success) throw response;
+      setStatus(newStatus);
       toast.success(t("Store status updated successfully"));
       router.refresh();
     } catch (error: any) {
@@ -41,37 +47,62 @@ export function StoreStatusSelect({ storeId, initialStatus }: StoreStatusSelectP
     }
   };
 
+  const handleStatusChange = async (newStatus: string) => {
+    if (newStatus === "BUSY" || newStatus === "CLOSED") {
+      setPendingStatus(newStatus);
+      setIsModalOpen(true);
+      return;
+    }
+
+    await performStatusChange(newStatus);
+  };
+
+  const handleModalConfirm = async (modalData: { statusReason?: string; busyMinutes?: number }) => {
+    if (pendingStatus) {
+      await performStatusChange(pendingStatus, modalData);
+    }
+  };
+
   return (
-    <Select disabled={isUpdating} value={status} onValueChange={handleStatusChange}>
-      <SelectTrigger className="w-full min-w-[120px]" id={`store-status-select-${storeId}`}>
-        <SelectValue placeholder={t("Select status")} />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="NORMAL">
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-green-500 flex-shrink-0" />
-            <span className="text-green-600 font-medium">{t("normal")}</span>
-          </span>
-        </SelectItem>
-        <SelectItem value="OPEN">
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-green-500 flex-shrink-0" />
-            <span className="text-green-600 font-medium">{t("Open")}</span>
-          </span>
-        </SelectItem>
-        <SelectItem value="BUSY">
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-orange-400 flex-shrink-0" />
-            <span className="text-orange-500 font-medium">{t("Busy")}</span>
-          </span>
-        </SelectItem>
-        <SelectItem value="CLOSED">
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-red-500 flex-shrink-0" />
-            <span className="text-red-500 font-medium">{t("Closed")}</span>
-          </span>
-        </SelectItem>
-      </SelectContent>
-    </Select>
+    <>
+      <Select disabled={isUpdating} value={status} onValueChange={handleStatusChange}>
+        <SelectTrigger className="w-full min-w-[120px]" id={`store-status-select-${storeId}`}>
+          <SelectValue placeholder={t("Select status")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="NORMAL">
+            <span className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-green-500 flex-shrink-0" />
+              <span className="text-green-600 font-medium">{t("normal")}</span>
+            </span>
+          </SelectItem>
+          <SelectItem value="OPEN">
+            <span className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-green-500 flex-shrink-0" />
+              <span className="text-green-600 font-medium">{t("Open")}</span>
+            </span>
+          </SelectItem>
+          <SelectItem value="BUSY">
+            <span className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-orange-400 flex-shrink-0" />
+              <span className="text-orange-500 font-medium">{t("Busy")}</span>
+            </span>
+          </SelectItem>
+          <SelectItem value="CLOSED">
+            <span className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-red-500 flex-shrink-0" />
+              <span className="text-red-500 font-medium">{t("Closed")}</span>
+            </span>
+          </SelectItem>
+        </SelectContent>
+      </Select>
+
+      <StatusOverrideModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleModalConfirm}
+        status={pendingStatus || ""}
+      />
+    </>
   );
 }

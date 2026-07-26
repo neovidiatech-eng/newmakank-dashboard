@@ -10,12 +10,30 @@ import { useTranslations } from "@/lib/i18n";
 import { useForm } from "react-hook-form";
 import { StoresInputs } from "./stores.inputs";
 import { StoresSchema, type StoresType } from "./stores.schema";
+import { useApiQuery } from "@/hooks/useApiQuery";
 
 export default function useStoresLogic({ data }: { data?: StoresType }) {
   const t = useTranslations();
   const formAction = useFormAction();
   const isEdit = !!data;
-  const inputs = StoresInputs({ isEdit });
+
+  const { data: permissionsData } = useApiQuery({
+    queryKey: ["myPermissions"],
+    endPoint: ["myPermissions"],
+    staleTime: 10 * 60 * 1000
+  });
+
+  const permissionsArray = permissionsData?.data || [];
+  const isAdmin = permissionsArray.some((p: any) => {
+    const keys = [p.prefix, p.name].filter(Boolean).map(k => k.toLowerCase());
+    if (!keys.includes("stores")) return false;
+    const methods = (p.method || p.methods || []).map((m: any) =>
+      typeof m === "string" ? m.toLowerCase() : m?.method?.toLowerCase()
+    );
+    return methods.includes("manage");
+  });
+
+  const inputs = StoresInputs({ isEdit, isAdmin });
   const {
     control,
     formState: { errors },
@@ -26,6 +44,9 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
     resolver: zodResolver(StoresSchema(t, isEdit)),
     defaultValues: {
       ...extractFormDefaultInputs(inputs, data),
+      prepTimeMinutes: data?.prepTimeMinutes !== undefined && data?.prepTimeMinutes !== null ? String(data.prepTimeMinutes) : "",
+      deliveryTimeMinMinutes: data?.deliveryTimeMinMinutes !== undefined && data?.deliveryTimeMinMinutes !== null ? String(data.deliveryTimeMinMinutes) : "",
+      deliveryTimeMaxMinutes: data?.deliveryTimeMaxMinutes !== undefined && data?.deliveryTimeMaxMinutes !== null ? String(data.deliveryTimeMaxMinutes) : "",
       templateId: ((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
                   ? String((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
                   : "",
@@ -90,6 +111,18 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       cover: formData.cover,
       lat: map?.lat ?? (isEdit ? (data as any)?.lat : 30.0444),
       lng: map?.lng ?? (isEdit ? (data as any)?.lng : 31.2357),
+      prepTimeMinutes:
+        rest.prepTimeMinutes !== undefined && rest.prepTimeMinutes !== "" && rest.prepTimeMinutes !== null
+          ? Number(rest.prepTimeMinutes)
+          : undefined,
+      deliveryTimeMinMinutes:
+        rest.deliveryTimeMinMinutes !== undefined && rest.deliveryTimeMinMinutes !== "" && rest.deliveryTimeMinMinutes !== null
+          ? Number(rest.deliveryTimeMinMinutes)
+          : undefined,
+      deliveryTimeMaxMinutes:
+        rest.deliveryTimeMaxMinutes !== undefined && rest.deliveryTimeMaxMinutes !== "" && rest.deliveryTimeMaxMinutes !== null
+          ? Number(rest.deliveryTimeMaxMinutes)
+          : undefined,
       // Required by the backend on create — default to 0 (first/unsorted) if left blank
       // rather than blocking store creation over a manual sort number nobody filled in.
       storeOrder:

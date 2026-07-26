@@ -10,8 +10,8 @@ export default function StoreCategoryColumns(t: any): ColumnDef<Record<string, u
       accessorKey: "name",
       header: () => <IconHeader key="name" columnKey="Name" />,
       cell: ({ row }) => {
-        const en = row.original.name?.en as string;
-        const ar = row.original.name?.ar as string;
+        const en = (row.original.name as any)?.en as string;
+        const ar = (row.original.name as any)?.ar as string;
         return <LocaleViewColumn value={{ en, ar }} />;
       }
     },
