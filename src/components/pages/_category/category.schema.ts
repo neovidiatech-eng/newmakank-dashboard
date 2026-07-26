@@ -14,6 +14,7 @@ image:noSchema(),
 order:noSchema(),
 storeId:selectNotReq(),
 templateId:selectNotReq(),
+active:noSchema(),
 })
   };
 

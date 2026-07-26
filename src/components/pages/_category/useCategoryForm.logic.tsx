@@ -22,7 +22,7 @@ export default function useCategoryLogic({
   const formAction = useFormAction();
   const hasStoreId = Boolean(data?.storeId);
   const isEdit = Boolean(data);
-  const inputs = CategoryInputs({ hasStoreId, isEdit });
+  const inputs = CategoryInputs({ hasStoreId, isEdit, t });
   const {
     control,
     handleSubmit,
@@ -30,14 +30,20 @@ export default function useCategoryLogic({
   } = useForm<CategoryType>({
     mode: "onSubmit",
     resolver: zodResolver(CategorySchema(t)),
-    defaultValues: extractFormDefaultInputs(inputs, data) as CategoryType
+    defaultValues: {
+      ...extractFormDefaultInputs(inputs, data),
+      active: data?.active !== undefined ? String(data.active) : "true"
+    } as CategoryType
   });
 
   useEffect(() => {
     if (data) {
-      reset(extractFormDefaultInputs(inputs, data) as CategoryType);
+      reset({
+        ...extractFormDefaultInputs(inputs, data),
+        active: data.active !== undefined ? String(data.active) : "true"
+      } as CategoryType);
     }
-  }, [data, reset]);
+  }, [data, reset, inputs]);
 
   const onSubmit = async (formData: CategoryType) => {
     if (data?.storeId) formData.storeId = data.storeId;
@@ -78,10 +84,18 @@ export default function useCategoryLogic({
       } else if (formData.image === "") {
         fd.append("image", "null");
       }
+
+      if (formData.active !== undefined) {
+        fd.append("active", String(formData.active === "true" || formData.active === true));
+      }
       
       payload = fd;
     } else {
-      payload = extractFormNameInputs({ inputs, data: formData });
+      const formattedData = {
+        ...formData,
+        active: formData.active === "true" || formData.active === true
+      };
+      payload = extractFormNameInputs({ inputs, data: formattedData });
     }
 
     await formAction({

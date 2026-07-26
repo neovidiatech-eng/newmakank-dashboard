@@ -1,6 +1,7 @@
 import IconHeader from "@/components/common/table/columns/icon-header";
 import { ImageCell } from "@/components/common/table/columns/img-cell";
 import LocaleViewColumn from "@/components/common/table/columns/locale-view.column";
+import ToggleStatus from "@/components/common/table/tableActions/ToggleStatus";
 import { type ColumnDef } from "@tanstack/react-table";
 
 import { useApiQuery } from "@/hooks/useApiQuery";
@@ -123,6 +124,20 @@ export default function Columns(): ColumnDef<Record<string, unknown>>[] {
 
         return <span className="text-sm font-medium text-blue-600 dark:text-blue-400">—</span>;
       }
+    },
+    {
+      accessorKey: "active",
+      header: () => <IconHeader columnKey="Status" />,
+      cell: ({ row }) => (
+        <ToggleStatus
+          id={row.original.id as string | number}
+          body={{
+            active: !row.original.active as boolean
+          }}
+          isActive={row.original.active as boolean}
+          endpoint={["categories"]}
+        />
+      )
     },
   ];
   return columns;

@@ -1,6 +1,7 @@
 import IconHeader from "@/components/common/table/columns/icon-header";
 import { ImageCell } from "@/components/common/table/columns/img-cell";
 import LocaleViewColumn from "@/components/common/table/columns/locale-view.column";
+import ToggleStatus from "@/components/common/table/tableActions/ToggleStatus";
 import { type ColumnDef } from "@tanstack/react-table";
 
 export default function StoreCategoryColumns(t: any): ColumnDef<Record<string, unknown>>[] {
@@ -61,6 +62,20 @@ export default function StoreCategoryColumns(t: any): ColumnDef<Record<string, u
           </span>
         );
       }
+    },
+    {
+      accessorKey: "active",
+      header: () => <IconHeader columnKey="Status" />,
+      cell: ({ row }) => (
+        <ToggleStatus
+          id={row.original.id as string | number}
+          body={{
+            active: !row.original.active as boolean
+          }}
+          isActive={row.original.active as boolean}
+          endpoint={["categories"]}
+        />
+      )
     }
   ];
 }
