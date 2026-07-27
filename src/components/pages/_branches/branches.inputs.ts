@@ -12,6 +12,7 @@ export const BranchesInputs = (
     { name: "storeId",isHidden:hasStoreId, type: "selectPaginated", apiUrl: ['stores'] },
     { name: "phone", type: "tel", required: true },
     { name: "address", type: "textarea" },
+    { name: "maxActiveOrders", type: "number" as const, min: 0 },
     { name: "isActive", type: "radioGroup", required: true, options: booleanOptions(t) },
     { name: "map", type: "map", required: true,width:6 },
   ];

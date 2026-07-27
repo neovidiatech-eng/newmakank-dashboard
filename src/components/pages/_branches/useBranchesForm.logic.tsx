@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
@@ -22,7 +22,10 @@ export default function useBranchesLogic({
   const { control, handleSubmit, reset } = useForm<BranchesType>({
     mode: "onSubmit",
     resolver: zodResolver(BranchesSchema(t)),
-    defaultValues: extractFormDefaultInputs(inputs, data) as BranchesType
+    defaultValues: {
+      ...extractFormDefaultInputs(inputs, data),
+      maxActiveOrders: data?.maxActiveOrders !== undefined && data?.maxActiveOrders !== null ? String(data.maxActiveOrders) : ""
+    } as any
   });
 
   const onSubmit = async (formData: BranchesType) => {
@@ -30,7 +33,11 @@ export default function useBranchesLogic({
       ...formData,
       lat: formData.map.lat,
       isActive: formData.isActive,
-      lng: formData.map.lng
+      lng: formData.map.lng,
+      maxActiveOrders:
+        formData.maxActiveOrders !== undefined && formData.maxActiveOrders !== "" && formData.maxActiveOrders !== null
+          ? Number(formData.maxActiveOrders)
+          : null
     };
     await formAction({
       data,

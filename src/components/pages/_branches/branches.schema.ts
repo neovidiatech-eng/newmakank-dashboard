@@ -17,7 +17,8 @@ map:z.object({
   lat: z.number(),
   lng: z.number(),
 }),
-isActive:noSchema()
+isActive:noSchema(),
+maxActiveOrders: z.union([z.number(), z.string()]).optional()
 })
   };
 

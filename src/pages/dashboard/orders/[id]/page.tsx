@@ -13,11 +13,12 @@ import OrderStatusSelect from "@/components/pages/_orders/OrderStatusSelect";
 import CopyOrderButton from "@/components/pages/_orders/CopyOrderButton";
 import VerifyPaymentAction from "@/components/pages/_orders/VerifyPaymentAction";
 import StoreInfo from "@/components/pages/_orders/StoreInfo";
+import PrintOrderButton from "@/components/pages/_orders/PrintOrderButton";
 import { CalendarClock } from "lucide-react";
 import { PriceAmount } from "@/components/PriceAmount";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { getTranslations } from "@/lib/i18n";
+import { getTranslations, getLocale } from "@/lib/i18n";
 import Image from "@/lib/Image";
 import { getEnv } from "@/lib/env";
 import { ApiResponse } from "../types";
@@ -30,6 +31,18 @@ const getImageUrl = (path?: string | null) => {
 
 async function page({ params }: { params: Params }): Promise<JSX.Element> {
   const t = await getTranslations();
+  const locale = await getLocale();
+  const getLocalizedName = (nameObj: any) => {
+    if (!nameObj) return "";
+    if (typeof nameObj === "string") return nameObj;
+    return nameObj.ar || nameObj.en || "";
+  };
+  const formatMoneyVal = (value: number | string | null | undefined) => {
+    const numberValue = Number(value ?? 0);
+    return new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-US", {
+      maximumFractionDigits: 2
+    }).format(Number.isFinite(numberValue) ? numberValue : 0);
+  };
   const id = (await params).id;
 
   const response = await fetchData(["orders", Number(id)]);
@@ -52,7 +65,8 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
     (data as any)?.rewardType === "FREE_DELIVERY"
   );
   return (
-    <div className="container mx-auto py-8 max-w-6xl px-4 lg:px-6">
+    <>
+      <div className="container mx-auto py-8 max-w-6xl px-4 lg:px-6 print:hidden">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
@@ -64,6 +78,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 print:hidden">
+          <PrintOrderButton />
           <CopyOrderButton orderId={data?.id} items={data?.OrderItems || []} orderData={data as any} />
           <div className="flex gap-2">
             <TableStatusBadge status={data?.status} />
@@ -494,6 +509,84 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
         </div>
       </div>
     </div>
+      
+      {/* Sibling div for Printing */}
+      <div className="hidden print:block w-full max-w-md mx-auto p-4 text-black bg-white font-mono text-xs leading-relaxed" dir="rtl">
+        {/* Header */}
+        <div className="text-center space-y-1 mb-4 border-b border-dashed border-black pb-4">
+          <h2 className="text-lg font-bold">فاتورة طلب #{data?.id}</h2>
+          <p className="text-xs">المتجر: {getLocalizedName((data as any)?.Store?.name) || (data as any)?.Store?.name || "—"}</p>
+          <p className="text-xs">التاريخ: {new Date(data?.createdAt || "").toLocaleString("ar-EG")}</p>
+        </div>
+
+        {/* Customer details */}
+        <div className="space-y-1 mb-4 border-b border-dashed border-black pb-4 text-xs">
+          <p><strong>العميل:</strong> {data?.Customer?.name || "—"}</p>
+          <p><strong>الهاتف:</strong> {data?.Customer?.phone || "—"}</p>
+          <p>
+            <strong>العنوان:</strong> {(data?.Address as any)?.adress || (data?.Address as any)?.address || "—"} 
+            {(data?.Address as any)?.title ? ` (${(data?.Address as any)?.title})` : ""}
+          </p>
+          {data?.note && <p><strong>ملاحظة العميل:</strong> {data.note}</p>}
+          <p><strong>طريقة الدفع:</strong> {data?.paymentMethod || "—"}</p>
+        </div>
+
+        {/* Order Items */}
+        <div className="mb-4 border-b border-dashed border-black pb-4">
+          <h3 className="font-bold mb-2">الأصناف:</h3>
+          <table className="w-full text-right text-xs">
+            <thead>
+              <tr className="border-b border-black">
+                <th className="pb-1 text-right">الصنف</th>
+                <th className="text-center pb-1">الكمية</th>
+                <th className="text-left pb-1">السعر</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data?.OrderItems?.map((item: any, idx: number) => (
+                <tr key={idx} className="border-b border-dashed border-gray-200">
+                  <td className="py-1.5 text-right">{getLocalizedName(item?.Service?.name) || item?.Service?.name || "—"}</td>
+                  <td className="text-center py-1.5">{item.quantity}</td>
+                  <td className="text-left py-1.5">{formatMoneyVal(item.price * item.quantity)} ج.م</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Totals */}
+        <div className="space-y-1.5 text-xs">
+          <div className="flex justify-between">
+            <span>سعر المنتجات:</span>
+            <span>{formatMoneyVal(data?.price || 0)} ج.م</span>
+          </div>
+          {combinedDiscount > 0 && (
+            <div className="flex justify-between text-green-600">
+              <span>الخصم:</span>
+              <span>- {formatMoneyVal(combinedDiscount)} ج.م</span>
+            </div>
+          )}
+          {data?.tax > 0 && (
+            <div className="flex justify-between">
+              <span>الضريبة:</span>
+              <span>{formatMoneyVal(data.tax)} ج.م</span>
+            </div>
+          )}
+          <div className="flex justify-between">
+            <span>الشحن:</span>
+            <span>{formatMoneyVal(data?.shipping || 0)} ج.م</span>
+          </div>
+          <div className="flex justify-between border-t border-dashed border-black pt-2 font-bold text-sm">
+            <span>الإجمالي النهائي:</span>
+            <span>{formatMoneyVal(totalPrice || 0)} ج.م</span>
+          </div>
+        </div>
+
+        <div className="text-center mt-6 text-xs text-gray-500 border-t border-dashed border-black pt-4">
+          <p className="mt-1 font-bold">شكراً لتعاملكم معنا!</p>
+        </div>
+      </div>
+    </>
   );
 }
 
