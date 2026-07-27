@@ -47,6 +47,7 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       prepTimeMinutes: data?.prepTimeMinutes !== undefined && data?.prepTimeMinutes !== null ? String(data.prepTimeMinutes) : "",
       deliveryTimeMinMinutes: data?.deliveryTimeMinMinutes !== undefined && data?.deliveryTimeMinMinutes !== null ? String(data.deliveryTimeMinMinutes) : "",
       deliveryTimeMaxMinutes: data?.deliveryTimeMaxMinutes !== undefined && data?.deliveryTimeMaxMinutes !== null ? String(data.deliveryTimeMaxMinutes) : "",
+      minOrderAmount: data?.minOrderAmount !== undefined && data?.minOrderAmount !== null ? String(data.minOrderAmount) : "",
       templateId: ((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
                   ? String((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
                   : "",
@@ -123,6 +124,10 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
         rest.deliveryTimeMaxMinutes !== undefined && rest.deliveryTimeMaxMinutes !== "" && rest.deliveryTimeMaxMinutes !== null
           ? Number(rest.deliveryTimeMaxMinutes)
           : undefined,
+      minOrderAmount:
+        rest.minOrderAmount !== undefined && rest.minOrderAmount !== "" && rest.minOrderAmount !== null
+          ? Number(rest.minOrderAmount)
+          : null,
       // Required by the backend on create — default to 0 (first/unsorted) if left blank
       // rather than blocking store creation over a manual sort number nobody filled in.
       storeOrder:

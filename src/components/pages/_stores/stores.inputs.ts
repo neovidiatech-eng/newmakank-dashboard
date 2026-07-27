@@ -13,6 +13,7 @@ export const StoresInputs = ({ isEdit, isAdmin }: {
     { name: "storeOrder", type: "number", cardId: 'info', width: 3, min: 0 },
     ...(isEdit ? [
       { name: "prepTimeMinutes", type: "number" as const, cardId: 'info', required: false, width: 3, min: 0 },
+      { name: "minOrderAmount", type: "number" as const, cardId: 'info', required: false, width: 3, min: 0 },
       ...(isAdmin ? [
         { name: "deliveryTimeMinMinutes", type: "number" as const, cardId: 'info', required: false, width: 3, min: 0 },
         { name: "deliveryTimeMaxMinutes", type: "number" as const, cardId: 'info', required: false, width: 3, min: 0 }

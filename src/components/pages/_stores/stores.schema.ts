@@ -30,6 +30,7 @@ userPass:isEdit ? StringNotReq() : StringReq(t),
 prepTimeMinutes: z.union([z.number(), z.string()]).optional(),
 deliveryTimeMinMinutes: z.union([z.number(), z.string()]).optional(),
 deliveryTimeMaxMinutes: z.union([z.number(), z.string()]).optional(),
+minOrderAmount: z.union([z.number(), z.string()]).optional(),
 }).refine((data) => {
   if (data.deliveryTimeMinMinutes !== undefined && data.deliveryTimeMinMinutes !== "" &&
       data.deliveryTimeMaxMinutes !== undefined && data.deliveryTimeMaxMinutes !== "") {
