@@ -13,7 +13,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Link } from "@/lib/navigation";
-import { AlertCircle, Clock, LogIn, LogOut, PencilLine, UserRound } from "lucide-react";
+import { AlertCircle, Clock, LogIn, LogOut, PencilLine, UserRound, CheckCircle2, XCircle } from "lucide-react";
 import { getLocale, getTranslations } from "@/lib/i18n";
 
 type LogsPageSearchParams = {
@@ -101,6 +101,20 @@ function getActionPresentation(action?: string | null) {
     };
   }
 
+  if (normalizedAction.includes("REJECTED")) {
+    return {
+      icon: XCircle,
+      variant: "destructive" as const
+    };
+  }
+
+  if (normalizedAction.includes("ACCEPTED") || normalizedAction.includes("READY")) {
+    return {
+      icon: CheckCircle2,
+      variant: "success" as const
+    };
+  }
+
   return {
     icon: PencilLine,
     variant: "info" as const
@@ -176,9 +190,14 @@ export default async function ActivityLogsPage({
   const total = pagination?.total ?? response?.total ?? logs.length;
   const activeAction = normalizeAction(resolvedSearchParams?.action);
   const actionFilters = [
-    { label: t("All"), value: null },
+    { label: t("All") || "الكل", value: null },
     { label: "LOGIN", value: "LOGIN" },
-    { label: "LOGOUT", value: "LOGOUT" }
+    { label: "LOGOUT", value: "LOGOUT" },
+    { label: t("Order Accepted") || "ORDER_ACCEPTED", value: "ORDER_ACCEPTED" },
+    { label: t("Order Rejected") || "ORDER_REJECTED", value: "ORDER_REJECTED" },
+    { label: t("Order Ready") || "ORDER_READY", value: "ORDER_READY" },
+    { label: t("Price Updated") || "SERVICE_PRICE_UPDATED", value: "SERVICE_PRICE_UPDATED" },
+    { label: t("Product Updated") || "SERVICE_UPDATED", value: "SERVICE_UPDATED" }
   ];
 
   return (
