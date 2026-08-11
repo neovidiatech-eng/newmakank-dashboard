@@ -11,6 +11,7 @@ import { useTranslations } from "@/lib/i18n";
 import OffersColumns from "@/pages/dashboard/offers/OffersColumns";
 import { useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "@/lib/navigation";
+import BulkUploadControl from "./BulkUploadControl";
 
 interface StoreTabsProps {
   branches: ApiResponse<any[]>;
@@ -107,31 +108,34 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
         </div>
       ),
       content: (
-        <TableBasic
-          data={services?.data}
-          columns={ServicesColumns}
-          cardHeader={t("Services")}
-          createNewLink={`/stores/${storeId}/products/create`}
-          hideCreateNew={false}
-          pagination={{
-            total: services?.total
-          }}
-          filters={[
-            {
-              name: "categoryId",
-              type: "selectPaginated",
-              apiUrl: ["storeCategories"],
-              searchFilters: [{ key: "storeId", value: storeId }]
-            }
-          ]}
-          tableActions={{
-            onDelete: ["services"],
-            onEdit: `/stores/${storeId}/products`,
-            fixedActions: true,
-            onInfo: `/services`
-          }}
-          isInnerTable={false}
-        />
+        <div className="flex flex-col gap-4">
+          <BulkUploadControl storeId={storeId} />
+          <TableBasic
+            data={services?.data}
+            columns={ServicesColumns}
+            cardHeader={t("Services")}
+            createNewLink={`/stores/${storeId}/products/create`}
+            hideCreateNew={false}
+            pagination={{
+              total: services?.total
+            }}
+            filters={[
+              {
+                name: "categoryId",
+                type: "selectPaginated",
+                apiUrl: ["storeCategories"],
+                searchFilters: [{ key: "storeId", value: storeId }]
+              }
+            ]}
+            tableActions={{
+              onDelete: ["services"],
+              onEdit: `/stores/${storeId}/products`,
+              fixedActions: true,
+              onInfo: `/services`
+            }}
+            isInnerTable={false}
+          />
+        </div>
       )
     },
     {

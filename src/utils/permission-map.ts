@@ -2,6 +2,7 @@ export type PermissionAction = "get" | "post" | "put" | "patch" | "delete";
 
 export const routePermissionMap: Record<string, string> = {
   banners: "Banners",
+  "special-delivery-banners": "special-delivery-banners",
   branches: "Branches",
   category: "Categories",
   categories: "Categories",

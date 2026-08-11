@@ -53,12 +53,15 @@ export default function useBannersLogic({ data }: { data?: BannersType }) {
   useEffect(() => {
     if (isSpecialDelivery) return;
 
-    if (selectedTargetType === "GENERAL") {
+    if (["GENERAL", "EXTERNAL_URL"].includes(selectedTargetType)) {
       setValue("storeId", "");
       setValue("categoryId", "");
       setValue("serviceId", "");
       setValue("zoneIds", []);
       setValue("customerCategoryId", "");
+      if (selectedTargetType !== "EXTERNAL_URL") {
+        setValue("clickUrl", "");
+      }
       return;
     }
 
@@ -108,6 +111,9 @@ export default function useBannersLogic({ data }: { data?: BannersType }) {
     };
     delete normalizedFormData.specialDelivery;
 
+    if (targetType !== "EXTERNAL_URL") {
+      delete normalizedFormData.clickUrl;
+    }
     if (targetType !== "CUSTOMER_CATEGORY") {
       delete normalizedFormData.customerCategoryId;
     }

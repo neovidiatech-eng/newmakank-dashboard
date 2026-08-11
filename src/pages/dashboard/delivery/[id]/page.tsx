@@ -1,7 +1,10 @@
+import { PriceAmount } from "@/components/PriceAmount";
 import { fetchHelper } from "@/api/fetch";
 import CustomHeader from "@/components/layouts/header/CustomHeader";
 import DeliveryProfileHeader from "@/components/pages/_delivery/DeliveryProfileHeader";
 import DeliveryScheduleSection from "@/components/pages/_delivery/DeliveryScheduleSection";
+import DeliveryDateFilterToolbar from "@/components/pages/_delivery/DeliveryDateFilterToolbar";
+import DriverOrdersTable from "@/components/pages/_delivery/DriverOrdersTable";
 import ResetWalletAction from "@/components/pages/_delivery/ResetWalletAction";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -102,12 +105,19 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
   const resolvedSearchParams = await searchParams;
   const deliveryId = Number(resolvedParams.id);
   const selectedDate = typeof resolvedSearchParams.date === "string" ? resolvedSearchParams.date : undefined;
+  const fromDate = typeof resolvedSearchParams.fromDate === "string" ? resolvedSearchParams.fromDate : undefined;
+  const toDate = typeof resolvedSearchParams.toDate === "string" ? resolvedSearchParams.toDate : undefined;
+
+  const dashboardParams: Record<string, string> = {};
+  if (selectedDate) dashboardParams.date = selectedDate;
+  if (fromDate) dashboardParams.fromDate = fromDate;
+  if (toDate) dashboardParams.toDate = toDate;
 
   const [response, scheduleResponse] = await Promise.all([
     fetchHelper<DeliveryDashboard>({
       endPoint: ["delivery", deliveryId, "deliveryDashboard"],
       method: "GET",
-      params: selectedDate ? { date: selectedDate } : undefined,
+      params: Object.keys(dashboardParams).length > 0 ? dashboardParams : undefined,
       redirectOnUnauthorized: false
     }),
     fetchHelper({
@@ -156,23 +166,11 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
           </CardContent>
         </Card>
 
-        <Card className="border-border/60 bg-card/80">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              {t("Selected Date")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form className="flex flex-col gap-3 sm:flex-row" action="">
-              <Input name="date" type="date" defaultValue={dateValue} className="max-w-xs" />
-              <Button type="submit" className="w-fit">
-                <Search className="h-4 w-4" />
-                {t("Filter")}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        <DeliveryDateFilterToolbar
+          currentFromDate={fromDate}
+          currentToDate={toDate}
+          currentDate={selectedDate}
+        />
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card className="border-border/60 bg-card/80">
@@ -214,7 +212,7 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
                 <div>
                   <p className="text-sm text-muted-foreground">{t("Selected Date")}</p>
                   <p className="mt-2 text-base font-semibold">
-                    {dateValue ? new Date(dateValue).toLocaleDateString(locale) : t("Today")}
+                    {fromDate && toDate ? `${fromDate} → ${toDate}` : dateValue ? new Date(dateValue).toLocaleDateString(locale) : t("Today")}
                   </p>
                 </div>
                 <Clock3 className="h-8 w-8 text-amber-500" />
@@ -231,18 +229,26 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
             </CardTitle>
             <ResetWalletAction deliveryId={deliveryId} />
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
+          <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
             <div className="rounded-2xl border bg-muted/20 p-4">
-              <p className="text-sm text-muted-foreground">{t("Orders Amount")}</p>
-              <p className="mt-2 text-2xl font-bold">{formatMoney(financialSummary.totalOrdersAmount, locale)}</p>
+              <p className="text-xs text-muted-foreground">{t("Orders Amount")}</p>
+              <p className="mt-2 text-xl font-bold"><PriceAmount value={financialSummary.totalOrdersAmount} /></p>
             </div>
             <div className="rounded-2xl border bg-muted/20 p-4">
-              <p className="text-sm text-muted-foreground">{t("Delivery Fees")}</p>
-              <p className="mt-2 text-2xl font-bold">{formatMoney(financialSummary.deliveryFees, locale)}</p>
+              <p className="text-xs text-muted-foreground">{t("Delivery Fees")}</p>
+              <p className="mt-2 text-xl font-bold"><PriceAmount value={financialSummary.deliveryFees} /></p>
             </div>
             <div className="rounded-2xl border bg-muted/20 p-4">
-              <p className="text-sm text-muted-foreground">{t("Admin Commission")}</p>
-              <p className="mt-2 text-2xl font-bold">{formatMoney(financialSummary.adminCommission, locale)}</p>
+              <p className="text-xs text-muted-foreground">{t("Admin Commission")}</p>
+              <p className="mt-2 text-xl font-bold"><PriceAmount value={financialSummary.adminCommission} /></p>
+            </div>
+            <div className="rounded-2xl border bg-violet-50/40 dark:bg-violet-950/20 border-violet-200 p-4">
+              <p className="text-xs text-violet-700 dark:text-violet-300 font-semibold">رصيد المحفظة</p>
+              <p className="mt-2 text-xl font-bold text-violet-900 dark:text-violet-100"><PriceAmount value={financialSummary.walletBalance} /></p>
+            </div>
+            <div className="rounded-2xl border bg-amber-50/40 dark:bg-amber-950/20 border-amber-200 p-4">
+              <p className="text-xs text-amber-700 dark:text-amber-300 font-semibold">كاش طرف المندوب (COD)</p>
+              <p className="mt-2 text-xl font-bold text-amber-900 dark:text-amber-100"><PriceAmount value={financialSummary.collectedCash} /></p>
             </div>
           </CardContent>
         </Card>
@@ -273,68 +279,7 @@ const page = async ({ params, searchParams }: { params: Params; searchParams: Se
           </CardContent>
         </Card>
 
-        <Card className="border-border/60 bg-card/80">
-          <CardHeader>
-            <CardTitle>{dateValue ? t("Selected Date Orders") || "طلبات التاريخ المحدد" : t("Today Orders")}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader className="bg-muted/40">
-                <TableRow>
-                  <TableHead className="text-center">Id</TableHead>
-                  <TableHead className="text-center">{t("Customer")}</TableHead>
-                  <TableHead className="text-center">{t("Store / Zone")}</TableHead>
-                  <TableHead className="text-center">{t("products")}</TableHead>
-                  <TableHead className="text-center">{t("Invoice Total")}</TableHead>
-                  <TableHead className="text-center">{t("Delivery Fees")}</TableHead>
-                  <TableHead className="text-center">{t("status")}</TableHead>
-                  <TableHead className="text-center">{t("CreatedAt")}</TableHead>
-                  <TableHead className="text-center">{t("Notes")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {orders.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className="py-10 text-center text-muted-foreground">{t("No Data")}</TableCell>
-                  </TableRow>
-                ) : orders.map(order => (
-                  <TableRow key={order.id}>
-                    <TableCell className="text-center font-semibold">
-                      <Link href={`/orders/${order.id}`} className="text-primary underline-offset-4 hover:underline">{order.id}</Link>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="font-medium">{order.customerName || "—"}</div>
-                      <div dir="ltr" className="text-xs text-muted-foreground">{order.customerPhone || "—"}</div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {order.customDeliveryKind ? (
-                        <div className="flex flex-col items-center gap-1.5 justify-center">
-                          <Badge variant="secondary" className="whitespace-nowrap">
-                            {order.customDeliveryKind === "PURCHASE" ? t("customDeliveryKind_PURCHASE") || "مشتريات" :
-                             order.customDeliveryKind === "RESTAURANT" ? t("customDeliveryKind_RESTAURANT") || "مطعم" :
-                             order.customDeliveryKind === "ONLINE" ? t("customDeliveryKind_ONLINE") || "أونلاين" :
-                             order.customDeliveryKind}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            {getLocalizedText(order.zoneName, locale)}
-                          </span>
-                        </div>
-                      ) : (
-                        getLocalizedText(order.storeName, locale)
-                      )}
-                    </TableCell>
-                    <TableCell className="max-w-[260px] text-center text-sm text-muted-foreground">{formatProducts(order.productsSummary, locale)}</TableCell>
-                    <TableCell className="text-center">{formatMoney(order.invoiceTotal, locale)}</TableCell>
-                    <TableCell className="text-center">{formatMoney(order.deliveryPrice, locale)}</TableCell>
-                    <TableCell className="text-center"><Badge variant={getStatusVariant(order.status)}>{order.status || "—"}</Badge></TableCell>
-                    <TableCell className="text-center">{order.createdAt ? new Date(order.createdAt).toLocaleString(locale) : "—"}</TableCell>
-                    <TableCell className="text-center">{order.notes || "—"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <DriverOrdersTable deliveryId={deliveryId} />
       </div>
     </>
   );

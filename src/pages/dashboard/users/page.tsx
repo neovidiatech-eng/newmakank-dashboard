@@ -17,12 +17,37 @@ export default async function page({ searchParams }: { searchParams: SearchParam
         columns={UsersColumns as any}
         hideCreateNew={!permission?.post}
         cardHeader={t("Users")}
+        extraParams={{ includeStats: true }}
         tableActions={{
           onEdit: permission?.put || permission?.patch,
           onDelete: permission?.delete ? ["users"] : undefined,
           //onInfo: true,
         }}
-        filters={[{ "name": "name", "type": "text", "width": 3 }]}
+        filters={[
+          { name: "name", type: "text", width: 3 },
+          {
+            name: "orderFilter",
+            type: "select",
+            width: 3,
+            label: t("Order Filter"),
+            options: [
+              { label: t("Most Orders"), value: "MOST_ORDERS" },
+              { label: t("Least Orders"), value: "LEAST_ORDERS" },
+              { label: t("Zero Orders"), value: "ZERO_ORDERS" },
+              { label: t("Most Cancelled"), value: "MOST_CANCELLED" }
+            ]
+          },
+          {
+            name: "zeroOrdersOnly",
+            type: "select",
+            width: 3,
+            label: t("Zero Orders Only"),
+            options: [
+              { label: t("Yes"), value: "true" },
+              { label: t("No"), value: "false" }
+            ]
+          }
+        ]}
       />
     </>
   );

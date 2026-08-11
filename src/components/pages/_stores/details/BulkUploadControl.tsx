@@ -18,7 +18,7 @@ import { apiClient } from "@/lib/axios";
 import { queryClient } from "@/lib/queryClient";
 import { toast } from "sonner";
 
-export default function BulkUploadControl({ storeId }: { storeId: number }) {
+export default function BulkUploadControl({ storeId }: { storeId?: number }) {
   const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -30,9 +30,16 @@ export default function BulkUploadControl({ storeId }: { storeId: number }) {
   const handleDownloadTemplate = async () => {
     setIsDownloading(true);
     try {
-      const response = await apiClient.get("/api/services/bulk-upload/template", {
-        responseType: "blob"
-      });
+      let response;
+      try {
+        response = await apiClient.get("/api/service/bulk-upload/template", {
+          responseType: "blob"
+        });
+      } catch (err: any) {
+        response = await apiClient.get("/api/services/bulk-upload/template", {
+          responseType: "blob"
+        });
+      }
       
       const blob = new Blob([response.data], { 
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
@@ -40,7 +47,7 @@ export default function BulkUploadControl({ storeId }: { storeId: number }) {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "menu_bulk_upload_template.xlsx";
+      link.download = "products-template.xlsx";
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -64,13 +71,24 @@ export default function BulkUploadControl({ storeId }: { storeId: number }) {
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
-      formData.append("storeId", String(storeId));
+      if (storeId) {
+        formData.append("storeId", String(storeId));
+      }
 
-      const response = await apiClient.post("/api/services/bulk-upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data"
-        }
-      });
+      let response;
+      try {
+        response = await apiClient.post("/api/service/bulk-upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        });
+      } catch (err: any) {
+        response = await apiClient.post("/api/services/bulk-upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        });
+      }
 
       // Handle raw response or nested data structure
       const responseData = response?.data?.data ?? response?.data ?? response;
@@ -279,7 +297,7 @@ export default function BulkUploadControl({ storeId }: { storeId: number }) {
                                   </Badge>
                                 </TableCell>
                                 <TableCell className={isSuccess ? "text-muted-foreground text-xs" : "text-rose-600 dark:text-rose-400 font-semibold text-xs"}>
-                                  {isSuccess ? (t("Product added successfully (Pending Review)") || "تمت إضافة المنتج بنجاح (قيد المراجعة)") : (res.reason || t("Validation error"))}
+                                  {isSuccess ? (t("Product added successfully") || "تمت إضافة المنتج بنجاح") : (res.reason || t("Validation error"))}
                                 </TableCell>
                               </TableRow>
                             );
@@ -296,7 +314,7 @@ export default function BulkUploadControl({ storeId }: { storeId: number }) {
           <DialogFooter className="flex justify-between sm:justify-between items-center border-t border-border/60 pt-4 gap-2">
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
-              <span>المنتجات المضافة بنجاح تدخل حالة <strong>قيد المراجعة</strong> وتتطلب موافقة الأدمن.</span>
+              <span>المنتجات المضافة بنجاح تصبح <strong>نشطة ومفعلة</strong> مباشرة.</span>
             </div>
             <Button 
               type="button" 

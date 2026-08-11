@@ -49,6 +49,37 @@ export default function StoresColumns(): ColumnDef<Record<string, unknown>>[] {
       cell: ({ getValue }) => <span>{(getValue() as number) ?? "-"}</span>
     },
     {
+      accessorKey: "orderStats",
+      header: () => <IconHeader columnKey="Order Stats" />,
+      cell: ({ row }) => {
+        const stats = (row.original as any)?.orderStats;
+        if (!stats) return <span className="text-muted-foreground">-</span>;
+        return (
+          <div className="flex flex-col gap-1 text-xs py-1">
+            <div className="flex items-center gap-1.5">
+              <span className="font-medium text-muted-foreground">{t("Total Orders")}:</span>
+              <span className="font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800">
+                {stats.totalOrders ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold" title={t("Completed Orders")}>
+                ✓ {stats.completedOrders ?? 0}
+              </span>
+              <span className="text-rose-500 font-semibold" title={t("Cancelled Orders")}>
+                ✗ {stats.cancelledOrders ?? 0}
+              </span>
+            </div>
+            {stats.totalRevenue > 0 && (
+              <div className="font-medium text-amber-600 dark:text-amber-400 text-xs">
+                {stats.totalRevenue} EGP
+              </div>
+            )}
+          </div>
+        );
+      }
+    },
+    {
       accessorKey: "status",
       header: () => <IconHeader columnKey="status" />,
       cell: ({ row }) => {

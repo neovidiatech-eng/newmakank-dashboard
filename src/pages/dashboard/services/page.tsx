@@ -3,6 +3,7 @@ import TableWithQuery from "@/components/common/table/TableWithQuery";
 import getPermissions from "@/api/permissions";
 import { getTranslations } from "@/lib/i18n";
 import ServicesColumns from "./ServicesColumns";
+import BulkUploadControl from "@/components/pages/_stores/details/BulkUploadControl";
 
 export default async function page({ searchParams }: { searchParams: SearchParams }): Promise<JSX.Element> {
   const t = await getTranslations();
@@ -12,7 +13,9 @@ export default async function page({ searchParams }: { searchParams: SearchParam
   return (
     <>
       <CustomHeader />
-      <TableWithQuery
+      <div className="flex flex-col gap-6 w-full mx-auto px-4 py-2">
+        {permission?.post && <BulkUploadControl />}
+        <TableWithQuery
         endPoint={["services"]}
         columns={ServicesColumns}
         hideCreateNew={!permission?.post}
@@ -39,6 +42,7 @@ export default async function page({ searchParams }: { searchParams: SearchParam
           }
         ]}
       />
+      </div>
     </>
   );
 }

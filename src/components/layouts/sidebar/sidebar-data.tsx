@@ -10,6 +10,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         title: "financialOverview",
         url: "/dashboard/financial-overview"
       },
+      (permissions?.statistics?.get || permissions?.Users?.get || permissions?.Stores?.get || permissions?.delivery?.get) && {
+        title: "activityAnalytics",
+        url: "/analytics"
+      },
       permissions?.logs?.get && {
         title: "activityLogs",
         url: "/logs"
@@ -46,6 +50,7 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
       },
 
       (permissions?.Banners?.get ||
+        permissions?.["special-delivery-banners"]?.get ||
         permissions?.Rating?.get ||
         permissions?.Coupons?.get ||
         permissions?.Service?.get ||
@@ -59,6 +64,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
           permissions?.Banners?.get && {
             title: "banners",
             url: "/banners"
+          },
+          permissions?.["special-delivery-banners"]?.get && {
+            title: "specialDeliveryBanners",
+            url: "/special-delivery-banners"
           },
           (permissions?.Banners?.get || permissions?.["fortune-wheel"]?.get) && {
             title: "fortuneWheel",

@@ -191,13 +191,13 @@ export default async function ActivityLogsPage({
   const activeAction = normalizeAction(resolvedSearchParams?.action);
   const actionFilters = [
     { label: t("All") || "الكل", value: null },
-    { label: "LOGIN", value: "LOGIN" },
-    { label: "LOGOUT", value: "LOGOUT" },
-    { label: t("Order Accepted") || "ORDER_ACCEPTED", value: "ORDER_ACCEPTED" },
-    { label: t("Order Rejected") || "ORDER_REJECTED", value: "ORDER_REJECTED" },
-    { label: t("Order Ready") || "ORDER_READY", value: "ORDER_READY" },
-    { label: t("Price Updated") || "SERVICE_PRICE_UPDATED", value: "SERVICE_PRICE_UPDATED" },
-    { label: t("Product Updated") || "SERVICE_UPDATED", value: "SERVICE_UPDATED" }
+    { label: t("LOGIN") || "LOGIN", value: "LOGIN" },
+    { label: t("LOGOUT") || "LOGOUT", value: "LOGOUT" },
+    { label: t("ORDER_ACCEPTED") || t("Order Accepted") || "Order Accepted", value: "ORDER_ACCEPTED" },
+    { label: t("ORDER_REJECTED") || t("Order Rejected") || "Order Rejected", value: "ORDER_REJECTED" },
+    { label: t("ORDER_READY") || t("Order Ready") || "Order Ready", value: "ORDER_READY" },
+    { label: t("SERVICE_PRICE_UPDATED") || t("Price Updated") || "Price Updated", value: "SERVICE_PRICE_UPDATED" },
+    { label: t("SERVICE_UPDATED") || t("Product Updated") || "Product Updated", value: "SERVICE_UPDATED" }
   ];
 
   return (
@@ -295,7 +295,7 @@ export default async function ActivityLogsPage({
                         <TableCell className="text-center">
                           <Badge variant={actionPresentation.variant}>
                             <ActionIcon className="h-3.5 text-black  w-3.5" />
-                            <span className="text-black ">{`${formatActionLabel(log.action)}`}</span>
+                            <span className="text-black ">{t(log.action ?? "") || formatActionLabel(log.action)}</span>
                           </Badge>
                         </TableCell>
                         <TableCell className="text-center text-gray-600 dark:text-gray-300">

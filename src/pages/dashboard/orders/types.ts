@@ -170,6 +170,14 @@ export interface ApiResponseOrderItemsItemOrderItemAddonsItem {
   Addon: ApiResponseOrderItemsItemOrderItemAddonsItemAddon;
 }
 
+export interface ApiResponseOrderBundle {
+  id: number;
+  title: { ar: string; en: string };
+  requiredPaidQuantity: number;
+  freeQuantity: number;
+  freeDiscountAmount: number;
+}
+
 export interface ApiResponseOrderItemsItem {
   id: number;
   orderId: number;
@@ -177,6 +185,9 @@ export interface ApiResponseOrderItemsItem {
   sizeId: number;
   quantity: number;
   price: number;
+  isFree?: boolean;
+  orderBundleId?: number | null;
+  OrderBundle?: ApiResponseOrderBundle | null;
   Service: ApiResponseOrderItemsItemService;
   Size: ApiResponseOrderItemsItemSize;
   OrderItemAddons: ApiResponseOrderItemsItemOrderItemAddonsItem[];

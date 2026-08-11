@@ -30,6 +30,7 @@ export default async function page({ searchParams }: { searchParams: SearchParam
       <StoresTable
         permission={permission}
         cardHeader={t("Stores")}
+        extraParams={{ includeStats: true }}
         filters={[
           { name: "name", type: "text", width: 3 },
           {
@@ -45,6 +46,29 @@ export default async function page({ searchParams }: { searchParams: SearchParam
             options: [
               { label: t("Approve"), value: "true" },
               { label: t("Pending Review"), value: "false" }
+            ]
+          },
+          {
+            name: "orderFilter",
+            type: "select",
+            width: 3,
+            label: t("Order Filter"),
+            options: [
+              { label: t("Most Orders"), value: "MOST_ORDERS" },
+              { label: t("Least Orders"), value: "LEAST_ORDERS" },
+              { label: t("Zero Orders"), value: "ZERO_ORDERS" },
+              { label: t("Most Cancelled"), value: "MOST_CANCELLED" },
+              { label: t("Highest Revenue"), value: "MOST_REVENUE" }
+            ]
+          },
+          {
+            name: "zeroOrdersOnly",
+            type: "select",
+            width: 3,
+            label: t("Zero Orders Only"),
+            options: [
+              { label: t("Yes"), value: "true" },
+              { label: t("No"), value: "false" }
             ]
           }
         ]}

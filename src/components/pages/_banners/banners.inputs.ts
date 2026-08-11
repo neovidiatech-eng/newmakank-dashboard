@@ -44,8 +44,16 @@ export const BannersInputs = ({
         { label: tr("STORE", "محل"), value: "STORE" },
         { label: tr("CATEGORY", "فئة"), value: "CATEGORY" },
         { label: tr("SERVICE", "منتج"), value: "SERVICE" },
-        { label: tr("ZONE", "منطقة"), value: "ZONE" }
+        { label: tr("ZONE", "منطقة"), value: "ZONE" },
+        { label: tr("EXTERNAL_URL", "رابط خارجي"), value: "EXTERNAL_URL" }
       ]
+    },
+    {
+      name: "clickUrl",
+      type: "text",
+      cardId: "targeting",
+      width: 3,
+      disabled: isSpecialDelivery || targetType !== "EXTERNAL_URL"
     },
     {
       name: "customerCategoryId",
@@ -53,7 +61,7 @@ export const BannersInputs = ({
       apiUrl: ['customerCategories'],
       cardId: 'targeting',
       width: 3,
-      disabled: isSpecialDelivery || targetType === "GENERAL",
+      disabled: isSpecialDelivery || targetType !== "CUSTOMER_CATEGORY",
     },
     {
       name: "storeId",

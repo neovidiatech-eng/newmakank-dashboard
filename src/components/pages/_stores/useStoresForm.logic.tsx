@@ -44,10 +44,6 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
     resolver: zodResolver(StoresSchema(t, isEdit)),
     defaultValues: {
       ...extractFormDefaultInputs(inputs, data),
-      prepTimeMinutes: data?.prepTimeMinutes !== undefined && data?.prepTimeMinutes !== null ? String(data.prepTimeMinutes) : "",
-      deliveryTimeMinMinutes: data?.deliveryTimeMinMinutes !== undefined && data?.deliveryTimeMinMinutes !== null ? String(data.deliveryTimeMinMinutes) : "",
-      deliveryTimeMaxMinutes: data?.deliveryTimeMaxMinutes !== undefined && data?.deliveryTimeMaxMinutes !== null ? String(data.deliveryTimeMaxMinutes) : "",
-      minOrderAmount: data?.minOrderAmount !== undefined && data?.minOrderAmount !== null ? String(data.minOrderAmount) : "",
       templateId: ((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
                   ? String((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
                   : "",
@@ -112,22 +108,7 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       cover: formData.cover,
       lat: map?.lat ?? (isEdit ? (data as any)?.lat : 30.0444),
       lng: map?.lng ?? (isEdit ? (data as any)?.lng : 31.2357),
-      prepTimeMinutes:
-        rest.prepTimeMinutes !== undefined && rest.prepTimeMinutes !== "" && rest.prepTimeMinutes !== null
-          ? Number(rest.prepTimeMinutes)
-          : undefined,
-      deliveryTimeMinMinutes:
-        rest.deliveryTimeMinMinutes !== undefined && rest.deliveryTimeMinMinutes !== "" && rest.deliveryTimeMinMinutes !== null
-          ? Number(rest.deliveryTimeMinMinutes)
-          : undefined,
-      deliveryTimeMaxMinutes:
-        rest.deliveryTimeMaxMinutes !== undefined && rest.deliveryTimeMaxMinutes !== "" && rest.deliveryTimeMaxMinutes !== null
-          ? Number(rest.deliveryTimeMaxMinutes)
-          : undefined,
-      minOrderAmount:
-        rest.minOrderAmount !== undefined && rest.minOrderAmount !== "" && rest.minOrderAmount !== null
-          ? Number(rest.minOrderAmount)
-          : null,
+
       // Required by the backend on create — default to 0 (first/unsorted) if left blank
       // rather than blocking store creation over a manual sort number nobody filled in.
       storeOrder:

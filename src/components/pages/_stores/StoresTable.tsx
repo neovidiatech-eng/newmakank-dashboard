@@ -22,11 +22,13 @@ import { CheckCircle2, XCircle, Ban } from "lucide-react";
 export default function StoresTable({
   permission,
   filters,
-  cardHeader
+  cardHeader,
+  extraParams
 }: {
   permission: any;
   filters: any[];
   cardHeader: string;
+  extraParams?: Record<string, unknown>;
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -253,6 +255,7 @@ export default function StoresTable({
         columns={StoresColumns}
         hideCreateNew={!permission?.post}
         cardHeader={cardHeader}
+        extraParams={extraParams}
         tableActions={{
           onEdit: permission?.put || permission?.patch,
           onDelete: permission?.delete ? ["stores"] : undefined,

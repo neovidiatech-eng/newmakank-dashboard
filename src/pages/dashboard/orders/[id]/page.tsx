@@ -511,43 +511,88 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
     </div>
       
       {/* Sibling div for Printing */}
-      <div className="hidden print:block w-full max-w-md mx-auto p-4 text-black bg-white font-mono text-xs leading-relaxed" dir="rtl">
+      <div className="hidden print:block w-full max-w-sm mx-auto p-6 text-black bg-white font-mono text-xs leading-relaxed" dir="rtl">
+        {/* CSS to hide headers, footers (localhost URLs) and page numbers */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media print {
+            @page {
+              margin: 0;
+            }
+            body {
+              margin: 0.8cm;
+              background-color: white !important;
+              color: black !important;
+            }
+          }
+        ` }} />
+
         {/* Header */}
-        <div className="text-center space-y-1 mb-4 border-b border-dashed border-black pb-4">
-          <h2 className="text-lg font-bold">فاتورة طلب #{data?.id}</h2>
-          <p className="text-xs">المتجر: {getLocalizedName((data as any)?.Store?.name) || (data as any)?.Store?.name || "—"}</p>
-          <p className="text-xs">التاريخ: {new Date(data?.createdAt || "").toLocaleString("ar-EG")}</p>
+        <div className="text-center space-y-1 mb-4 pb-4 border-b-2 border-dotted border-black">
+          <h1 className="text-2xl font-black tracking-wider uppercase mb-1">مـكـانـك</h1>
+          <p className="text-[10px] text-gray-500 font-sans tracking-wide">منصة التوصيل الأولى</p>
+          <div className="my-2 border border-black py-1 px-3 inline-block rounded">
+            <h2 className="text-sm font-bold">فاتورة طلب #{data?.id}</h2>
+          </div>
+          <p className="text-[10px] font-sans">التاريخ: {new Date(data?.createdAt || "").toLocaleString("ar-EG")}</p>
         </div>
 
-        {/* Customer details */}
-        <div className="space-y-1 mb-4 border-b border-dashed border-black pb-4 text-xs">
+        {/* Store & Customer Details */}
+        <div className="space-y-1.5 mb-4 pb-4 border-b border-dashed border-black text-xs">
+          <p className="flex justify-between">
+            <span className="font-bold">المتجر:</span>
+            <span>{getLocalizedName(data?.invoice?.store?.name) || "—"}</span>
+          </p>
+          {data?.invoice?.store?.address && (
+            <p className="text-[10px] text-gray-600 text-left">{data.invoice.store.address}</p>
+          )}
+          <div className="h-[1px] bg-gray-200 my-1"></div>
           <p><strong>العميل:</strong> {data?.Customer?.name || "—"}</p>
           <p><strong>الهاتف:</strong> {data?.Customer?.phone || "—"}</p>
-          <p>
+          {(data as any)?.Zone?.name && (
+            <p><strong>المنطقة:</strong> {getLocalizedName((data as any).Zone.name)}</p>
+          )}
+          <p className="leading-tight">
             <strong>العنوان:</strong> {(data?.Address as any)?.adress || (data?.Address as any)?.address || "—"} 
             {(data?.Address as any)?.title ? ` (${(data?.Address as any)?.title})` : ""}
           </p>
-          {data?.note && <p><strong>ملاحظة العميل:</strong> {data.note}</p>}
-          <p><strong>طريقة الدفع:</strong> {data?.paymentMethod || "—"}</p>
+          {data?.note && (
+            <div className="bg-gray-100 p-1.5 rounded mt-1 border-r-2 border-black">
+              <strong>ملاحظة:</strong> {data.note}
+            </div>
+          )}
+          <p className="flex justify-between pt-1">
+            <span className="font-bold">طريقة الدفع:</span>
+            <span className="border border-black px-1.5 rounded font-sans text-[10px]">{data?.paymentMethod || "—"}</span>
+          </p>
         </div>
 
         {/* Order Items */}
-        <div className="mb-4 border-b border-dashed border-black pb-4">
-          <h3 className="font-bold mb-2">الأصناف:</h3>
+        <div className="mb-4 pb-4 border-b border-dashed border-black">
+          <h3 className="font-bold mb-2">الطلبات:</h3>
           <table className="w-full text-right text-xs">
             <thead>
-              <tr className="border-b border-black">
+              <tr className="border-b border-black font-bold">
                 <th className="pb-1 text-right">الصنف</th>
-                <th className="text-center pb-1">الكمية</th>
-                <th className="text-left pb-1">السعر</th>
+                <th className="text-center pb-1 w-12">الكمية</th>
+                <th className="text-left pb-1 w-20">السعر</th>
               </tr>
             </thead>
             <tbody>
               {data?.OrderItems?.map((item: any, idx: number) => (
-                <tr key={idx} className="border-b border-dashed border-gray-200">
-                  <td className="py-1.5 text-right">{getLocalizedName(item?.Service?.name) || item?.Service?.name || "—"}</td>
-                  <td className="text-center py-1.5">{item.quantity}</td>
-                  <td className="text-left py-1.5">{formatMoneyVal(item.price * item.quantity)} ج.م</td>
+                <tr key={idx} className="border-b border-dotted border-gray-300">
+                  <td className="py-2 text-right">
+                    <span className="font-bold">{getLocalizedName(item?.Service?.name) || item?.Service?.name || "—"}</span>
+                    {item?.Size?.name && (
+                      <div className="text-[10px] text-gray-500 font-sans">· المقاس: {getLocalizedName(item.Size.name)}</div>
+                    )}
+                    {item?.OrderItemAddons && item.OrderItemAddons.length > 0 && (
+                      <div className="text-[10px] text-gray-500 font-sans leading-tight">
+                        · إضافات: {item.OrderItemAddons.map((oia: any) => getLocalizedName(oia?.Addon?.name)).filter(Boolean).join("، ")}
+                      </div>
+                    )}
+                  </td>
+                  <td className="text-center py-2 font-bold font-sans">{item.quantity}</td>
+                  <td className="text-left py-2 font-sans">{formatMoneyVal(item.price * item.quantity)} ج.م</td>
                 </tr>
               ))}
             </tbody>
@@ -555,35 +600,37 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
         </div>
 
         {/* Totals */}
-        <div className="space-y-1.5 text-xs">
+        <div className="space-y-2 text-xs">
           <div className="flex justify-between">
             <span>سعر المنتجات:</span>
-            <span>{formatMoneyVal(data?.price || 0)} ج.م</span>
+            <span className="font-sans">{formatMoneyVal(data?.price || 0)} ج.م</span>
           </div>
           {combinedDiscount > 0 && (
-            <div className="flex justify-between text-green-600">
+            <div className="flex justify-between text-black">
               <span>الخصم:</span>
-              <span>- {formatMoneyVal(combinedDiscount)} ج.م</span>
+              <span className="font-sans">- {formatMoneyVal(combinedDiscount)} ج.م</span>
             </div>
           )}
           {data?.tax > 0 && (
             <div className="flex justify-between">
               <span>الضريبة:</span>
-              <span>{formatMoneyVal(data.tax)} ج.م</span>
+              <span className="font-sans">{formatMoneyVal(data.tax)} ج.م</span>
             </div>
           )}
           <div className="flex justify-between">
-            <span>الشحن:</span>
-            <span>{formatMoneyVal(data?.shipping || 0)} ج.م</span>
+            <span>رسوم التوصيل:</span>
+            <span className="font-sans">{formatMoneyVal(data?.shipping || 0)} ج.م</span>
           </div>
-          <div className="flex justify-between border-t border-dashed border-black pt-2 font-bold text-sm">
+          <div className="flex justify-between border-t border-double border-black pt-2 font-black text-sm">
             <span>الإجمالي النهائي:</span>
-            <span>{formatMoneyVal(totalPrice || 0)} ج.م</span>
+            <span className="font-sans">{formatMoneyVal(totalPrice || 0)} ج.م</span>
           </div>
         </div>
 
-        <div className="text-center mt-6 text-xs text-gray-500 border-t border-dashed border-black pt-4">
-          <p className="mt-1 font-bold">شكراً لتعاملكم معنا!</p>
+        {/* Footer */}
+        <div className="text-center mt-6 pt-4 border-t-2 border-dotted border-black">
+          <p className="font-bold">شكراً لتعاملكم معنا!</p>
+          <p className="text-[9px] text-gray-400 mt-1 font-sans">Powered by Makanak App</p>
         </div>
       </div>
     </>

@@ -18,6 +18,11 @@ export default function CitiesFormPage({ data }: { data?: CitiesType }) {
           title: t("Cities Information"),
           multiLang: true,
           width: 6
+        },
+        {
+          id: "mapCard",
+          title: t("Location"),
+          width: 6
         }
       ]}
       inputs={inputs}

@@ -1,4 +1,5 @@
 import { stores } from "@/pages/dashboard/stores/types";
+import ResetPeriodButton from "@/components/pages/_dashboard/ResetPeriodButton";
 import { StoreAbout } from "./details/StoreAbout";
 import { StoreCommotionButton } from "./details/StoreCommotionButton";
 import { ApplyTemplateButton } from "./details/ApplyTemplateButton";
@@ -9,6 +10,7 @@ import { StoreStats } from "./details/StoreStats";
 import { StoreTabs } from "./details/StoreTabs";
 import { StoreManagedByAdminToggle } from "./details/StoreManagedByAdminToggle";
 import { StoreDiscountButton } from "./details/StoreDiscountButton";
+import { StorePrepTimeButton } from "./details/StorePrepTimeButton";
 import { useTranslations } from "@/lib/i18n";
 import { AlertTriangle } from "lucide-react";
 
@@ -87,10 +89,22 @@ export default function StoreDetailsPage({
             initialDiscountValue={currentDiscount}
           />
           <ApplyTemplateButton storeId={Number(data.id)} />
+          <StorePrepTimeButton
+            storeId={Number(data.id)}
+            initialPrepTime={Number((data as any)?.prepTimeMinutes ?? 0)}
+            initialDeliveryMin={Number((data as any)?.deliveryTimeMinMinutes ?? 0)}
+            initialDeliveryMax={Number((data as any)?.deliveryTimeMaxMinutes ?? 0)}
+            initialMinOrderAmount={Number((data as any)?.minOrderAmount ?? 0)}
+          />
           <StoreCommotionButton
             storeId={Number(data.id)}
             initialValue={currentCommission}
             initialType={currentCommissionType}
+          />
+          <ResetPeriodButton
+            endPoint={["storeResetPeriod"]}
+            label={t("Reset Store Period") || "تصفير فترة المتجر"}
+            variant="secondary"
           />
         </div>
       </div>

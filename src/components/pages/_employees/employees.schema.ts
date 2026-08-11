@@ -7,11 +7,12 @@ export const EmployeesSchema = (t: TFunction, isEdit: boolean) => {
   return z.object({
     name: StringReq(t),
     email: EmailReq(t),
-    phone: StringReq(t).refine((val) => /^\+200?1[0125]\d{8}$/.test(val), {
+    phone: StringReq(t).refine((val) => /^(\+20|0020|20)?0?1[0125]\d{8}$/.test(val), {
       message: t("enterValidEgyptianPhone")
     }),
     password: isEdit ? noSchema() : StringReq(t, 6),
-    roleId: SelectReq(t)
+    roleId: SelectReq(t),
+    branchId: z.union([z.number(), z.string()]).optional().nullable()
   });
 };
 

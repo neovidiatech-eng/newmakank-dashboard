@@ -32,6 +32,7 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
       priceBeforeDiscount: data ? (data.priceAfterDiscount ? data.price : "") : undefined,
       priceAfterDiscount: data ? (data.priceAfterDiscount ? data.priceAfterDiscount : data.price) : undefined,
       available: data?.available !== undefined ? String(data.available) : "true",
+      status: data?.status || "ACTIVE",
       Sizes: data?.Sizes?.map((item: any) => {
         const hasDiscount = Boolean(item?.priceAfterDiscount);
         return {

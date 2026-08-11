@@ -11,14 +11,7 @@ export const StoresInputs = ({ isEdit, isAdmin }: {
     { name: "logo", type: "img", cardId: 'info', width: 3 },
     { name: "cover", type: "img", cardId: 'info', width: 3 },
     { name: "storeOrder", type: "number", cardId: 'info', width: 3, min: 0 },
-    ...(isEdit ? [
-      { name: "prepTimeMinutes", type: "number" as const, cardId: 'info', required: false, width: 3, min: 0 },
-      { name: "minOrderAmount", type: "number" as const, cardId: 'info', required: false, width: 3, min: 0 },
-      ...(isAdmin ? [
-        { name: "deliveryTimeMinMinutes", type: "number" as const, cardId: 'info', required: false, width: 3, min: 0 },
-        { name: "deliveryTimeMaxMinutes", type: "number" as const, cardId: 'info', required: false, width: 3, min: 0 }
-      ] : [])
-    ] : []),
+
     {
       name: 'map',
       type: 'map' as const,
@@ -28,7 +21,7 @@ export const StoresInputs = ({ isEdit, isAdmin }: {
     { name: "address", type: "text" as const, cardId: 'location', required: true, width: 6 },
     { name: "UserName", type: "text" as const, cardId: 'user', required: true, width: 6 },
     { name: "userEmail", type: "email" as const, cardId: 'user', required: true, width: 6 },
-    { name: "userPhone", type: "tel" as const, cardId: 'user', required: true, width: 3 },
+    { name: "userPhone", type: "tel" as const, cardId: 'user', required: !isEdit, width: 3 },
     { name: "userPass", type: "password" as const, cardId: 'user', required: !isEdit, width: 3 }
   ];
   return inputs;

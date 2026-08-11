@@ -24,9 +24,25 @@ export default function useEmployeesLogic({ data }: { data?: EmployeesType }) {
   });
 
   const onSubmit = async (formData: EmployeesType) => {
+    let formattedPhone = formData.phone;
+    if (formattedPhone) {
+      formattedPhone = formattedPhone.replace(/^(\+20|0020|20)/, "");
+      if (formattedPhone.startsWith("0")) {
+        formattedPhone = formattedPhone.substring(1);
+      }
+      formattedPhone = "+20" + formattedPhone;
+    }
+
+    const payload = {
+      ...formData,
+      phone: formattedPhone,
+      roleId: Number(formData.roleId),
+      branchId: formData.branchId ? Number(formData.branchId) : undefined
+    };
+
     await formAction({
       data,
-      formData: extractFormNameInputs({ inputs, data: formData }),
+      formData: payload as any,
       endpoint: ["employees"],
       reset: reset,
       t

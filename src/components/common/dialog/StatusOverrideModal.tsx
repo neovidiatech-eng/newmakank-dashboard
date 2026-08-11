@@ -74,12 +74,12 @@ export default function StatusOverrideModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[450px] z-50 rounded-lg shadow-xl" id="status-override-dialog">
+      <DialogContent className="sm:max-w-[450px] rounded-lg shadow-xl text-gray-900 dark:text-gray-100 bg-white dark:bg-zinc-900" id="status-override-dialog">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
+          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
             {isBusy ? t("Specify Busy Details") || "تحديد تفاصيل حالة مشغول" : t("Specify Closure Details") || "تحديد تفاصيل الإيقاف مؤقتاً"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-gray-500 dark:text-gray-400">
             {t("StatusDetailsDescription") || "يرجى تحديد سبب الإيقاف المؤقت أو تغيير حالة النشاط ليظهر للعملاء بشكل واضح."}
           </DialogDescription>
         </DialogHeader>
@@ -87,7 +87,7 @@ export default function StatusOverrideModal({
         <form onSubmit={handleSubmit} className="space-y-6 pt-2">
           {isBusy && (
             <div className="space-y-2">
-              <Label htmlFor="busy-minutes" className="text-sm font-semibold">
+              <Label htmlFor="busy-minutes" className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                 {t("Busy Duration (minutes)") || "مدة الانشغال (بالدقائق)"}
               </Label>
               <Input
@@ -98,13 +98,13 @@ export default function StatusOverrideModal({
                 value={busyMinutes}
                 onChange={(e) => setBusyMinutes(Number(e.target.value))}
                 placeholder="30"
-                className="w-full"
+                className="w-full text-gray-900 dark:text-gray-100 bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700"
               />
             </div>
           )}
 
           <div className="space-y-3">
-            <Label className="text-sm font-semibold">
+            <Label className="text-sm font-semibold text-gray-800 dark:text-gray-200">
               {t("Suspension Reason") || "سبب الإيقاف/الحالة"}
             </Label>
             <RadioGroup
@@ -114,28 +114,28 @@ export default function StatusOverrideModal({
             >
               <div className="flex items-center space-x-2 space-x-reverse gap-2">
                 <RadioGroupItem value="high_demand" id="r-high_demand" />
-                <Label htmlFor="r-high_demand" className="cursor-pointer font-medium text-sm">
+                <Label htmlFor="r-high_demand" className="cursor-pointer font-medium text-sm text-gray-800 dark:text-gray-200">
                   {t("High demand of orders") || "ضغط طلبات"}
                 </Label>
               </div>
 
               <div className="flex items-center space-x-2 space-x-reverse gap-2">
                 <RadioGroupItem value="power_outage" id="r-power_outage" />
-                <Label htmlFor="r-power_outage" className="cursor-pointer font-medium text-sm">
+                <Label htmlFor="r-power_outage" className="cursor-pointer font-medium text-sm text-gray-800 dark:text-gray-200">
                   {t("Power outage") || "انقطاع كهرباء"}
                 </Label>
               </div>
 
               <div className="flex items-center space-x-2 space-x-reverse gap-2">
                 <RadioGroupItem value="out_of_stock" id="r-out_of_stock" />
-                <Label htmlFor="r-out_of_stock" className="cursor-pointer font-medium text-sm">
+                <Label htmlFor="r-out_of_stock" className="cursor-pointer font-medium text-sm text-gray-800 dark:text-gray-200">
                   {t("Out of stock") || "نفاد خامات"}
                 </Label>
               </div>
 
               <div className="flex items-center space-x-2 space-x-reverse gap-2">
                 <RadioGroupItem value="custom" id="r-custom" />
-                <Label htmlFor="r-custom" className="cursor-pointer font-medium text-sm">
+                <Label htmlFor="r-custom" className="cursor-pointer font-medium text-sm text-gray-800 dark:text-gray-200">
                   {t("Other reason") || "سبب آخر..."}
                 </Label>
               </div>
@@ -144,7 +144,7 @@ export default function StatusOverrideModal({
 
           {reasonType === "custom" && (
             <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
-              <Label htmlFor="custom-reason" className="text-sm font-semibold">
+              <Label htmlFor="custom-reason" className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                 {t("Write your reason") || "اكتب السبب بالتفصيل"}
               </Label>
               <Textarea
@@ -153,7 +153,7 @@ export default function StatusOverrideModal({
                 value={customReason}
                 onChange={(e) => setCustomReason(e.target.value)}
                 placeholder={t("WriteReasonPlaceholder") || "أدخل تفاصيل السبب هنا (مثلاً: أعمال صيانة سنوية)"}
-                className="w-full min-h-[80px]"
+                className="w-full min-h-[80px] text-gray-900 dark:text-gray-100 bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700"
               />
             </div>
           )}

@@ -44,9 +44,29 @@ const page = async ({ params }: { params: Params }): Promise<JSX.Element> => {
     const currentMinutes = now.getMinutes().toString().padStart(2, '0');
     const currentTimeStr = `${currentHours}:${currentMinutes}`;
     
+    const extractTimeHHMM = (timeStr: string) => {
+      if (!timeStr) return "00:00";
+      if (timeStr.includes("T")) {
+        const timePart = timeStr.split("T")[1];
+        if (timePart) {
+          const parts = timePart.split(":");
+          if (parts[0] && parts[1]) {
+            return `${parts[0]}:${parts[1]}`;
+          }
+        }
+      }
+      const parts = timeStr.split(":");
+      if (parts.length >= 2) {
+        return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+      }
+      return timeStr;
+    };
+
     isCurrentlyOpen = scheduleData.some((s: any) => {
       if (s.day !== currentDay) return false;
-      return currentTimeStr >= s.openingTime && currentTimeStr <= s.closingTime;
+      const op = extractTimeHHMM(s.openingTime);
+      const cl = extractTimeHHMM(s.closingTime);
+      return currentTimeStr >= op && currentTimeStr <= cl;
     });
   }
 

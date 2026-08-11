@@ -1,36 +1,37 @@
-'use client'
 import PhoneDirectionCol from "@/components/common/table/columns/Phone.direction";
 import DateCol from "@/components/common/table/columns/date.column";
 import { ImageCell } from "@/components/common/table/columns/img-cell";
 import { type ColumnDef } from "@tanstack/react-table";
+import { useTranslations } from "@/lib/i18n";
 import { employeesEntity } from "./types";
 
 export default function EmployeesColumns(): ColumnDef<employeesEntity>[] {
+    const t = useTranslations();
 
     const columns = [
         {
             accessorKey: "id",
-            header: "Id",
+            header: t("Id") || "Id",
             cell: ({ getValue }) => <span>{getValue() as string}</span>
         },
         {
             accessorKey: "name",
-            header: "Name",
+            header: t("Name") || "Name",
             cell: ({ getValue }) => <span>{getValue() as string}</span>
         },
         {
             accessorKey: "email",
-            header: "Email",
+            header: t("Email") || "Email",
             cell: ({ getValue }) => <span>{getValue() as string}</span>
         },
         {
             accessorKey: "phone",
-            header: "Phone",
+            header: t("Phone") || "Phone",
             cell: ({ getValue }) => <PhoneDirectionCol value={getValue() as string} />
         },
         {
             accessorKey: "Role.name",
-            header: "Role",
+            header: t("Role") || "Role",
             cell: ({ row }) => {
                 const name = row.original.Role?.name as any;
                 return <span>{name?.ar || name?.en || "-"}</span>;
@@ -38,7 +39,7 @@ export default function EmployeesColumns(): ColumnDef<employeesEntity>[] {
         },
         {
             accessorKey: "image",
-            header: "Image",
+            header: t("Image") || "Image",
             cell: ({ getValue }) => {
                 const image = getValue() as string;
                 return (
@@ -50,7 +51,7 @@ export default function EmployeesColumns(): ColumnDef<employeesEntity>[] {
         },
         {
             accessorKey: "createdAt",
-            header: "CreatedAt",
+            header: t("CreatedAt") || "CreatedAt",
             cell: ({ getValue }) => {
                 return (
                     <DateCol date={getValue()} />

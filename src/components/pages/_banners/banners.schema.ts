@@ -18,6 +18,7 @@ categoryId:selectNotReq(),
 serviceId:selectNotReq(),
 zoneIds:noSchema(),
 specialDelivery:noSchema(),
+clickUrl:noSchema(),
 startDate:noSchema(),
 endDate:noSchema(),
     order: noSchema(),
@@ -27,6 +28,14 @@ endDate:noSchema(),
         ? data.specialDelivery.includes("true")
         : Boolean(data.specialDelivery);
       const targetType = isSpecialDelivery ? "SPECIAL_DRIVER" : data.targetType;
+
+      if (targetType === "EXTERNAL_URL") {
+        if (!data.clickUrl) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: t("Required"), path: ["clickUrl"] });
+        } else if (!data.clickUrl.startsWith("http://") && !data.clickUrl.startsWith("https://")) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: t("clickUrl must be http or https"), path: ["clickUrl"] });
+        }
+      }
 
       if (["STORE", "CATEGORY", "SERVICE", "ZONE"].includes(targetType as string)) {
         if (!data.storeId) {

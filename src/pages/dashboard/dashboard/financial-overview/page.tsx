@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useApiQuery } from "@/hooks/useApiQuery";
-import { useSearchParams } from "react-router-dom";
 import { useTranslations, useLocale } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Link } from "@/lib/navigation";
 import {
   Banknote,
   TrendingUp,
@@ -15,7 +15,6 @@ import {
   Coins,
   ShieldCheck,
   Wallet,
-  Coins as CoinsIcon,
   HandCoins,
   ArrowUpRight,
   ArrowDownLeft,
@@ -23,7 +22,13 @@ import {
   CheckCircle,
   HelpCircle,
   RotateCcw,
-  Calendar
+  Calendar as CalendarIcon,
+  PackageCheck,
+  PackageX,
+  CreditCard,
+  Truck,
+  Package,
+  ChevronLeft
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -36,363 +41,500 @@ function formatMoney(value: number | string | null | undefined, locale: string) 
   }).format(Number.isFinite(numberValue) ? numberValue : 0);
 }
 
-function pad2(value: number) {
-  return String(value).padStart(2, "0");
-}
-
-function toDateOnly(date: Date) {
-  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
-}
-
-function getCurrentMonthValue() {
-  const now = new Date();
-  return `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`;
-}
-
-// monthValue is "YYYY-MM" — returns the first/last calendar day of that month as YYYY-MM-DD
-function getMonthRange(monthValue: string) {
-  const [year, month] = monthValue.split("-").map(Number);
-  const fromDate = new Date(year, month - 1, 1);
-  const toDate = new Date(year, month, 0);
-  return { fromDate: toDateOnly(fromDate), toDate: toDateOnly(toDate) };
-}
-
-function buildMonthOptions(locale: string, count = 12) {
-  const formatter = new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
-    year: "numeric",
-    month: "long"
-  });
-  const now = new Date();
-  return Array.from({ length: count }, (_, index) => {
-    const date = new Date(now.getFullYear(), now.getMonth() - index, 1);
-    const value = `${date.getFullYear()}-${pad2(date.getMonth() + 1)}`;
-    return { value, label: formatter.format(date) };
-  });
-}
-
 export default function FinancialOverviewPage() {
   const t = useTranslations();
   const locale = useLocale();
-  const [searchParams, setSearchParams] = useSearchParams();
 
-  const currentMonthValue = getCurrentMonthValue();
-  const monthValue = searchParams.get("month") || currentMonthValue;
-  const { fromDate, toDate } = useMemo(() => getMonthRange(monthValue), [monthValue]);
-  const monthOptions = useMemo(() => buildMonthOptions(locale), [locale]);
+  // Period Filter State
+  const [periodFilter, setPeriodFilter] = useState<string>("THIS_MONTH");
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
+
+  // Build queryParams according to backend specification
+  const queryParams = useMemo(() => {
+    const params: Record<string, string> = {};
+    if (periodFilter === "CUSTOM") {
+      if (fromDate) params.fromDate = fromDate;
+      if (toDate) params.toDate = toDate;
+      params.periodFilter = "CUSTOM";
+    } else if (periodFilter) {
+      params.periodFilter = periodFilter;
+    }
+    return params;
+  }, [periodFilter, fromDate, toDate]);
 
   const { data: response, isLoading } = useApiQuery({
-    queryKey: ["financialOverview", { fromDate, toDate }],
+    queryKey: ["financialOverview", JSON.stringify(queryParams)],
     endPoint: ["financialOverview"],
-    params: { fromDate, toDate }
+    params: queryParams
   });
 
   const financialData = response?.data || {};
+  const summary = financialData.summary || {};
+  const revenue = financialData.revenue || {};
+  const commission = financialData.commission || {};
+  const paymentMethods = financialData.paymentMethods || {};
+  const walletBalances = financialData.walletBalances || {};
+  const cashCollectedByDrivers = financialData.cashCollectedByDrivers ?? 0;
+  const withdrawals = financialData.withdrawals || {};
 
-  const handleMonthChange = (value: string) => {
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.set("month", value);
-    setSearchParams(nextParams);
-  };
-
-  const handleReset = () => {
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.delete("month");
-    setSearchParams(nextParams);
+  const handleResetFilter = () => {
+    setPeriodFilter("THIS_MONTH");
+    setFromDate("");
+    setToDate("");
   };
 
   return (
-    <div className="flex flex-col gap-8 w-full mx-auto px-4 py-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto px-4 py-6">
+      {/* Page Header & Period Filter Toolbar */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b pb-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2.5">
-            <TrendingUp className="h-8 w-8 text-primary" />
-            {t("financialOverview")}
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
+            <TrendingUp className="h-7 w-7 text-primary" />
+            الملخص المالي الشامل (Financial Overview)
           </h1>
-          <p className="text-sm text-muted-foreground mt-1.5">
-            {t("financialOverviewDescription", "مرجع موحد وشامل لجميع المعاملات والإحصائيات المالية على المنصة")}
+          <p className="text-xs text-muted-foreground mt-1">
+            مرجع تحليلي موحد لجميع المبيعات، عوائد التوصيل، عمولات المنصة، وأرصدة المناديب والمتاجر.
           </p>
         </div>
 
-        {/* Month Filter */}
-        <div className="flex flex-wrap items-end gap-3 bg-card p-4 rounded-xl border shadow-sm">
-          <div className="space-y-1.5">
-            <Label htmlFor="month-filter" className="text-xs font-semibold">
-              {t("selectMonth", "الشهر")}
-            </Label>
-            <Select value={monthValue} onValueChange={handleMonthChange}>
-              <SelectTrigger id="month-filter" className="h-9 w-48 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {monthOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Date Filter Toolbar */}
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 bg-card p-1.5 rounded-xl border shadow-sm">
+            {[
+              { id: "TODAY", label: "اليوم" },
+              { id: "YESTERDAY", label: "أمس" },
+              { id: "THIS_WEEK", label: "هذا الأسبوع" },
+              { id: "THIS_MONTH", label: "هذا الشهر" },
+              { id: "THIS_YEAR", label: "هذه السنة" },
+              { id: "CUSTOM", label: "مخصص" }
+            ].map((item) => (
+              <Button
+                key={item.id}
+                size="sm"
+                variant={periodFilter === item.id ? "default" : "ghost"}
+                onClick={() => setPeriodFilter(item.id)}
+                className="text-xs h-8 px-3"
+              >
+                {item.label}
+              </Button>
+            ))}
+            {(periodFilter !== "THIS_MONTH" || fromDate || toDate) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleResetFilter}
+                className="h-8 text-xs text-muted-foreground hover:text-foreground px-2"
+                title="إعادة ضبط"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
-          {monthValue !== currentMonthValue && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleReset}
-              className="h-9 w-9 text-muted-foreground hover:text-foreground"
-              title={t("resetToCurrentMonth", "الرجوع للشهر الحالي")}
-            >
-              <RotateCcw className="h-4 w-4" />
-            </Button>
+
+          {/* Custom Date Pickers */}
+          {periodFilter === "CUSTOM" && (
+            <div className="flex items-center gap-2 bg-card p-2 rounded-lg border text-xs">
+              <span className="text-muted-foreground">من:</span>
+              <Input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="h-8 text-xs w-36"
+              />
+              <span className="text-muted-foreground">إلى:</span>
+              <Input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="h-8 text-xs w-36"
+              />
+            </div>
           )}
         </div>
       </div>
 
-      {/* Info Alert about Live vs Filtered data */}
-      <Alert className="bg-sky-50 dark:bg-sky-950/20 border-sky-200 dark:border-sky-900/50">
-        <HelpCircle className="h-5 w-5 text-sky-600 dark:text-sky-400" />
-        <AlertTitle className="text-sky-800 dark:text-sky-300 font-semibold mb-1">
-          {t("dataFilterNoteTitle", "توضيح هام بشأن فلترة البيانات")}
+      {/* Info Alert */}
+      <Alert className="bg-sky-50/60 dark:bg-sky-950/20 border-sky-200 dark:border-sky-900/50">
+        <HelpCircle className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+        <AlertTitle className="text-sky-800 dark:text-sky-300 font-semibold text-xs mb-0.5">
+          توضيح بشأن الفلترة والضغط التفاعلي:
         </AlertTitle>
         <AlertDescription className="text-sky-700 dark:text-sky-400 text-xs">
-          {t(
-            "dataFilterNoteDescription",
-            "الأرقام المتعلقة بالنشاط (الإيرادات، العمولات، والخصومات، وطلبات السحب) تتأثر بنطاق التاريخ المحدد. بينما تُعرض أرصدة المحافظ والنقدية الحالية كأرقام لحظية مباشرة بالوقت الحالي ولا تتأثر بالتواريخ."
-          )}
+          الأرقام المتعلقة بالإيرادات وأعداد الطلبات والعمولات تتأثر بالفترة الزمنية المختارة. بينما تُعرض أرصدة المحافظ والنقدية الحالية كأرقام لحظية مباشرة. اضغط على أي كارت للتوجيه المباشر لقسمه الخاص.
         </AlertDescription>
       </Alert>
 
       {isLoading ? (
-        <div className="flex min-h-[400px] items-center justify-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <div className="flex min-h-[300px] items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
       ) : (
-        <div className="space-y-8">
-          {/* Section 1: Revenue, Discounts & Commissions */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Banknote className="h-5.5 w-5.5 text-primary" />
-              {t("revenueAndCommissions", "الإيرادات والعمولات")}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Total Orders Card */}
-              <Card className="border-border/60 bg-card shadow-sm hover:border-primary/30 transition-colors">
-                <CardContent className="p-6 flex items-center justify-between">
+        <div className="space-y-6">
+          {/* Section 1: KPI Top Cards (Clickable Drill-downs) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Total Orders Card -> Links to /orders */}
+            <Link href="/orders" className="group">
+              <Card className="border shadow-sm hover:border-primary/50 transition-all duration-200 group-hover:shadow-md cursor-pointer">
+                <CardContent className="p-4 flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">{t("totalOrders", "إجمالي الطلبات")}</p>
-                    <h3 className="text-3xl font-bold mt-2">{financialData.revenue?.totalOrders ?? 0}</h3>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Calendar className="h-6 w-6 text-primary" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Total Revenue Card */}
-              <Card className="border-emerald-200 dark:border-emerald-950 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-sm hover:border-emerald-400 transition-colors">
-                <CardContent className="p-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">{t("totalRevenue", "إجمالي الإيرادات")}</p>
-                    <h3 className="text-3xl font-bold text-emerald-900 dark:text-emerald-100 mt-2">
-                      {formatMoney(financialData.revenue?.totalRevenue, locale)}
+                    <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                      إجمالي الطلبات (GMV)
+                      <ChevronLeft className="h-3 w-3 text-muted-foreground group-hover:translate-x-[-2px] transition-transform rtl:rotate-180" />
+                    </p>
+                    <h3 className="text-2xl font-bold text-foreground mt-1">
+                      {summary.totalOrders ?? 0}
                     </h3>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Total Discounts Card */}
-              <Card className="border-rose-200 dark:border-rose-950 bg-rose-50/50 dark:bg-rose-950/20 shadow-sm hover:border-rose-400 transition-colors">
-                <CardContent className="p-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-rose-700 dark:text-rose-300">{t("Total Discounts Given", "إجمالي الخصومات الممنوحة")}</p>
-                    <h3 className="text-3xl font-bold text-rose-900 dark:text-rose-100 mt-2">
-                      {formatMoney(financialData.revenue?.totalDiscountGiven, locale)}
-                    </h3>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center">
-                    <Percent className="h-6 w-6 text-rose-600 dark:text-rose-400" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Commissions Split */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-              <Card className="border-border/60 bg-card shadow-sm hover:border-primary/30 transition-colors">
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-900/50">
-                    <ShieldCheck className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t("Platform Commission", "عمولة المنصة")}</p>
-                    <p className="text-2xl font-bold mt-1">
-                      {formatMoney(financialData.commission?.platformCommission, locale)}
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">
+                      مبيعات: {formatMoney(summary.totalRevenue, locale)}
                     </p>
                   </div>
+                  <div className="p-3 bg-primary/10 text-primary rounded-xl">
+                    <CalendarIcon className="h-6 w-6" />
+                  </div>
                 </CardContent>
               </Card>
+            </Link>
 
-              <Card className="border-border/60 bg-card shadow-sm hover:border-primary/30 transition-colors">
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-sky-100 text-sky-600 dark:bg-sky-900/50">
-                    <Coins className="h-6 w-6" />
-                  </div>
+            {/* Delivered Orders Card -> Links to /orders */}
+            <Link href="/orders?status=DELIVERED" className="group">
+              <Card className="border shadow-sm hover:border-emerald-400 transition-all duration-200 group-hover:shadow-md cursor-pointer bg-emerald-50/30 dark:bg-emerald-950/10">
+                <CardContent className="p-4 flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">{t("Store Commission", "عمولة المتاجر")}</p>
-                    <p className="text-2xl font-bold mt-1">
-                      {formatMoney(financialData.commission?.storeCommission, locale)}
+                    <p className="text-xs font-medium text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                      الطلبات المسلمة
+                      <ChevronLeft className="h-3 w-3 text-emerald-600 group-hover:translate-x-[-2px] transition-transform rtl:rotate-180" />
                     </p>
+                    <h3 className="text-2xl font-bold text-emerald-950 dark:text-emerald-100 mt-1">
+                      {summary.deliveredOrders ?? 0}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">ناجحة ومكتملة</p>
+                  </div>
+                  <div className="p-3 bg-emerald-500/20 text-emerald-600 rounded-xl">
+                    <PackageCheck className="h-6 w-6" />
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          </div>
+            </Link>
 
-          {/* Section 2: Wallet Balances & Live Cash */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Wallet className="h-5.5 w-5.5 text-primary" />
-              {t("walletBalancesAndLiveCash", "أرصدة المحافظ والنقدية الحالية")}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Stores Wallets */}
-              <Card className="border-border/60 bg-card shadow-sm hover:border-primary/30 transition-colors">
-                <CardHeader className="pb-2">
-                  <CardDescription className="text-xs">{t("currentLiveBalance", "الرصيد الحالي الآن")}</CardDescription>
-                  <CardTitle className="text-base font-semibold">{t("totalStoreWalletBalance", "إجمالي محافظ المتاجر")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">
-                    {formatMoney(financialData.walletBalances?.totalStoreWalletBalance, locale)}
+            {/* Cancelled Orders Card -> Links to /orders */}
+            <Link href="/orders?status=CANCELLED" className="group">
+              <Card className="border shadow-sm hover:border-rose-400 transition-all duration-200 group-hover:shadow-md cursor-pointer bg-rose-50/30 dark:bg-rose-950/10">
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-rose-800 dark:text-rose-300 flex items-center gap-1">
+                      الطلبات المكنسلة/المرفوضة
+                      <ChevronLeft className="h-3 w-3 text-rose-600 group-hover:translate-x-[-2px] transition-transform rtl:rotate-180" />
+                    </p>
+                    <h3 className="text-2xl font-bold text-rose-950 dark:text-rose-100 mt-1">
+                      {summary.cancelledOrders ?? 0}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">إلغاء أو رفض</p>
                   </div>
-                  <div className="mt-2 text-xs text-muted-foreground flex justify-between">
-                    <span>{t("totalStoreCommissionDeducted", "العمولات المستقطعة:")}</span>
-                    <span className="font-semibold text-foreground">
-                      {formatMoney(financialData.walletBalances?.totalStoreCommissionDeducted, locale)}
-                    </span>
+                  <div className="p-3 bg-rose-500/20 text-rose-600 rounded-xl">
+                    <PackageX className="h-6 w-6" />
                   </div>
                 </CardContent>
               </Card>
+            </Link>
 
-              {/* Drivers Wallets */}
-              <Card className="border-border/60 bg-card shadow-sm hover:border-primary/30 transition-colors">
-                <CardHeader className="pb-2">
-                  <CardDescription className="text-xs">{t("currentLiveBalance", "الرصيد الحالي الآن")}</CardDescription>
-                  <CardTitle className="text-base font-semibold">{t("totalDriverWalletBalance", "إجمالي محافظ المناديب")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">
-                    {formatMoney(financialData.walletBalances?.totalDriverWalletBalance, locale)}
-                  </div>
-                  <div className="mt-2 text-xs text-muted-foreground flex justify-between">
-                    <span>{t("totalDriverUnsettledCommission", "عمولات غير مسواة:")}</span>
-                    <span className="font-semibold text-rose-600">
-                      {formatMoney(financialData.walletBalances?.totalDriverUnsettledCommission, locale)}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Cash collected by drivers */}
-              <Card className="border-amber-200 dark:border-amber-950 bg-amber-50/30 dark:bg-amber-950/10 shadow-sm hover:border-amber-400 transition-colors">
-                <CardHeader className="pb-2">
-                  <CardDescription className="text-xs text-amber-700 dark:text-amber-400">{t("currentLiveBalance", "الرصيد الحالي الآن")}</CardDescription>
-                  <CardTitle className="text-base font-semibold text-amber-900 dark:text-amber-100">{t("cashCollectedByDrivers", "كاش طرف المناديب (الدفع عند الاستلام)")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-amber-800 dark:text-amber-200">
-                    {formatMoney(financialData.cashCollectedByDrivers, locale)}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {t("cashCollectedByDriversDescription", "إجمالي المبالغ النقدية المحصلة من العملاء والمتواجدة مع المناديب حالياً.")}
+            {/* Platform Net Commission Card */}
+            <Card className="border shadow-sm bg-violet-50/30 dark:bg-violet-950/10">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-violet-800 dark:text-violet-300">
+                    صافي عمولة المنصة
                   </p>
-                </CardContent>
-              </Card>
+                  <h3 className="text-2xl font-bold text-violet-950 dark:text-violet-100 mt-1">
+                    {formatMoney(summary.platformCommission, locale)}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">أرباح السيرفر الصافية</p>
+                </div>
+                <div className="p-3 bg-violet-500/20 text-violet-600 rounded-xl">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Section 2: Detailed Revenue & Commissions */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Revenue Breakdown */}
+            <Card className="lg:col-span-2 border shadow-sm">
+              <CardHeader className="pb-3 border-b">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Banknote className="h-5 w-5 text-primary" />
+                  تفاصيل المبيعات والإيرادات (Revenue Breakdown)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="p-3 rounded-xl border bg-muted/20">
+                    <p className="text-xs text-muted-foreground">أثمان المنتجات</p>
+                    <p className="text-base font-bold mt-1 text-foreground">
+                      {formatMoney(revenue.productPrice, locale)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl border bg-muted/20">
+                    <p className="text-xs text-muted-foreground">رسوم التوصيل</p>
+                    <p className="text-base font-bold mt-1 text-foreground">
+                      {formatMoney(revenue.shipping || summary.shippingFees, locale)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl border bg-muted/20">
+                    <p className="text-xs text-muted-foreground">رسوم التغليف</p>
+                    <p className="text-base font-bold mt-1 text-foreground">
+                      {formatMoney(revenue.packagingFee, locale)}
+                    </p>
+                  </div>
+                  
+                  {/* Discounts Card -> Links to /coupons */}
+                  <Link href="/coupons" className="group">
+                    <div className="p-3 rounded-xl border border-rose-200 bg-rose-50/40 dark:bg-rose-950/20 hover:border-rose-400 transition-colors cursor-pointer">
+                      <p className="text-xs text-rose-800 dark:text-rose-300 font-medium flex items-center justify-between">
+                        الخصومات والكوبونات
+                        <ChevronLeft className="h-3 w-3 text-rose-600 group-hover:translate-x-[-2px] transition-transform rtl:rotate-180" />
+                      </p>
+                      <p className="text-base font-bold mt-1 text-rose-900 dark:text-rose-100">
+                        {formatMoney(revenue.totalDiscountGiven, locale)}
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+
+                {/* Payment Methods Split */}
+                <div className="border-t pt-4 space-y-3">
+                  <h4 className="text-xs font-semibold text-muted-foreground">تفقيط وسائل الدفع (Payment Methods):</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between p-3 rounded-xl border bg-emerald-50/20 border-emerald-200/50">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-emerald-500/20 text-emerald-600 rounded-lg">
+                          <Banknote className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-foreground">الدفع كاش (Cash on Delivery)</p>
+                          <p className="text-xs text-muted-foreground">{paymentMethods.cash?.count ?? 0} طلبات</p>
+                        </div>
+                      </div>
+                      <span className="font-bold text-foreground">{formatMoney(paymentMethods.cash?.amount, locale)}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl border bg-indigo-50/20 border-indigo-200/50">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-indigo-500/20 text-indigo-600 rounded-lg">
+                          <CreditCard className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-foreground">الدفع بالمحفظة (Wallet)</p>
+                          <p className="text-xs text-muted-foreground">{paymentMethods.wallet?.count ?? 0} طلبات</p>
+                        </div>
+                      </div>
+                      <span className="font-bold text-foreground">{formatMoney(paymentMethods.wallet?.amount, locale)}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Commissions Card */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-3 border-b">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Coins className="h-5 w-5 text-primary" />
+                  أرباح وعمولات المنصة (Commissions)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 space-y-4">
+                <div className="p-4 rounded-xl border bg-violet-50/50 dark:bg-violet-950/20 border-violet-200">
+                  <p className="text-xs text-violet-800 dark:text-violet-300 font-semibold">عمولة المنصة الصافية</p>
+                  <h3 className="text-2xl font-bold text-violet-900 dark:text-violet-100 mt-1">
+                    {formatMoney(commission.platformCommission || summary.platformCommission, locale)}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">مستقطعة تلقائياً من الطلبات الناجحة</p>
+                </div>
+
+                {commission.storeCommission > 0 && (
+                  <div className="p-4 rounded-xl border bg-sky-50/50 dark:bg-sky-950/20 border-sky-200">
+                    <p className="text-xs text-sky-800 dark:text-sky-300 font-semibold">عمولة المتاجر</p>
+                    <h3 className="text-2xl font-bold text-sky-900 dark:text-sky-100 mt-1">
+                      {formatMoney(commission.storeCommission, locale)}
+                    </h3>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Section 3: Live Wallets & Cash Held by Drivers (Clickable) */}
+          <div className="space-y-3">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-primary" />
+              أرصدة المحافظ والنقدية الحالية (Live Balances)
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Stores Wallets -> Links to /stores */}
+              <Link href="/stores" className="group">
+                <Card className="border shadow-sm hover:border-primary/50 transition-all duration-200 group-hover:shadow-md cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <CardDescription className="text-xs text-muted-foreground flex items-center justify-between">
+                      <span>رصيد لحظي مباشر</span>
+                      <ChevronLeft className="h-3 w-3 text-muted-foreground group-hover:translate-x-[-2px] transition-transform rtl:rotate-180" />
+                    </CardDescription>
+                    <CardTitle className="text-sm font-semibold">إجمالي أرصدة محافظ المتاجر</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-foreground">
+                      {formatMoney(walletBalances.totalStoreWalletBalance, locale)}
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground flex justify-between">
+                      <span>العمولات المستقطعة:</span>
+                      <span className="font-semibold text-foreground">
+                        {formatMoney(walletBalances.totalStoreCommissionDeducted, locale)}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              {/* Drivers Wallets -> Links to /delivery */}
+              <Link href="/analytics?tab=drivers" className="group">
+                <Card className="border shadow-sm hover:border-primary/50 transition-all duration-200 group-hover:shadow-md cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <CardDescription className="text-xs text-muted-foreground flex items-center justify-between">
+                      <span>رصيد لحظي مباشر</span>
+                      <ChevronLeft className="h-3 w-3 text-muted-foreground group-hover:translate-x-[-2px] transition-transform rtl:rotate-180" />
+                    </CardDescription>
+                    <CardTitle className="text-sm font-semibold">إجمالي أرصدة محافظ المناديب</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-foreground">
+                      {formatMoney(walletBalances.totalDriverWalletBalance, locale)}
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground flex justify-between">
+                      <span>عمولات غير مسواة:</span>
+                      <span className="font-semibold text-rose-600">
+                        {formatMoney(walletBalances.totalDriverUnsettledCommission, locale)}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              {/* Cash Collected by Drivers -> Links to /delivery */}
+              <Link href="/analytics?tab=drivers" className="group">
+                <Card className="border shadow-sm border-amber-200 bg-amber-50/30 dark:bg-amber-950/10 hover:border-amber-400 transition-all duration-200 group-hover:shadow-md cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <CardDescription className="text-xs text-amber-700 dark:text-amber-400 flex items-center justify-between">
+                      <span>رصيد لحظي مباشر</span>
+                      <ChevronLeft className="h-3 w-3 text-amber-600 group-hover:translate-x-[-2px] transition-transform rtl:rotate-180" />
+                    </CardDescription>
+                    <CardTitle className="text-sm font-semibold text-amber-950 dark:text-amber-100">
+                      كاش طرف المناديب (الدفع عند الاستلام)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                      {formatMoney(cashCollectedByDrivers, locale)}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      مبالغ نقدية كاش متواجدة مع المناديب حالياً لم يتم تسويتها بعد.
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
           </div>
 
-          {/* Section 3: Withdrawal Requests Overview */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <HandCoins className="h-5.5 w-5.5 text-primary" />
-              {t("withdrawalsRequestsOverview", "طلبات السحب المالي")}
+          {/* Section 4: Withdrawal Requests Overview */}
+          <div className="space-y-3">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <HandCoins className="h-5 w-5 text-primary" />
+              طلبات السحب المالي (Withdrawal Requests)
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Stores Withdrawals */}
-              <Card className="border-border/60 bg-card shadow-sm">
-                <CardHeader className="pb-4 border-b">
-                  <CardTitle className="text-base font-bold flex items-center gap-2">
-                    <ArrowUpRight className="h-5 w-5 text-violet-600" />
-                    {t("storesWithdrawals", "طلبات سحب المتاجر")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6 grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1 p-3 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5 text-amber-500" />
-                      {t("PENDING", "قيد الانتظار")}
-                    </span>
-                    <span className="text-lg font-bold text-amber-800 dark:text-amber-300">
-                      {formatMoney(financialData.withdrawals?.stores?.pending?.amount, locale)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {t("requestsCount", "{count} طلبات").replace("{count}", String(financialData.withdrawals?.stores?.pending?.count ?? 0))}
-                    </span>
-                  </div>
+              {/* Stores Withdrawals Card -> Links to /stores */}
+              <Link href="/stores" className="group">
+                <Card className="border shadow-sm hover:border-primary/50 transition-all duration-200 group-hover:shadow-md cursor-pointer">
+                  <CardHeader className="pb-3 border-b">
+                    <CardTitle className="text-base font-bold flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ArrowUpRight className="h-5 w-5 text-violet-600" />
+                        طلبات سحب المتاجر (Stores Withdrawals)
+                      </div>
+                      <ChevronLeft className="h-4 w-4 text-muted-foreground group-hover:translate-x-[-2px] transition-transform rtl:rotate-180" />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4 grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1 p-3 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
+                        <Clock className="h-3.5 w-3.5 text-amber-500" />
+                        قيد الانتظار (Pending)
+                      </span>
+                      <span className="text-lg font-bold text-amber-800 dark:text-amber-300">
+                        {formatMoney(withdrawals.stores?.pending?.amount, locale)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {withdrawals.stores?.pending?.count ?? 0} طلبات
+                      </span>
+                    </div>
 
-                  <div className="flex flex-col gap-1 p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
-                      {t("APPROVED", "تمت الموافقة")}
-                    </span>
-                    <span className="text-lg font-bold text-emerald-800 dark:text-emerald-300">
-                      {formatMoney(financialData.withdrawals?.stores?.approved?.amount, locale)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {t("requestsCount", "{count} طلبات").replace("{count}", String(financialData.withdrawals?.stores?.approved?.count ?? 0))}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className="flex flex-col gap-1 p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+                        تمت الموافقة (Approved)
+                      </span>
+                      <span className="text-lg font-bold text-emerald-800 dark:text-emerald-300">
+                        {formatMoney(withdrawals.stores?.approved?.amount, locale)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {withdrawals.stores?.approved?.count ?? 0} طلبات
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
 
-              {/* Drivers Withdrawals */}
-              <Card className="border-border/60 bg-card shadow-sm">
-                <CardHeader className="pb-4 border-b">
-                  <CardTitle className="text-base font-bold flex items-center gap-2">
-                    <ArrowDownLeft className="h-5 w-5 text-sky-600" />
-                    {t("driversWithdrawals", "طلبات سحب المناديب")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6 grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1 p-3 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5 text-amber-500" />
-                      {t("PENDING", "قيد الانتظار")}
-                    </span>
-                    <span className="text-lg font-bold text-amber-800 dark:text-amber-300">
-                      {formatMoney(financialData.withdrawals?.drivers?.pending?.amount, locale)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {t("requestsCount", "{count} طلبات").replace("{count}", String(financialData.withdrawals?.drivers?.pending?.count ?? 0))}
-                    </span>
-                  </div>
+              {/* Drivers Withdrawals Card -> Links to /delivery */}
+              <Link href="/analytics?tab=drivers" className="group">
+                <Card className="border shadow-sm hover:border-primary/50 transition-all duration-200 group-hover:shadow-md cursor-pointer">
+                  <CardHeader className="pb-3 border-b">
+                    <CardTitle className="text-base font-bold flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ArrowDownLeft className="h-5 w-5 text-sky-600" />
+                        طلبات سحب المناديب (Drivers Withdrawals)
+                      </div>
+                      <ChevronLeft className="h-4 w-4 text-muted-foreground group-hover:translate-x-[-2px] transition-transform rtl:rotate-180" />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4 grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1 p-3 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
+                        <Clock className="h-3.5 w-3.5 text-amber-500" />
+                        قيد الانتظار (Pending)
+                      </span>
+                      <span className="text-lg font-bold text-amber-800 dark:text-amber-300">
+                        {formatMoney(withdrawals.drivers?.pending?.amount, locale)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {withdrawals.drivers?.pending?.count ?? 0} طلبات
+                      </span>
+                    </div>
 
-                  <div className="flex flex-col gap-1 p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
-                      {t("APPROVED", "تمت الموافقة")}
-                    </span>
-                    <span className="text-lg font-bold text-emerald-800 dark:text-emerald-300">
-                      {formatMoney(financialData.withdrawals?.drivers?.approved?.amount, locale)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {t("requestsCount", "{count} طلبات").replace("{count}", String(financialData.withdrawals?.drivers?.approved?.count ?? 0))}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className="flex flex-col gap-1 p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+                        تمت الموافقة (Approved)
+                      </span>
+                      <span className="text-lg font-bold text-emerald-800 dark:text-emerald-300">
+                        {formatMoney(withdrawals.drivers?.approved?.amount, locale)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {withdrawals.drivers?.approved?.count ?? 0} طلبات
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
           </div>
         </div>

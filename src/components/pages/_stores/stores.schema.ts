@@ -23,24 +23,15 @@ map: z.object({
 address:StringReq(t),
 UserName:StringReq(t),
 userEmail:EmailReq(t),
-userPhone: StringReq(t).refine((val) => /^(\+20|0020|20)?0?1[0125]\d{8}$/.test(val), {
-      message: t("enterValidEgyptianPhone")
-    }),
+    userPhone: isEdit
+      ? z.string().nullable().optional().refine((val) => !val || /^(\+20|0020|20)?0?1[0125]\d{8}$/.test(val), {
+          message: t("enterValidEgyptianPhone")
+        })
+      : StringReq(t).refine((val) => /^(\+20|0020|20)?0?1[0125]\d{8}$/.test(val), {
+          message: t("enterValidEgyptianPhone")
+        }),
 userPass:isEdit ? StringNotReq() : StringReq(t),
-prepTimeMinutes: z.union([z.number(), z.string()]).optional(),
-deliveryTimeMinMinutes: z.union([z.number(), z.string()]).optional(),
-deliveryTimeMaxMinutes: z.union([z.number(), z.string()]).optional(),
-minOrderAmount: z.union([z.number(), z.string()]).optional(),
-}).refine((data) => {
-  if (data.deliveryTimeMinMinutes !== undefined && data.deliveryTimeMinMinutes !== "" &&
-      data.deliveryTimeMaxMinutes !== undefined && data.deliveryTimeMaxMinutes !== "") {
-    return Number(data.deliveryTimeMaxMinutes) >= Number(data.deliveryTimeMinMinutes);
-  }
-  return true;
-}, {
-  message: t("deliveryTimeMaxMustBeGreaterThanMin") || "الحد الأقصى للتوصيل يجب أن يكون أكبر من أو يساوي الحد الأدنى",
-  path: ["deliveryTimeMaxMinutes"]
-});
+  });
   };
 
   
