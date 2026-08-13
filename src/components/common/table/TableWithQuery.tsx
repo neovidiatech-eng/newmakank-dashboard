@@ -87,8 +87,13 @@ export default function TableWithQuery({
       if (!isAllowedValue) return; // Ignore parameter if not valid for this table's filter options
     }
 
-    const mappedKey = mapParams?.[key] || key;
+    const mappedKey = mapParams?.[key] || (key === "name" ? "search" : key);
     params[mappedKey] = value;
+  });
+
+  // Ensure no client* keys ever leak into API query params
+  Object.keys(params).forEach(k => {
+    if (k.startsWith("client")) delete params[k];
   });
 
   const queryKey = [endPoint.join("/"), JSON.stringify(params)];
@@ -117,7 +122,7 @@ export default function TableWithQuery({
     const start = clientStartDate ? new Date(clientStartDate as string).getTime() : 0;
     const end = clientEndDate ? new Date(clientEndDate as string + "T23:59:59").getTime() : Infinity;
     tableData = tableData.filter((item: any) => {
-      const dateStr = item.createdAt || item.date;
+      const dateStr = item.createdAt || item.user?.createdAt || item.date || item.updatedAt;
       if (!dateStr) return true;
       const itemTime = new Date(dateStr).getTime();
       return itemTime >= start && itemTime <= end;

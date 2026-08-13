@@ -79,9 +79,9 @@ export default function AnalyticsPage(): JSX.Element {
 
   // Fetch driver summary statistics safely via hook
   const { data: driverRes } = useApiQuery({
-    queryKey: ["deliverySummaryData", JSON.stringify(dateParams)],
+    queryKey: ["deliverySummaryData"],
     endPoint: ["delivery"],
-    params: { limit: 1, ...dateParams }
+    params: { limit: 1, includeStats: true }
   });
 
   const driverSummary = driverRes?.data?.summary || driverRes?.summary || null;
