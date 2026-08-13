@@ -122,7 +122,7 @@ export default function TableWithQuery({
     const start = clientStartDate ? new Date(clientStartDate as string).getTime() : 0;
     const end = clientEndDate ? new Date(clientEndDate as string + "T23:59:59").getTime() : Infinity;
     tableData = tableData.filter((item: any) => {
-      const dateStr = item.createdAt || item.user?.createdAt || item.date || item.updatedAt;
+      const dateStr = item.lastOrderDate || item.latestOrderDate || item.lastOrderAt || item.createdAt || item.user?.createdAt || item.date || item.updatedAt;
       if (!dateStr) return true;
       const itemTime = new Date(dateStr).getTime();
       return itemTime >= start && itemTime <= end;
