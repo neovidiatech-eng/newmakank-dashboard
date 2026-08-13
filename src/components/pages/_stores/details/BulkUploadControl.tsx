@@ -62,6 +62,8 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
     }
   };
 
+  const [selectedStoreId, setSelectedStoreId] = useState<number | null>(storeId ?? null);
+
   // Trigger Excel file upload
   const handleUploadFile = async () => {
     if (!selectedFile) return;
@@ -71,8 +73,9 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
-      if (storeId) {
-        formData.append("storeId", String(storeId));
+      const targetStoreId = selectedStoreId || storeId;
+      if (targetStoreId) {
+        formData.append("storeId", String(targetStoreId));
       }
 
       let response;
