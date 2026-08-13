@@ -85,9 +85,11 @@ export default function AnalyticsPage(): JSX.Element {
     includeStats: true
   };
   if (startDate) {
+    dateParams.fromDate = startDate;
     dateParams.clientStartDate = startDate;
   }
   if (endDate) {
+    dateParams.toDate = endDate;
     dateParams.clientEndDate = endDate;
   }
 

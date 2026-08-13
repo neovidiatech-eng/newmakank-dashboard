@@ -122,10 +122,30 @@ export default function TableWithQuery({
     ? (rawData[dataKey] as Record<string, unknown>[])
     : [];
 
+  // Helper to parse dates safely regardless of DD/MM/YYYY or YYYY-MM-DD format
+  const parseSafeDate = (dStr?: unknown): number | null => {
+    if (!dStr || typeof dStr !== "string") return null;
+    const str = dStr.trim();
+    if (!str) return null;
+    // Handle DD/MM/YYYY format e.g. "14/07/2026" or "06/08/2026"
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(str)) {
+      const parts = str.split("/");
+      const day = parts[0].padStart(2, "0");
+      const month = parts[1].padStart(2, "0");
+      const year = parts[2];
+      const parsed = new Date(`${year}-${month}-${day}`).getTime();
+      return isNaN(parsed) ? null : parsed;
+    }
+    const d = new Date(str);
+    const time = d.getTime();
+    return isNaN(time) ? null : time;
+  };
+
   // Apply client-side date range filtering if clientStartDate or clientEndDate provided
   if (clientStartDate || clientEndDate) {
-    const start = clientStartDate ? new Date(clientStartDate as string).getTime() : 0;
-    const end = clientEndDate ? new Date(clientEndDate as string + "T23:59:59").getTime() : Infinity;
+    const start = parseSafeDate(clientStartDate) ?? 0;
+    const endRaw = parseSafeDate(clientEndDate);
+    const end = endRaw !== null ? endRaw + 86399999 : Infinity;
     const isTodayFilter = Boolean(clientStartDate && clientEndDate && clientStartDate === clientEndDate);
 
     tableData = tableData.filter((item: any) => {
@@ -140,11 +160,11 @@ export default function TableWithQuery({
 
       // Check all possible date fields (last order date, creation date, update date)
       const dateStr = item.lastOrderDate || item.latestOrderDate || item.lastOrderAt || item.lastActivity || item.createdAt || item.user?.createdAt || item.date || item.updatedAt;
-      if (!dateStr) {
+      const itemTime = parseSafeDate(dateStr);
+      if (itemTime === null) {
         return totalCount > 0;
       }
 
-      const itemTime = new Date(dateStr).getTime();
       const inRange = itemTime >= start && itemTime <= end;
 
       // Keep if date is in selected range, or if today filter and entity has any order activity
