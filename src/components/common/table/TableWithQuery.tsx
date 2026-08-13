@@ -121,11 +121,29 @@ export default function TableWithQuery({
   if (clientStartDate || clientEndDate) {
     const start = clientStartDate ? new Date(clientStartDate as string).getTime() : 0;
     const end = clientEndDate ? new Date(clientEndDate as string + "T23:59:59").getTime() : Infinity;
+    const isTodayFilter = Boolean(clientStartDate && clientEndDate && clientStartDate === clientEndDate);
+
     tableData = tableData.filter((item: any) => {
-      const dateStr = item.lastOrderDate || item.latestOrderDate || item.lastOrderAt || item.createdAt || item.user?.createdAt || item.date || item.updatedAt;
-      if (!dateStr) return true;
+      const stats = item.orderStats || item.stats || item._count || {};
+      const todayCount = Number(stats.todayOrders ?? stats.ordersToday ?? stats.deliveredToday ?? 0);
+      const totalCount = Number(stats.totalOrders ?? stats.orders ?? stats.completedOrders ?? item.ordersCount ?? 0);
+
+      // If filtering for Today and item has today orders, always include it
+      if (isTodayFilter && todayCount > 0) {
+        return true;
+      }
+
+      // Check all possible date fields (last order date, creation date, update date)
+      const dateStr = item.lastOrderDate || item.latestOrderDate || item.lastOrderAt || item.lastActivity || item.createdAt || item.user?.createdAt || item.date || item.updatedAt;
+      if (!dateStr) {
+        return totalCount > 0;
+      }
+
       const itemTime = new Date(dateStr).getTime();
-      return itemTime >= start && itemTime <= end;
+      const inRange = itemTime >= start && itemTime <= end;
+
+      // Keep if date is in selected range, or if today filter and entity has any order activity
+      return inRange || (isTodayFilter && (todayCount > 0 || totalCount > 0));
     });
   }
 
