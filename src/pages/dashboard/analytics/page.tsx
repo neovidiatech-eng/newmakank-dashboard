@@ -514,7 +514,7 @@ export default function AnalyticsPage(): JSX.Element {
             endPoint={["users"]}
             columns={UsersColumns as any}
             cardHeader="تحليلات ونشاط العملاء"
-            extraParams={dateParams}
+            extraParams={{ ...dateParams, roleKey: "CUSTOMER" }}
             omitParams={["tab"]}
             tableActions={{
               onInfo: "/users",
