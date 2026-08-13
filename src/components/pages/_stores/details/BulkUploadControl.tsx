@@ -167,7 +167,7 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
 
       {/* Upload Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto z-50">
+        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto bg-card text-card-foreground border border-border shadow-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-bold">
               <Upload className="h-5 w-5 text-primary" />
