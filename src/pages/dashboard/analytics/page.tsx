@@ -26,10 +26,24 @@ import IconHeader from "@/components/common/table/columns/icon-header";
 import { PriceAmount } from "@/components/PriceAmount";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { useTranslations } from "@/lib/i18n";
+import { useSearchParams, useRouter, usePathname } from "@/lib/navigation";
 
 export default function AnalyticsPage(): JSX.Element {
   const t = useTranslations();
-  const [activeTab, setActiveTab] = useState<"drivers" | "stores" | "customers">("drivers");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const urlTab = searchParams.get("tab") as "drivers" | "stores" | "customers" | null;
+  const [activeTabState, setActiveTabState] = useState<"drivers" | "stores" | "customers">("drivers");
+  const activeTab = (urlTab === "drivers" || urlTab === "stores" || urlTab === "customers") ? urlTab : activeTabState;
+
+  const handleTabChange = (newTab: "drivers" | "stores" | "customers") => {
+    setActiveTabState(newTab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", newTab);
+    router.push(`${pathname}?${params.toString()}`);
+  };
   
   // Date Range Filtering state
   const [startDate, setStartDate] = useState<string>("");
@@ -363,7 +377,7 @@ export default function AnalyticsPage(): JSX.Element {
         <div className="flex items-center gap-2 border-b border-border pb-3">
           <button
             type="button"
-            onClick={() => setActiveTab("drivers")}
+            onClick={() => handleTabChange("drivers")}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
               activeTab === "drivers"
                 ? "bg-primary text-primary-foreground shadow-sm"
@@ -376,7 +390,7 @@ export default function AnalyticsPage(): JSX.Element {
 
           <button
             type="button"
-            onClick={() => setActiveTab("stores")}
+            onClick={() => handleTabChange("stores")}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
               activeTab === "stores"
                 ? "bg-primary text-primary-foreground shadow-sm"
@@ -389,7 +403,7 @@ export default function AnalyticsPage(): JSX.Element {
 
           <button
             type="button"
-            onClick={() => setActiveTab("customers")}
+            onClick={() => handleTabChange("customers")}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
               activeTab === "customers"
                 ? "bg-primary text-primary-foreground shadow-sm"

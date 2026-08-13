@@ -87,7 +87,7 @@ export default function TableWithQuery({
       if (!isAllowedValue) return; // Ignore parameter if not valid for this table's filter options
     }
 
-    const mappedKey = mapParams?.[key] || (key === "name" ? "search" : key);
+    const mappedKey = mapParams?.[key] || key;
     params[mappedKey] = value;
   });
 
@@ -95,6 +95,15 @@ export default function TableWithQuery({
   Object.keys(params).forEach(k => {
     if (k.startsWith("client")) delete params[k];
   });
+
+  // Transform 'search' query parameter to 'name' for backend endpoints that do not accept 'search' (e.g. users, stores)
+  const endpointPath = endPoint.join("/").toLowerCase();
+  if ((endpointPath.includes("users") || endpointPath.includes("stores")) && params.search) {
+    if (!params.name) {
+      params.name = params.search;
+    }
+    delete params.search;
+  }
 
   const queryKey = [endPoint.join("/"), JSON.stringify(params)];
 
