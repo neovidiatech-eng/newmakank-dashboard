@@ -96,13 +96,9 @@ export default function TableWithQuery({
     if (k.startsWith("client")) delete params[k];
   });
 
-  // Transform 'search' query parameter to 'name' for backend endpoints that do not accept 'search' (e.g. users, stores)
-  const endpointPath = endPoint.join("/").toLowerCase();
-  if ((endpointPath.includes("users") || endpointPath.includes("stores")) && params.search) {
-    if (!params.name) {
-      params.name = params.search;
-    }
-    delete params.search;
+  // Pass both search and name to support updated backend multi-field search DTOs
+  if (params.search && !params.name) {
+    params.name = params.search;
   }
 
   const queryKey = [endPoint.join("/"), JSON.stringify(params)];
