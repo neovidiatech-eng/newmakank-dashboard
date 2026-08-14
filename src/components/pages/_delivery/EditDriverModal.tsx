@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Pencil, Loader2, User, Phone, Mail, CheckCircle2, ShieldCheck, Zap } from "lucide-react";
+import { Pencil, Loader2, User, Phone, Mail, CheckCircle2, ShieldCheck, Zap, Lock, Eye, EyeOff } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { apiClient } from "@/lib/axios";
 import { queryClient } from "@/lib/queryClient";
@@ -52,11 +52,28 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
   const [forceAvailable, setForceAvailable] = useState<boolean>(Boolean(driver.isAvailable ?? driver.forceAvailable ?? false));
   const [isOnShift, setIsOnShift] = useState<boolean>(Boolean(driver.isOnShift ?? false));
 
+  // Password State
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password) {
+      if (password.length < 6) {
+        toast.error("كلمة المرور يجب أن لا تقل عن 6 أحرف");
+        return;
+      }
+      if (password !== confirmPassword) {
+        toast.error("كلمة المرور وتأكيد كلمة المرور غير متطابقين");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
-    const payload = {
+    const payload: Record<string, any> = {
       name,
       phone,
       email,
@@ -67,6 +84,11 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
       forceAvailable,
       isOnShift
     };
+
+    if (password) {
+      payload.password = password;
+      payload.newPassword = password;
+    }
 
     try {
       let response;
@@ -80,10 +102,12 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
         }
       }
 
-      toast.success(t("Driver profile updated successfully") || "تم تحديث بيانات المندوب بنجاح");
+      toast.success(t("Driver profile updated successfully") || "تم تحديث بيانات المندوب وكلمة المرور بنجاح");
       queryClient.invalidateQueries({ queryKey: ["delivery"] });
       queryClient.invalidateQueries({ queryKey: ["deliverySummaryData"] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      setPassword("");
+      setConfirmPassword("");
       setIsOpen(false);
     } catch (error: any) {
       console.error("Failed to update driver profile:", error);
@@ -170,6 +194,56 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
                 placeholder="driver@example.com"
                 className="h-9 text-xs font-mono"
               />
+            </div>
+
+            {/* Change Password Section */}
+            <div className="space-y-3 pt-2 border-t border-border/60">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5 text-primary" />
+                {t("Change Password") || "تغيير كلمة المرور (اختياري)"}
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">
+                    {t("New Password") || "كلمة المرور الجديدة"}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      dir="ltr"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="h-9 text-xs font-mono pe-8"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">
+                    {t("Confirm New Password") || "تأكيد كلمة المرور"}
+                  </Label>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    dir="ltr"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="h-9 text-xs font-mono"
+                  />
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {t("Leave password fields blank if you do not want to change the password.") || "اترك حقول كلمة المرور فارغة إذا كنت لا تريد تغييرها."}
+              </p>
             </div>
 
             {/* Switches for Statuses */}
