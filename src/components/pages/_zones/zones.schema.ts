@@ -11,7 +11,7 @@
     return z.object({
     nameAr:StringReq(t), nameEn:StringReq(t),
 cityId:selectNotReq(),
-coordinates:z.array(z.object({ lat: z.number(), lng: z.number() })),
+coordinates:z.array(z.object({ lat: z.number(), lng: z.number() })).optional().default([]),
 // App-wide fixed delivery price for this zone — optional; leaving it empty falls back
 // to the base-fee-plus-per-km formula everywhere it's used (regular delivery, 2-stop
 // custom delivery, and per-recipient online delivery).

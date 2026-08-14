@@ -1,4 +1,4 @@
-﻿
+
 import useFormErrorLang from "@/components/common/Form/hooks/useFormErrorLang";
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
@@ -28,10 +28,6 @@ export default function useZonesLogic({ data }: { data?: ZonesType }) {
 	});
 
 	const onSubmit = async (formData: ZonesType) => {
-		if (formData.coordinates.length <= 2) {
-			toast.error(t("Please add at least one coordinate"));
-			return;
-		}
 		await formAction({
 			data,
 			formData: extractFormNameInputs({ inputs, data: formData }),
