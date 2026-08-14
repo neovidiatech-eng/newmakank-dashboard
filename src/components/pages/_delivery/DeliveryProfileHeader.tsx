@@ -10,6 +10,8 @@ import ResetWalletAction from "./ResetWalletAction";
 
 const imgUrl = getEnv("VITE_API_URL");
 
+import EditDriverModal from "./EditDriverModal";
+
 export interface DeliveryUser {
   id: number;
   name: string;
@@ -17,7 +19,7 @@ export interface DeliveryUser {
   phone: string;
   image?: string | null;
   avatar?: string | null;
-  verified: boolean;
+  verified?: boolean;
   isVerified?: boolean;
   active?: boolean;
   isActive?: boolean;
@@ -31,7 +33,7 @@ export interface DeliveryUser {
 
 export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) {
   const t = useTranslations();
-  const forceAvailable = Boolean(data.isAvailable);
+  const forceAvailable = Boolean(data.isAvailable ?? data.forceAvailable);
   const avatar = data.avatar ?? data.image;
   const isVerified = data.isVerified ?? data.verified;
   const isActiveStatus = Boolean(data.isActive ?? data.active ?? true);
@@ -117,6 +119,11 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
       </div>
 
       <div className="flex flex-col items-end gap-2 pr-2">
+        <div className="mb-1 flex flex-wrap gap-2">
+          <EditDriverModal driver={data} />
+          <ResetWalletAction deliveryId={data.id} />
+        </div>
+
         {isAdmin && (
           <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-2xl border border-primary/10">
             <div className="flex flex-col items-end mr-2">
@@ -169,9 +176,6 @@ export default function DeliveryProfileHeader({ data }: { data: DeliveryUser }) 
             isActive={!!forceAvailable}
             endpoint={["delivery"]}
           />
-        </div>
-        <div className="mt-1">
-          <ResetWalletAction deliveryId={data.id} />
         </div>
       </div>
     </div>
