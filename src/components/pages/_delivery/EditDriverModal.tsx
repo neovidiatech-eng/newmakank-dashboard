@@ -13,8 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Pencil, Loader2, User, Phone, Mail, CheckCircle2, ShieldCheck, Zap, Lock, Eye, EyeOff } from "lucide-react";
-import { useTranslations } from "@/lib/i18n";
+import { Pencil, Loader2, User, Phone, Mail, CheckCircle2, ShieldCheck, Zap, Lock, Eye, EyeOff, KeyRound } from "lucide-react";
+import { useLocale, useTranslations } from "@/lib/i18n";
 import { apiClient } from "@/lib/axios";
 import { queryClient } from "@/lib/queryClient";
 import { toast } from "sonner";
@@ -39,7 +39,10 @@ export interface EditDriverModalProps {
 }
 
 export default function EditDriverModal({ driver, trigger }: EditDriverModalProps) {
+  const locale = useLocale();
+  const isAr = locale === "ar";
   const t = useTranslations();
+
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -62,11 +65,11 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
 
     if (password) {
       if (password.length < 6) {
-        toast.error("كلمة المرور يجب أن لا تقل عن 6 أحرف");
+        toast.error(isAr ? "كلمة المرور يجب أن لا تقل عن 6 أحرف" : "Password must be at least 6 characters");
         return;
       }
       if (password !== confirmPassword) {
-        toast.error("كلمة المرور وتأكيد كلمة المرور غير متطابقين");
+        toast.error(isAr ? "كلمة المرور وتأكيد كلمة المرور غير متطابقين" : "Password and confirmation do not match");
         return;
       }
     }
@@ -102,7 +105,11 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
         }
       }
 
-      toast.success(t("Driver profile updated successfully") || "تم تحديث بيانات المندوب وكلمة المرور بنجاح");
+      toast.success(
+        isAr 
+          ? (password ? "تم تحديث بيانات المندوب وكلمة المرور بنجاح" : "تم تحديث بيانات المندوب بنجاح")
+          : (password ? "Driver profile and password updated successfully" : "Driver profile updated successfully")
+      );
       queryClient.invalidateQueries({ queryKey: ["delivery"] });
       queryClient.invalidateQueries({ queryKey: ["deliverySummaryData"] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -111,7 +118,7 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
       setIsOpen(false);
     } catch (error: any) {
       console.error("Failed to update driver profile:", error);
-      toast.error(error?.response?.data?.message || error?.message || "حدث خطأ أثناء تعديل بيانات المندوب");
+      toast.error(error?.response?.data?.message || error?.message || (isAr ? "حدث خطأ أثناء تعديل بيانات المندوب" : "Failed to update driver profile"));
     } finally {
       setIsSubmitting(false);
     }
@@ -129,84 +136,97 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
           className="gap-2 text-xs font-semibold border-primary/20 text-primary hover:bg-primary/5 rounded-xl shadow-xs"
         >
           <Pencil className="h-3.5 w-3.5" />
-          {t("Edit Driver") || "تعديل بيانات المندوب"}
+          {isAr ? "تعديل بيانات المندوب" : "Edit Driver Profile"}
         </Button>
       )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto bg-card text-card-foreground border border-border shadow-2xl rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg font-bold">
-              <Pencil className="h-5 w-5 text-primary" />
-              {t("Edit Driver Profile") || "تعديل بيانات المندوب"} #{driver.id}
+        <DialogContent 
+          dir={isAr ? "rtl" : "ltr"}
+          className="sm:max-w-lg max-h-[90vh] overflow-y-auto bg-card text-card-foreground border border-border shadow-2xl rounded-3xl p-6"
+        >
+          <DialogHeader className={isAr ? "text-right" : "text-left"}>
+            <DialogTitle className="flex items-center gap-2.5 text-xl font-bold">
+              <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                <Pencil className="h-5 w-5" />
+              </div>
+              <span>{isAr ? `تعديل بيانات المندوب #${driver.id}` : `Edit Driver Profile #${driver.id}`}</span>
             </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              {t("Update personal details and system privileges for this driver.") || "قم بتحديث البيانات الشخصية وصلاحيات المندوب في النظام."}
+            <DialogDescription className="text-xs text-muted-foreground mt-1">
+              {isAr 
+                ? "قم بتحديث البيانات الشخصية، إعدادات الحساب، وكلمة المرور للمندوب في النظام." 
+                : "Update personal details, account settings, and system password for this driver."}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-5 py-2">
-            {/* Full Name */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5 text-primary" />
-                {t("Full Name") || "الاسم الكامل"}
-              </Label>
-              <Input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="أدخل اسم المندوب"
-                className="h-9 text-xs"
-              />
-            </div>
+            {/* Main Personal Info Section */}
+            <div className="space-y-4">
+              {/* Full Name */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                  <User className="h-3.5 w-3.5 text-primary" />
+                  {isAr ? "الاسم الكامل" : "Full Name"}
+                </Label>
+                <Input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={isAr ? "أدخل اسم المندوب الكامل" : "Enter driver full name"}
+                  className="h-10 text-xs rounded-xl bg-background/50 focus:bg-background transition-all"
+                />
+              </div>
 
-            {/* Phone Number */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold flex items-center gap-1.5">
-                <Phone className="h-3.5 w-3.5 text-primary" />
-                {t("Phone Number") || "رقم الهاتف"}
-              </Label>
-              <Input
-                type="text"
-                required
-                dir="ltr"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+201012345678"
-                className="h-9 text-xs font-mono"
-              />
-            </div>
+              {/* Phone Number */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                  <Phone className="h-3.5 w-3.5 text-primary" />
+                  {isAr ? "رقم الهاتف" : "Phone Number"}
+                </Label>
+                <Input
+                  type="text"
+                  required
+                  dir="ltr"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+201012345678"
+                  className="h-10 text-xs font-mono rounded-xl bg-background/50 focus:bg-background transition-all"
+                />
+              </div>
 
-            {/* Email Address */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold flex items-center gap-1.5">
-                <Mail className="h-3.5 w-3.5 text-primary" />
-                {t("Email Address") || "البريد الإلكتروني"}
-              </Label>
-              <Input
-                type="email"
-                required
-                dir="ltr"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="driver@example.com"
-                className="h-9 text-xs font-mono"
-              />
+              {/* Email Address */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                  <Mail className="h-3.5 w-3.5 text-primary" />
+                  {isAr ? "البريد الإلكتروني" : "Email Address"}
+                </Label>
+                <Input
+                  type="email"
+                  required
+                  dir="ltr"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="driver@example.com"
+                  className="h-10 text-xs font-mono rounded-xl bg-background/50 focus:bg-background transition-all"
+                />
+              </div>
             </div>
 
             {/* Change Password Section */}
-            <div className="space-y-3 pt-2 border-t border-border/60">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Lock className="h-3.5 w-3.5 text-primary" />
-                {t("Change Password") || "تغيير كلمة المرور (اختياري)"}
-              </p>
+            <div className="space-y-3 pt-4 border-t border-border/60">
+              <div className="flex items-center gap-2">
+                <KeyRound className="h-4 w-4 text-primary" />
+                <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                  {isAr ? "تغيير كلمة المرور (اختياري)" : "Change Password (Optional)"}
+                </h4>
+              </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* New Password */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">
-                    {t("New Password") || "كلمة المرور الجديدة"}
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    {isAr ? "كلمة المرور الجديدة" : "New Password"}
                   </Label>
                   <div className="relative">
                     <Input
@@ -215,21 +235,24 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="h-9 text-xs font-mono pe-8"
+                      className="h-10 text-xs font-mono rounded-xl bg-background/50 focus:bg-background transition-all pe-9"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      className={`absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors ${
+                        isAr ? "left-2.5" : "right-2.5"
+                      }`}
                     >
-                      {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
 
+                {/* Confirm Password */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">
-                    {t("Confirm New Password") || "تأكيد كلمة المرور"}
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    {isAr ? "تأكيد كلمة المرور" : "Confirm New Password"}
                   </Label>
                   <Input
                     type={showPassword ? "text" : "password"}
@@ -237,29 +260,34 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="h-9 text-xs font-mono"
+                    className="h-10 text-xs font-mono rounded-xl bg-background/50 focus:bg-background transition-all"
                   />
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                {t("Leave password fields blank if you do not want to change the password.") || "اترك حقول كلمة المرور فارغة إذا كنت لا تريد تغييرها."}
+              <p className="text-[11px] text-muted-foreground/80">
+                {isAr 
+                  ? "اترك حقول كلمة المرور فارغة إذا كنت لا تريد تغيير كلمة المرور الحالية." 
+                  : "Leave password fields blank if you do not want to change the current password."}
               </p>
             </div>
 
-            {/* Switches for Statuses */}
-            <div className="space-y-3 pt-2 border-t border-border/60">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                {t("Status & Permissions") || "حالة الحساب والصلاحيات"}
-              </p>
+            {/* Switches for Statuses & Permissions */}
+            <div className="space-y-3 pt-4 border-t border-border/60">
+              <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                {isAr ? "حالة الحساب والصلاحيات" : "Account Status & Permissions"}
+              </h4>
 
-              <div className="flex items-center justify-between p-3 rounded-xl border bg-muted/30">
+              {/* Account Active */}
+              <div className="flex items-center justify-between p-3.5 rounded-2xl border bg-muted/30 hover:bg-muted/50 transition-all">
                 <div className="space-y-0.5">
-                  <Label className="text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                    {t("Account Active") || "تفعيل الحساب (نشط)"}
+                  <Label className="text-xs font-bold flex items-center gap-1.5 cursor-pointer text-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    {isAr ? "تفعيل حساب المندوب (نشط)" : "Account Active"}
                   </Label>
                   <p className="text-[11px] text-muted-foreground">
-                    {isActive ? "الحساب مفعل ويمكن للمندوب الدخول" : "الحساب معطل وموقوف"}
+                    {isActive 
+                      ? (isAr ? "الحساب مفعل ويمكن للمندوب تسجيل الدخول واستلام الطلبات" : "Account active and driver can login")
+                      : (isAr ? "الحساب معطل وموقوف عن العمل" : "Account disabled and suspended")}
                   </p>
                 </div>
                 <Switch
@@ -268,14 +296,17 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl border bg-muted/30">
+              {/* Account Verified */}
+              <div className="flex items-center justify-between p-3.5 rounded-2xl border bg-muted/30 hover:bg-muted/50 transition-all">
                 <div className="space-y-0.5">
-                  <Label className="text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
-                    <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
-                    {t("Account Verified") || "توثيق حساب المندوب"}
+                  <Label className="text-xs font-bold flex items-center gap-1.5 cursor-pointer text-foreground">
+                    <ShieldCheck className="h-4 w-4 text-blue-500" />
+                    {isAr ? "توثيق حساب المندوب (حساب موثق)" : "Account Verified"}
                   </Label>
                   <p className="text-[11px] text-muted-foreground">
-                    {isVerified ? "الحساب موثق رسمياً" : "الحساب غير موثق"}
+                    {isVerified 
+                      ? (isAr ? "الحساب موثق رسمياً برمز التوثيق" : "Account officially verified")
+                      : (isAr ? "الحساب غير موثق حالياً" : "Account unverified")}
                   </p>
                 </div>
                 <Switch
@@ -284,14 +315,17 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl border bg-muted/30">
+              {/* Force Available */}
+              <div className="flex items-center justify-between p-3.5 rounded-2xl border bg-muted/30 hover:bg-muted/50 transition-all">
                 <div className="space-y-0.5">
-                  <Label className="text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
-                    <Zap className="h-3.5 w-3.5 text-amber-500" />
-                    {t("Force Available") || "متاح دائماً (Force Available)"}
+                  <Label className="text-xs font-bold flex items-center gap-1.5 cursor-pointer text-foreground">
+                    <Zap className="h-4 w-4 text-amber-500" />
+                    {isAr ? "متاح دائماً (Force Available)" : "Force Available"}
                   </Label>
                   <p className="text-[11px] text-muted-foreground">
-                    {forceAvailable ? "المندوب متاح دائماً بدون جدولة" : "حسب جدولة العمل والتواجد"}
+                    {forceAvailable 
+                      ? (isAr ? "المندوب متاح دائماً لاستلام الطلبات بدون جدول شيفتات" : "Always available without schedule")
+                      : (isAr ? "التواجد مقيد بجدول مواعيد الشيفت المحدد" : "Availability restricted to schedule")}
                   </p>
                 </div>
                 <Switch
@@ -301,28 +335,28 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
               </div>
             </div>
 
-            <DialogFooter className="gap-2 pt-4 border-t border-border/60">
+            <DialogFooter className="gap-2 pt-4 border-t border-border/60 flex-wrap sm:flex-nowrap">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setIsOpen(false)}
-                className="text-xs"
+                className="w-full sm:w-auto text-xs rounded-xl"
               >
-                {t("Cancel") || "إلغاء"}
+                {isAr ? "إلغاء" : "Cancel"}
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
                 size="sm"
-                className="gap-2 text-xs font-semibold"
+                className="w-full sm:w-auto gap-2 text-xs font-bold rounded-xl shadow-md"
               >
                 {isSubmitting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Pencil className="h-4 w-4" />
                 )}
-                {t("Save Changes") || "حفظ التعديلات"}
+                {isAr ? "حفظ التعديلات" : "Save Changes"}
               </Button>
             </DialogFooter>
           </form>
