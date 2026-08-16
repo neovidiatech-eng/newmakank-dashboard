@@ -2,6 +2,7 @@ import ActiveCol from "@/components/common/table/columns/Ative.column";
 import EntityInfoCell from "@/components/common/table/columns/entity-info-cell";
 import IconHeader from "@/components/common/table/columns/icon-header";
 import ToggleStatus from "@/components/common/table/tableActions/ToggleStatus";
+import BlockCustomerButton from "@/components/pages/_customers/BlockCustomerButton";
 import { type ColumnDef } from "@tanstack/react-table";
 
 export default function CustomersColumns(): ColumnDef<Record<string, unknown>>[] {
@@ -28,7 +29,6 @@ export default function CustomersColumns(): ColumnDef<Record<string, unknown>>[]
       header: () => <IconHeader columnKey="Verified" />,
       cell: ({ getValue }) => <ActiveCol value={getValue() as boolean} />
     },
-
     {
       accessorKey: "active",
       header: () => <IconHeader columnKey="Active" />,
@@ -44,30 +44,21 @@ export default function CustomersColumns(): ColumnDef<Record<string, unknown>>[]
             active: !row.original.active as boolean
           }}
           isActive={row.original.active as boolean}
-          endpoint={["users"]}
+          endpoint={["customers"]}
+        />
+      )
+    },
+    {
+      id: "blockAction",
+      header: () => <IconHeader columnKey="Block" />,
+      cell: ({ row }) => (
+        <BlockCustomerButton
+          customerId={row.original.id as number}
+          isActive={row.original.active as boolean}
+          customerName={row.original.name as string}
         />
       )
     }
-
-    // {
-    //   accessorKey: "createdAt",
-    //   header: "CreatedAt",
-    //   cell: ({ getValue }) => {
-    //     return (
-    //       <DateCol date={getValue()} />
-    //     );
-    //   }
-    // },
-    // {
-    //   accessorKey: "totalOrders",
-    //   header: "TotalOrders",
-    //   cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
-    // },
-    // {
-    //   accessorKey: "totalSpent",
-    //   header: "TotalSpent",
-    //   cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
-    // }
   ];
 
   return columns;

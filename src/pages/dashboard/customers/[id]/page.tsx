@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getTranslations } from '@/lib/i18n';
+import BlockCustomerButton from "@/components/pages/_customers/BlockCustomerButton";
 
 interface Customer {
   id: number;
@@ -41,22 +42,32 @@ const page = async ({ params }: { params: Params }) => {
     <div className="container mx-auto p-6 space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center space-x-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={customer.image} alt={customer.name} />
-              <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div>
-              <CardTitle className="text-2xl">{customer.name}</CardTitle>
-              <p className="text-muted-foreground">{customer.email}</p>
-              <p dir="ltr" className="text-muted-foreground">{customer.phone}</p>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 shrink-0">
+                <AvatarImage src={customer.image} alt={customer.name} />
+                <AvatarFallback>{customer.name?.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle className="text-2xl">{customer.name}</CardTitle>
+                <p className="text-muted-foreground text-sm">{customer.email}</p>
+                <p dir="ltr" className="text-muted-foreground text-sm">{customer.phone}</p>
+              </div>
+            </div>
+            {/* Block / Unblock Action */}
+            <div className="flex items-center gap-2 shrink-0">
+              <BlockCustomerButton
+                customerId={customer.id}
+                isActive={customer.active}
+                customerName={customer.name}
+              />
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2 mb-4">
-            <Badge variant={customer.active ? "default" : "secondary"}>
-              {customer.active ? t('Active') : t('Inactive')}
+            <Badge variant={customer.active ? "default" : "destructive"}>
+              {customer.active ? t('Active') : "🚫 محظور"}
             </Badge>
             <Badge variant={customer.verified ? "default" : "outline"}>
               {customer.verified ? t('Verified') : t('Unverified')}
