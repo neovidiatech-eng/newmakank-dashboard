@@ -14,10 +14,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Ban, ShieldCheck, Loader2 } from "lucide-react";
-import { apiClient } from "@/lib/axios";
+import { fetchHelper } from "@/api/fetch";
 import { toast } from "sonner";
-import { usePathname, useRouter } from "@/lib/navigation";
-import { revalidatePathAction } from "@/api/global/revalidatePath";
+import { queryClient } from "@/lib/queryClient";
 
 interface BlockCustomerButtonProps {
   customerId: number;
@@ -32,15 +31,17 @@ export default function BlockCustomerButton({
 }: BlockCustomerButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [localIsActive, setLocalIsActive] = useState(isActive);
-  const router = useRouter();
-  const pathname = usePathname();
 
   const handleToggle = async () => {
     setIsLoading(true);
     try {
-      await apiClient.patch(`/api/customers/${customerId}`, {
-        active: !localIsActive,
+      const res = await fetchHelper({
+        endPoint: ["customers", customerId],
+        method: "PATCH",
+        body: { active: !localIsActive },
       });
+
+      if (!res?.success && res?.status !== true) throw res;
 
       const newState = !localIsActive;
       setLocalIsActive(newState);
@@ -56,13 +57,13 @@ export default function BlockCustomerButton({
         }
       );
 
-      await revalidatePathAction(pathname);
-      router.refresh();
+      // Invalidate customers queries to refresh the table
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
     } catch (error: any) {
       console.error("Failed to toggle customer status:", error);
       toast.error("حدث خطأ أثناء تغيير حالة العميل", {
         description:
-          error?.response?.data?.message ||
+          error?.result?.message ||
           error?.message ||
           "تأكد من صلاحياتك وحاول مجدداً",
       });
@@ -96,7 +97,7 @@ export default function BlockCustomerButton({
               <Ban className="h-5 w-5" />
               تأكيد حظر العميل
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-right text-sm leading-relaxed space-y-3">
+            <AlertDialogDescription className="text-right text-sm leading-relaxed">
               <span>
                 هل أنت متأكد من حظر{" "}
                 <strong className="text-foreground">
@@ -108,7 +109,7 @@ export default function BlockCustomerButton({
                 <span className="text-destructive font-semibold">⚠️ سيتم فوراً:</span>
                 <ul className="mt-2 space-y-1 text-muted-foreground text-xs list-disc list-inside">
                   <li>منع تسجيل الدخول بأي طريقة (Email / Google / البصمة)</li>
-                  <li>طرد جميع الجلسات النشطة (Access &amp; Refresh Tokens)</li>
+                  <li>طرد جميع الجلسات النشطة (Tokens)</li>
                   <li>
                     إرجاع{" "}
                     <code className="bg-muted px-1 rounded text-[10px]">

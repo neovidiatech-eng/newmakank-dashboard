@@ -82,11 +82,11 @@ const page = async ({ params }: { params: Params }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary">{customer.Details.wallet}</p>
+              <p className="text-2xl font-bold text-primary">{customer.Details?.wallet ?? 0}</p>
               <p className="text-sm text-muted-foreground">{t('Wallet Balance')}</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary">{customer.Details.points}</p>
+              <p className="text-2xl font-bold text-primary">{customer.Details?.points ?? 0}</p>
               <p className="text-sm text-muted-foreground">{t('Points')}</p>
             </div>
             <div className="text-center">
