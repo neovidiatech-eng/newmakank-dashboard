@@ -163,12 +163,25 @@ export default function DashboardPage() {
                   </TableRow>
                 ) : (
                   orders.map((order: any) => {
-                    const total = order.totalPriceAfterDiscount ?? order.totalPrice ?? 0;
-                    const productPrice = order.subTotal ?? order.totalPrice ?? 0;
-                    const storeCommission = order.storeCommission ?? 0;
-                    const globalCommission = order.adminCommission ?? 0;
-                    const tax = order.tax ?? 0;
-                    const deliveryPrice = order.shipping ?? 0;
+                    const total = Number(order.totalPriceAfterDiscount ?? order.totalPrice ?? 0);
+                    const storeCommission = Number(order.storeCommission ?? order.store_commission ?? 0);
+                    const globalCommission = Number(order.adminCommission ?? order.globalCommission ?? order.admin_commission ?? 0);
+                    const tax = Number(order.tax ?? 0);
+                    const deliveryPrice = Number(order.shipping ?? order.deliveryPrice ?? order.fixedDeliveryPrice ?? 0);
+
+                    // Product price logic: check explicit price fields, or compute from OrderItems, or total minus fees
+                    let productPrice = Number(order.price ?? order.productPrice ?? order.productsPrice ?? order.subTotal ?? 0);
+                    if (!productPrice && Array.isArray(order.OrderItems) && order.OrderItems.length > 0) {
+                      productPrice = order.OrderItems.reduce((sum: number, item: any) => {
+                        const itemPrice = Number(item.price ?? item.totalPrice ?? item.unitPrice ?? 0);
+                        const qty = Number(item.quantity ?? 1);
+                        return sum + (itemPrice * qty);
+                      }, 0);
+                    }
+                    if (!productPrice && total > 0) {
+                      productPrice = Math.max(0, total - deliveryPrice - tax);
+                    }
+
                     const deliveryName = order.delivery?.user?.name || order.delivery?.name || "—";
 
                     return (
