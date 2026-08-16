@@ -180,7 +180,7 @@ export default function SendNotificationForm() {
       }
 
       const res = await fetchHelper({
-        endPoint: ["admin-notifications"],
+        endPoint: ["adminNotifications"],
         method: "POST",
         body: payload,
       });
