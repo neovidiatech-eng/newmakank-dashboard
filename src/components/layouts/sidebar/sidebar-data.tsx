@@ -128,6 +128,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
           permissions?.Customers?.get && {
             title: "customers",
             url: "/customers"
+          },
+          true && {
+            title: "notifications",
+            url: "/notifications"
           }
         ].filter(Boolean)
       },
