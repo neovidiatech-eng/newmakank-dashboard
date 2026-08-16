@@ -57,6 +57,7 @@ export const endpoints = {
   fox: '/PREPARING',
   unassign: '/unassign',
   adminNotifications: "/api/admin-notifications",
+  "admin-notifications": "/api/admin-notifications",
   orders: "/api/orders",
   bulkDelete: "/bulk-delete",
   "bulk-delete": "/bulk-delete",
