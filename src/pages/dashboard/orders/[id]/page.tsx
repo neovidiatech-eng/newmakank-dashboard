@@ -55,6 +55,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
     customDeliveryStations.length > 0 ||
     (data as any)?.customDeliveryProgress;
   const combinedDiscount = Number((data as any)?.discountValue ?? data?.discountAmount ?? 0);
+  const totalPrice = (data as any)?.totalPrice ?? data?.totalPriceAfterDiscount;
   const rawTax = Number(data?.tax ?? data?.invoice?.summary?.tax ?? 0);
   const rawGlobalCommission = Number((data as any)?.globalCommission ?? (data as any)?.adminCommission ?? 0);
   const rawServiceFee = Number((data as any)?.serviceFee ?? (data as any)?.service_fee ?? 0);
@@ -64,7 +65,6 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
   const serviceFee = rawTax || rawGlobalCommission || rawServiceFee || calculatedDiff;
   const priceAfterDiscount = (data as any)?.priceAfterDiscount;
   const priceAfterTax = (data as any)?.priceAfterTax;
-  const totalPrice = (data as any)?.totalPrice ?? data?.totalPriceAfterDiscount;
   const rewardId = (data as any)?.rewardId ?? (data as any)?.fortuneRewardId;
   const hasFreeDeliveryReward = Boolean(
     (data as any)?.freeDeliveryReward ||
