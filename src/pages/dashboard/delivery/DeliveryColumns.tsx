@@ -81,6 +81,47 @@ export default function DeliveryColumns(): ColumnDef<Record<string, unknown>>[] 
           </div>
         );
       }
+    },
+    {
+      id: "currentOrder",
+      header: () => <IconHeader columnKey="Current Order" />,
+      cell: ({ row }) => {
+        const currentOrder = (row.original as any)?.currentOrder;
+        if (!currentOrder) {
+          return (
+            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-300">
+              🟢 {t("Available") || "متاح"}
+            </Badge>
+          );
+        }
+
+        const statusText =
+          currentOrder.status === "ON_THE_WAY"
+            ? "في الطريق"
+            : currentOrder.status === "READY_PICKUP"
+            ? "جاهز للاستلام"
+            : currentOrder.status === "PREPARING"
+            ? "جاري التحضير"
+            : currentOrder.status === "PENDING"
+            ? "قيد الانتظار"
+            : currentOrder.status;
+
+        return (
+          <div className="flex flex-col gap-1 text-xs">
+            <Badge variant="outline" className="w-fit gap-1 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-300 font-semibold">
+              🔴 {t("Busy") || "مشغول"} (#{currentOrder.id})
+            </Badge>
+            {currentOrder.storeName && (
+              <span className="text-muted-foreground font-medium text-[11px]">
+                {currentOrder.storeName}
+              </span>
+            )}
+            <span className="text-[10px] text-muted-foreground">
+              {statusText}
+            </span>
+          </div>
+        );
+      }
     }
   ];
 

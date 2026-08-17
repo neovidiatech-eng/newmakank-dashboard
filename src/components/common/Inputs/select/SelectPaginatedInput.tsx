@@ -87,10 +87,30 @@ export default function SelectPaginated({
         return serviceName || storeName || "Unknown";
       }
 
+      if (item.currentOrder !== undefined || apiUrl?.[0] === "delivery") {
+        const name = getLocalizedText(item.name || item[labelKey]);
+        if (item.currentOrder) {
+          const order = item.currentOrder;
+          const statusText =
+            order.status === "ON_THE_WAY"
+              ? "في الطريق"
+              : order.status === "READY_PICKUP"
+              ? "جاهز للاستلام"
+              : order.status === "PREPARING"
+              ? "جاري التحضير"
+              : order.status === "PENDING"
+              ? "قيد الانتظار"
+              : order.status;
+          const storeInfo = order.storeName ? ` من (${order.storeName})` : "";
+          return `${name} 🔴 [مشغول: طلب #${order.id}${storeInfo} - ${statusText}]`;
+        }
+        return `${name} 🟢 [متاح]`;
+      }
+
       const labelValue = item[labelKey];
       return getLocalizedText(labelValue) || (typeof labelValue === "number" ? String(labelValue) : "Unknown");
     },
-    [getLocalizedText, labelFormat, labelKey]
+    [apiUrl, getLocalizedText, labelFormat, labelKey]
   );
 
   const displayedOptions = useMemo(() => {
