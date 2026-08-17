@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
@@ -29,7 +29,8 @@ export default function useDeliveryLogic({ data }: { data?: DeliveryType }) {
     await formAction({
       data,
       formData: extractFormNameInputs({ inputs, data: formData }),
-      endpoint: ["deliveryRegister"],
+      endpoint: isEdit ? ["delivery"] : ["deliveryRegister"],
+      method: isEdit ? "PUT" : "POST",
       customReset: () => reset(extractFormDefaultInputs(inputs, undefined) as any),
 
       t

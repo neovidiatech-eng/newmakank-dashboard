@@ -32,7 +32,7 @@ export default function ResetWalletAction({ deliveryId }: ResetWalletActionProps
     try {
       setIsLoading(true);
       const response = await fetchHelper({
-        endPoint: ["delivery", String(deliveryId), "reset-wallet"],
+        endPoint: ["delivery", deliveryId, "resetWallet"] as any,
         method: "PATCH"
       });
 

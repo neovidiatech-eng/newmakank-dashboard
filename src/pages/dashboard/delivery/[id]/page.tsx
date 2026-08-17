@@ -63,6 +63,8 @@ type DeliveryDashboard = {
     totalOrdersAmount?: number;
     deliveryFees?: number;
     adminCommission?: number;
+    walletBalance?: number;
+    collectedCash?: number;
   };
   acceptanceSummary?: {
     acceptedOrders?: number;

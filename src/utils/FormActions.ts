@@ -68,7 +68,7 @@ export async function FormAction<T = any>({
   reset?: UseFormReset<T extends FieldValues ? T : FieldValues>;
   data?: T & { id?: string | number };
   // data?: T & { id?: string | number; key?: string };
-  method?: "POST" | "PATCH";
+  method?: "POST" | "PATCH" | "PUT";
   // redirectLink?: allRoutes;
   endpoint: endpointType;
   formData: FieldValues;

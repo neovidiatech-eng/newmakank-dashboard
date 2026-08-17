@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Pencil, Loader2, User, Phone, Mail, CheckCircle2, ShieldCheck, Zap, Lock, Eye, EyeOff, KeyRound } from "lucide-react";
+import { Pencil, Loader2, User, Phone, Mail, CheckCircle2, ShieldCheck, Zap, Eye, EyeOff, KeyRound, Radio } from "lucide-react";
 import { useLocale, useTranslations } from "@/lib/i18n";
 import { apiClient } from "@/lib/axios";
 import { queryClient } from "@/lib/queryClient";
@@ -32,6 +32,7 @@ export interface EditDriverModalProps {
     active?: boolean;
     isActive?: boolean;
     isOnShift?: boolean;
+    availableNow?: boolean;
     forceAvailable?: boolean;
     isAvailable?: boolean;
   };
@@ -53,7 +54,7 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
   const [isActive, setIsActive] = useState<boolean>(Boolean(driver.isActive ?? driver.active ?? true));
   const [isVerified, setIsVerified] = useState<boolean>(Boolean(driver.isVerified ?? driver.verified ?? false));
   const [forceAvailable, setForceAvailable] = useState<boolean>(Boolean(driver.isAvailable ?? driver.forceAvailable ?? false));
-  const [isOnShift, setIsOnShift] = useState<boolean>(Boolean(driver.isOnShift ?? false));
+  const [availableNow, setAvailableNow] = useState<boolean>(Boolean(driver.availableNow ?? driver.isOnShift ?? false));
 
   // Password State
   const [password, setPassword] = useState("");
@@ -81,16 +82,13 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
       phone,
       email,
       active: isActive,
-      isActive,
       verified: isVerified,
-      isVerified,
       forceAvailable,
-      isOnShift
+      availableNow
     };
 
     if (password) {
       payload.password = password;
-      payload.newPassword = password;
     }
 
     try {
@@ -118,7 +116,23 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
       setIsOpen(false);
     } catch (error: any) {
       console.error("Failed to update driver profile:", error);
-      toast.error(error?.response?.data?.message || error?.message || (isAr ? "حدث خطأ أثناء تعديل بيانات المندوب" : "Failed to update driver profile"));
+      const errData = error?.response?.data;
+      const errMsg = errData?.message || error?.message || "";
+      const status = error?.response?.status;
+
+      if (status === 409 || errMsg.includes("already_exists")) {
+        if (errMsg.includes("phone")) {
+          toast.error(isAr ? "رقم الهاتف مستخدم بالفعل لمندوب آخر" : "Phone number is already in use by another driver");
+        } else if (errMsg.includes("email")) {
+          toast.error(isAr ? "البريد الإلكتروني مستخدم بالفعل لمندوب آخر" : "Email is already in use by another driver");
+        } else {
+          toast.error(isAr ? "رقم الهاتف أو البريد الإلكتروني مستخدم بالفعل" : "Phone or email is already registered");
+        }
+      } else if (status === 400) {
+        toast.error(errMsg || (isAr ? "بيانات غير صالحة، يرجى التأكد من كلمة المرور والبيانات المدخلة" : "Invalid data, please check the entered fields"));
+      } else {
+        toast.error(errMsg || (isAr ? "حدث خطأ أثناء تعديل بيانات المندوب" : "Failed to update driver profile"));
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -333,6 +347,25 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
                   onCheckedChange={setForceAvailable}
                 />
               </div>
+
+              {/* Available Now */}
+              <div className="flex items-center justify-between p-3.5 rounded-2xl border bg-muted/30 hover:bg-muted/50 transition-all">
+                <div className="space-y-0.5">
+                  <Label className="text-xs font-bold flex items-center gap-1.5 cursor-pointer text-foreground">
+                    <Radio className="h-4 w-4 text-emerald-500" />
+                    {isAr ? "شغال أونلاين الآن (Available Now)" : "Available Online Now"}
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    {availableNow 
+                      ? (isAr ? "المندوب شغال حالياً أونلاين ومتاح لاستلام الطلبات" : "Driver is currently online and active on shift")
+                      : (isAr ? "المندوب أوفلاين وغير متصل بالشفت حالياً" : "Driver is currently offline / not on shift")}
+                  </p>
+                </div>
+                <Switch
+                  checked={availableNow}
+                  onCheckedChange={setAvailableNow}
+                />
+              </div>
             </div>
 
             <DialogFooter className="gap-2 pt-4 border-t border-border/60 flex-wrap sm:flex-nowrap">
@@ -365,3 +398,4 @@ export default function EditDriverModal({ driver, trigger }: EditDriverModalProp
     </>
   );
 }
+

@@ -24,6 +24,7 @@ export interface DeliveryUser {
   active?: boolean;
   isActive?: boolean;
   isOnShift?: boolean;
+  availableNow?: boolean;
   roleKey?: string;
   allowNotification?: boolean;
   forceAvailable?: boolean;

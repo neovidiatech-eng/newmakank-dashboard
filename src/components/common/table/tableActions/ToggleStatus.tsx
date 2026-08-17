@@ -4,17 +4,20 @@ import { endpointType } from "@/utils/endpoints";
 import { useTranslations } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { queryClient } from "@/lib/queryClient";
 
 export default function ToggleStatus({
   isActive,
   endpoint,
   id,
-  body
+  body,
+  method
 }: {
   isActive: boolean;
   endpoint: endpointType;
   id: string | number;
   body?: unknown;
+  method?: "PUT" | "PATCH";
 }): JSX.Element {
   const t = useTranslations();
   const [isLoading, setIsLoading] = useState(false);
@@ -38,26 +41,36 @@ export default function ToggleStatus({
       });
     }
 
-    const res = await fetchHelper({
+    const isDelivery = endpoint.includes("delivery");
+    const primaryMethod = method || (isDelivery ? "PUT" : "PATCH");
+    const secondaryMethod = primaryMethod === "PUT" ? "PATCH" : "PUT";
+
+    let res = await fetchHelper({
       endPoint: [...endpoint, Number(id)],
-      method: "PATCH",
+      method: primaryMethod,
       body: finalBody
     });
+
+    if (!res.success && (res.code === 404 || res.code === 405)) {
+      res = await fetchHelper({
+        endPoint: [...endpoint, Number(id)],
+        method: secondaryMethod,
+        body: finalBody
+      });
+    }
+
     if (res.success) {
       toast.success(t("done"), {
         description: t("Status Changed")
       });
       setLocalIsActive(targetState);
-
-      // router.refresh();
+      queryClient.invalidateQueries({ queryKey: endpoint.map(String) });
     } else {
       setLocalIsActive(isActive);
       toast.error(t("error"), {
-        description: t("Failed to change status")
+        description: res?.message || t("Failed to change status")
       });
       setIsLoading(false);
-
-      throw new Error("Failed to update status");
     }
 
     setIsLoading(false);
