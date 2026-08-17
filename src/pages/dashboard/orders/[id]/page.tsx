@@ -55,6 +55,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
     customDeliveryStations.length > 0 ||
     (data as any)?.customDeliveryProgress;
   const combinedDiscount = Number((data as any)?.discountValue ?? data?.discountAmount ?? 0);
+  const taxValue = Number(data?.tax ?? data?.invoice?.summary?.tax ?? 0);
   const priceAfterDiscount = (data as any)?.priceAfterDiscount;
   const priceAfterTax = (data as any)?.priceAfterTax;
   const totalPrice = (data as any)?.totalPrice ?? data?.totalPriceAfterDiscount;
@@ -177,11 +178,11 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   </div>
                 </div>
               </div>
-              {data?.tax > 0 && (
+              {taxValue > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">- {t("Tax")}</span>
+                  <span className="text-muted-foreground">- {t("Service Fee") || "رسوم الخدمة / الضريبة"}</span>
                   <span className="font-medium">
-                    <PriceAmount value={data?.tax} />
+                    <PriceAmount value={taxValue} />
                   </span>
                 </div>
               )}
@@ -611,16 +612,16 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
               <span className="font-sans">- {formatMoneyVal(combinedDiscount)} ج.م</span>
             </div>
           )}
-          {data?.tax > 0 && (
-            <div className="flex justify-between">
-              <span>الضريبة:</span>
-              <span className="font-sans">{formatMoneyVal(data.tax)} ج.م</span>
-            </div>
-          )}
           <div className="flex justify-between">
             <span>رسوم التوصيل:</span>
             <span className="font-sans">{formatMoneyVal(data?.shipping || 0)} ج.م</span>
           </div>
+          {taxValue > 0 && (
+            <div className="flex justify-between">
+              <span>رسوم الخدمة:</span>
+              <span className="font-sans">{formatMoneyVal(taxValue)} ج.م</span>
+            </div>
+          )}
           <div className="flex justify-between border-t border-double border-black pt-2 font-black text-sm">
             <span>الإجمالي النهائي:</span>
             <span className="font-sans">{formatMoneyVal(totalPrice || 0)} ج.م</span>
