@@ -590,7 +590,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   <td className="py-2 text-right">
                     <span className="font-bold">{getLocalizedName(item?.Service?.name) || item?.Service?.name || "—"}</span>
                     {item?.Size?.name && (
-                      <div className="text-[10px] text-gray-500 font-sans">· المقاس: {getLocalizedName(item.Size.name)}</div>
+                      <div className="text-[10px] text-gray-500 font-sans">· الحجم: {getLocalizedName(item.Size.name)}</div>
                     )}
                     {item?.OrderItemAddons && item.OrderItemAddons.length > 0 && (
                       <div className="text-[10px] text-gray-500 font-sans leading-tight">
