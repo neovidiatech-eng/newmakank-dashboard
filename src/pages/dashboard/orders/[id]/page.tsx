@@ -55,7 +55,9 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
     customDeliveryStations.length > 0 ||
     (data as any)?.customDeliveryProgress;
   const combinedDiscount = Number((data as any)?.discountValue ?? data?.discountAmount ?? 0);
-  const taxValue = Number(data?.tax ?? data?.invoice?.summary?.tax ?? 0);
+  const rawTax = Number(data?.tax ?? data?.invoice?.summary?.tax ?? 0);
+  const rawGlobalCommission = Number((data as any)?.globalCommission ?? (data as any)?.adminCommission ?? 0);
+  const serviceFee = rawTax > 0 ? rawTax : rawGlobalCommission;
   const priceAfterDiscount = (data as any)?.priceAfterDiscount;
   const priceAfterTax = (data as any)?.priceAfterTax;
   const totalPrice = (data as any)?.totalPrice ?? data?.totalPriceAfterDiscount;
@@ -178,11 +180,11 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   </div>
                 </div>
               </div>
-              {taxValue > 0 && (
+              {serviceFee > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">- {t("Service Fee") || "رسوم الخدمة / الضريبة"}</span>
+                  <span className="text-muted-foreground">- {t("Service Fee") || "رسوم الخدمة"}</span>
                   <span className="font-medium">
-                    <PriceAmount value={taxValue} />
+                    <PriceAmount value={serviceFee} />
                   </span>
                 </div>
               )}
@@ -199,11 +201,11 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   </span>
                 </div>
               )}
-              {(data as any)?.globalCommission > 0 && (
+              {rawTax > 0 && rawGlobalCommission > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">- {t("Platform Fee")}</span>
                   <span className="font-medium">
-                    <PriceAmount value={(data as any)?.globalCommission} />
+                    <PriceAmount value={rawGlobalCommission} />
                   </span>
                 </div>
               )}
@@ -616,10 +618,10 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
             <span>رسوم التوصيل:</span>
             <span className="font-sans">{formatMoneyVal(data?.shipping || 0)} ج.م</span>
           </div>
-          {taxValue > 0 && (
+          {serviceFee > 0 && (
             <div className="flex justify-between">
               <span>رسوم الخدمة:</span>
-              <span className="font-sans">{formatMoneyVal(taxValue)} ج.م</span>
+              <span className="font-sans">{formatMoneyVal(serviceFee)} ج.م</span>
             </div>
           )}
           <div className="flex justify-between border-t border-double border-black pt-2 font-black text-sm">
