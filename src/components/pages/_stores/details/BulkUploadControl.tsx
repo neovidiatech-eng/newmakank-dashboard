@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -11,12 +11,13 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from "@/components/ui/table";
 import { 
-  FileSpreadsheet, Upload, Download, Loader2, CheckCircle2, XCircle, AlertCircle, Info 
+  FileSpreadsheet, Upload, Download, Loader2, CheckCircle2, XCircle, AlertCircle, Info, Store as StoreIcon
 } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { apiClient } from "@/lib/axios";
 import { queryClient } from "@/lib/queryClient";
 import { toast } from "sonner";
+import SelectPaginated from "@/components/common/Inputs/select/SelectPaginatedInput";
 
 export default function BulkUploadControl({ storeId }: { storeId?: number }) {
   const t = useTranslations();
@@ -25,6 +26,9 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResults, setUploadResults] = useState<any>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [selectedStoreId, setSelectedStoreId] = useState<number | null>(storeId ?? null);
+
+  const effectiveStoreId = storeId || selectedStoreId;
 
   // Trigger file download for template Excel
   const handleDownloadTemplate = async () => {
@@ -32,11 +36,11 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
     try {
       let response;
       try {
-        response = await apiClient.get("/api/service/bulk-upload/template", {
+        response = await apiClient.get("/api/services/bulk-upload/template", {
           responseType: "blob"
         });
-      } catch (err: any) {
-        response = await apiClient.get("/api/services/bulk-upload/template", {
+      } catch {
+        response = await apiClient.get("/api/service/bulk-upload/template", {
           responseType: "blob"
         });
       }
@@ -56,57 +60,74 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
       toast.success(t("templateDownloaded") || "تم تحميل النموذج بنجاح");
     } catch (error: any) {
       console.error("Failed to download template:", error);
-      toast.error(error?.message || "فشل تحميل نموذج Excel");
+      toast.error(error?.response?.data?.message || error?.message || "فشل تحميل نموذج Excel");
     } finally {
       setIsDownloading(false);
     }
   };
 
-  const [selectedStoreId, setSelectedStoreId] = useState<number | null>(storeId ?? null);
-
   // Trigger Excel file upload
   const handleUploadFile = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile) {
+      toast.error("يرجى اختيار ملف Excel أولاً");
+      return;
+    }
+
+    if (!effectiveStoreId) {
+      toast.error("يرجى اختيار المتجر أولاً قبل الرفع");
+      return;
+    }
+
     setIsUploading(true);
     setUploadResults(null);
 
     try {
       const formData = new FormData();
-      formData.append("file", selectedFile);
-      const targetStoreId = selectedStoreId || storeId;
-      if (targetStoreId) {
-        formData.append("storeId", String(targetStoreId));
-      }
+      formData.append("file", selectedFile); // Key MUST strictly be 'file'
+      formData.append("storeId", String(effectiveStoreId));
 
       let response;
       try {
-        response = await apiClient.post("/api/service/bulk-upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data"
-          }
-        });
-      } catch (err: any) {
         response = await apiClient.post("/api/services/bulk-upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data"
           }
         });
+      } catch {
+        try {
+          response = await apiClient.post("/api/services/bulk-upload/upload", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data"
+            }
+          });
+        } catch {
+          response = await apiClient.post("/api/service/bulk-upload", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data"
+            }
+          });
+        }
       }
 
-      // Handle raw response or nested data structure
+      // Handle standard response structure: { statusCode: 200, message: "...", data: { totalRows, createdCount, failedCount, results: [...] } }
       const responseData = response?.data?.data ?? response?.data ?? response;
-      
-      if (responseData && (responseData.results || responseData.totalRows !== undefined)) {
-        setUploadResults(responseData);
-        toast.success(t("uploadCompleted") || "تمت معالجة ملف الرفع بنجاح");
-        // Invalidate services query to refresh the list in the dashboard table
-        queryClient.invalidateQueries({ queryKey: ["services"] });
-      } else {
-        toast.error(response?.data?.message || "فشل معالجة ملف Excel");
-      }
+      const results = Array.isArray(responseData?.results) ? responseData.results : [];
+      const totalRows = responseData?.totalRows ?? results.length;
+      const createdCount = responseData?.createdCount ?? results.filter((r: any) => r.status === "created").length;
+      const failedCount = responseData?.failedCount ?? results.filter((r: any) => r.status === "failed").length;
+
+      setUploadResults({
+        totalRows,
+        createdCount,
+        failedCount,
+        results
+      });
+
+      toast.success(t("uploadCompleted") || "تمت معالجة ملف الرفع بنجاح");
+      queryClient.invalidateQueries({ queryKey: ["services"] });
     } catch (error: any) {
       console.error("Failed to upload menu file:", error);
-      toast.error(error?.message || "حدث خطأ أثناء رفع ملف Excel");
+      toast.error(error?.response?.data?.message || error?.message || "حدث خطأ أثناء رفع ملف Excel");
     } finally {
       setIsUploading(false);
     }
@@ -170,7 +191,7 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
 
       {/* Upload Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto bg-card text-card-foreground border border-border shadow-2xl">
+        <DialogContent className="sm:max-w-3xl max-h-[88vh] overflow-y-auto bg-card text-card-foreground border border-border shadow-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-bold">
               <Upload className="h-5 w-5 text-primary" />
@@ -181,11 +202,45 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
+          <div className="space-y-5 py-3">
+            {/* Admin Store Selector Input */}
+            {!storeId && (
+              <div className="space-y-2 p-4 bg-slate-50 dark:bg-slate-900/60 border border-border/80 rounded-xl">
+                <label className="text-xs font-bold flex items-center justify-between text-slate-800 dark:text-slate-200">
+                  <span className="flex items-center gap-1.5">
+                    <StoreIcon className="h-4 w-4 text-primary" />
+                    <span>{t("Select Store") || "اختيار المتجر"}</span>
+                    <span className="text-rose-500 font-bold">*</span>
+                  </span>
+                  <span className="text-[11px] text-amber-600 dark:text-amber-400 font-normal">
+                    (إجباري لأدمن النظام)
+                  </span>
+                </label>
+                <SelectPaginated
+                  name="storeId"
+                  apiUrl={["stores"]}
+                  value={selectedStoreId ? String(selectedStoreId) : ""}
+                  onChange={(val) => {
+                    const numVal = Array.isArray(val) ? Number(val[0]) : Number(val);
+                    setSelectedStoreId(isNaN(numVal) || !numVal ? null : numVal);
+                  }}
+                  placeholder={t("Select a store...") || "اختر المتجر التابع له المنتجات..."}
+                />
+              </div>
+            )}
+
+            {/* Warning if no store selected for Admin */}
+            {!effectiveStoreId && (
+              <div className="flex items-center gap-2.5 p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 rounded-xl text-amber-800 dark:text-amber-300 text-xs">
+                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                <span>يرجى اختيار المتجر التابع له المنتجات أولاً لتمكين زر رفع الملف ومتابعة المعالجة.</span>
+              </div>
+            )}
+
             {/* File Selector Dropzone */}
             <div 
               onClick={() => document.getElementById("excel-file-input")?.click()}
-              className="border-2 border-dashed border-gray-300 dark:border-gray-800 hover:border-primary/50 rounded-2xl p-8 text-center bg-slate-50/50 dark:bg-slate-900/30 hover:bg-slate-50 dark:hover:bg-slate-900/50 cursor-pointer transition-all"
+              className="border-2 border-dashed border-gray-300 dark:border-gray-800 hover:border-primary/50 rounded-2xl p-6 text-center bg-slate-50/50 dark:bg-slate-900/30 hover:bg-slate-50 dark:hover:bg-slate-900/50 cursor-pointer transition-all"
             >
               <input 
                 id="excel-file-input"
@@ -194,11 +249,11 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
                 className="hidden"
                 onChange={handleFileChange}
               />
-              <FileSpreadsheet className="h-12 w-12 mx-auto text-primary/75 mb-3" />
+              <FileSpreadsheet className="h-10 w-10 mx-auto text-primary/75 mb-2" />
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                 {selectedFile ? selectedFile.name : (t("Drag Excel file here or click to select") || "اسحب ملف Excel هنا أو اضغط للاختيار")}
               </p>
-              <p className="text-xs text-muted-foreground mt-1.5">
+              <p className="text-xs text-muted-foreground mt-1">
                 {selectedFile 
                   ? `${(selectedFile.size / 1024).toFixed(1)} KB` 
                   : (t("Supports .xlsx and .xls formats only") || "يدعم صيغ .xlsx و .xls فقط")
@@ -206,13 +261,13 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
               </p>
             </div>
 
-            {/* Error Message */}
+            {/* Upload Action Button */}
             {selectedFile && !uploadResults && (
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-1">
                 <Button 
                   onClick={handleUploadFile}
-                  disabled={isUploading}
-                  className="gap-2 text-xs"
+                  disabled={isUploading || !effectiveStoreId}
+                  className="gap-2 text-xs font-semibold px-5 shadow-sm"
                 >
                   {isUploading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -226,9 +281,9 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
 
             {/* Uploading State Spinner */}
             {isUploading && (
-              <div className="flex flex-col items-center justify-center py-6 gap-3">
+              <div className="flex flex-col items-center justify-center py-6 gap-3 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-border/60">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground font-medium">
                   {t("Processing Excel rows, please wait...") || "جاري معالجة صفوف ملف الـ Excel وإضافة المنتجات، يرجى الانتظار..."}
                 </p>
               </div>
@@ -242,34 +297,40 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
                   {t("Upload Summary") || "ملخص نتيجة المعالجة"}
                 </h3>
 
-                {/* Counts Summary */}
-                <div className="grid grid-cols-3 gap-4 text-center text-xs font-semibold">
+                {/* Counts Summary Cards */}
+                <div className="grid grid-cols-3 gap-3 text-center text-xs font-semibold">
                   <div className="p-3 bg-slate-100 dark:bg-slate-900 border border-border/40 rounded-xl">
                     <p className="text-muted-foreground text-xs">{t("Total Rows") || "إجمالي الصفوف"}</p>
                     <p className="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1">{uploadResults.totalRows}</p>
                   </div>
-                  <div className="p-3 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-100/50 rounded-xl">
-                    <p className="text-emerald-600 dark:text-emerald-400 text-xs">{t("Created Successfully") || "تمت إضافتها"}</p>
-                    <p className="text-lg font-bold mt-1">{uploadResults.createdCount}</p>
+                  <div className="p-3 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-200/50 rounded-xl flex flex-col items-center">
+                    <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 text-xs">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      {t("Created Successfully") || "تمت إضافتها بنجاح"}
+                    </span>
+                    <p className="text-lg font-bold mt-1 text-emerald-700 dark:text-emerald-300">{uploadResults.createdCount}</p>
                   </div>
-                  <div className="p-3 bg-rose-50 text-rose-800 dark:bg-rose-950/20 dark:text-rose-400 border border-rose-100/50 rounded-xl">
-                    <p className="text-rose-600 dark:text-rose-400 text-xs">{t("Failed Rows") || "فشلت"}</p>
-                    <p className="text-lg font-bold mt-1">{uploadResults.failedCount}</p>
+                  <div className="p-3 bg-rose-50 text-rose-800 dark:bg-rose-950/20 dark:text-rose-400 border border-rose-200/50 rounded-xl flex flex-col items-center">
+                    <span className="flex items-center gap-1 text-rose-700 dark:text-rose-400 text-xs">
+                      <XCircle className="w-3.5 h-3.5" />
+                      {t("Failed Rows") || "صفوف فشلت"}
+                    </span>
+                    <p className="text-lg font-bold mt-1 text-rose-700 dark:text-rose-300">{uploadResults.failedCount}</p>
                   </div>
                 </div>
 
-                {/* Results List Table */}
+                {/* Detailed Results Table */}
                 <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground font-medium">
                     {t("Detailed row response:") || "تفصيل مخرجات معالجة كل صف:"}
                   </p>
-                  <div className="max-h-64 overflow-y-auto border border-border/80 rounded-xl">
+                  <div className="max-h-60 overflow-y-auto border border-border/80 rounded-xl shadow-inner">
                     <Table>
-                      <TableHeader className="bg-slate-50 dark:bg-slate-900 sticky top-0 z-10">
+                      <TableHeader className="bg-slate-100 dark:bg-slate-900 sticky top-0 z-10">
                         <TableRow>
                           <TableHead className="w-16 text-center">{t("Row") || "الصف"}</TableHead>
                           <TableHead>{t("Product Name") || "اسم المنتج"}</TableHead>
-                          <TableHead className="w-24 text-center">{t("Status") || "الحالة"}</TableHead>
+                          <TableHead className="w-28 text-center">{t("Status") || "الحالة"}</TableHead>
                           <TableHead>{t("Reason / Notes") || "السبب / ملاحظات"}</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -285,22 +346,29 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
                             const isSuccess = res.status === "created";
                             return (
                               <TableRow key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 text-xs">
-                                <TableCell className="text-center font-bold text-muted-foreground">
-                                  {res.row}
+                                <TableCell className="text-center font-bold text-slate-500 dark:text-slate-400">
+                                  #{res.row}
                                 </TableCell>
                                 <TableCell className="font-medium text-slate-800 dark:text-slate-200">
                                   {res.productName || "—"}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                  <Badge 
-                                    variant={isSuccess ? "success" : "destructive"} 
-                                    className="text-[10px] px-2 py-0.5 rounded-full"
-                                  >
-                                    {isSuccess ? (t("Created") || "ناجح") : (t("Failed") || "فشل")}
-                                  </Badge>
+                                  {isSuccess ? (
+                                    <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-300 text-[10px] px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                                      {t("Created") || "ناجح"}
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="destructive" className="text-[10px] px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                                      <XCircle className="w-3 h-3" />
+                                      {t("Failed") || "فشل"}
+                                    </Badge>
+                                  )}
                                 </TableCell>
-                                <TableCell className={isSuccess ? "text-muted-foreground text-xs" : "text-rose-600 dark:text-rose-400 font-semibold text-xs"}>
-                                  {isSuccess ? (t("Product added successfully") || "تمت إضافة المنتج بنجاح") : (res.reason || t("Validation error"))}
+                                <TableCell className={isSuccess ? "text-slate-500 dark:text-slate-400 text-xs" : "text-rose-600 dark:text-rose-400 font-semibold text-xs leading-snug"}>
+                                  {isSuccess 
+                                    ? (t("Product added successfully") || "تمت إضافة المنتج بنجاح") 
+                                    : (res.reason || t("Validation error") || "خطأ في معالجة البيانات")}
                                 </TableCell>
                               </TableRow>
                             );
@@ -314,10 +382,10 @@ export default function BulkUploadControl({ storeId }: { storeId?: number }) {
             )}
           </div>
 
-          <DialogFooter className="flex justify-between sm:justify-between items-center border-t border-border/60 pt-4 gap-2">
+          <DialogFooter className="flex justify-between sm:justify-between items-center border-t border-border/60 pt-3 gap-2">
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
-              <span>المنتجات المضافة بنجاح تصبح <strong>نشطة ومفعلة</strong> مباشرة.</span>
+              <AlertCircle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+              <span>المنتجات المضافة بنجاح تصبح <strong>نشطة ومفعلة</strong> مباشرة في متجرك.</span>
             </div>
             <Button 
               type="button" 
