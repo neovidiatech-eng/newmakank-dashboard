@@ -1301,6 +1301,8 @@
   "bonus": "مكافأة",
   "branch": "فرع",
   "branchId": "الفرع",
+  "storeId": "المطعم / المتجر",
+  "selectStoreFirst": "اختر المطعم أولاً",
   "brand": "علامة تجارية",
   "breeder": "مربي",
   "breederAddress": "عنوان مربي الجواد",

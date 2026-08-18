@@ -12,6 +12,7 @@ export const EmployeesSchema = (t: TFunction, isEdit: boolean) => {
     }),
     password: isEdit ? noSchema() : StringReq(t, 6),
     roleId: SelectReq(t),
+    storeId: z.union([z.number(), z.string()]).optional().nullable(),
     branchId: z.union([z.number(), z.string()]).optional().nullable()
   });
 };

@@ -1250,6 +1250,8 @@
   "bonus": "Bonus",
   "branch": "branch",
   "branchId": "Branch",
+  "storeId": "Store / Restaurant",
+  "selectStoreFirst": "Select Store First",
   "brand": "Brand",
   "breeder": "Breeder",
   "breederAddress": "breederAddress",
