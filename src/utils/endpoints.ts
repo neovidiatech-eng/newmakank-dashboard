@@ -43,7 +43,7 @@ export const endpoints = {
   store: "/store",
   deliverySchedule: "/api/deliveryData/schedule",
   rating: '/api/rating',
-  roles: "/api/roles/all",
+  roles: "/api/roles",
   role: '/api/roles',
   zones: "/api/zones",
   categories: "/api/categories",
@@ -80,7 +80,7 @@ export const endpoints = {
   resetAdminPassword: "/api/users/me/change-password", // renamed from "s" to be more descriptive
   //////////////////////////////////////////////
   socialMedia: "/api/social-media",
-  allRoles: "/api/roles/all",
+  allRoles: "/api/roles",
   keyvalue: "/api/keyvalue",
   statistics: "/api/statistics",
   financialOverview: "/api/statistics/financial-overview",
