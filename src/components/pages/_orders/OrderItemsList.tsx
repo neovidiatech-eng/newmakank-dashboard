@@ -57,6 +57,11 @@ export default function OrderItemsList({ items, storeCommission }: { items: ApiR
             <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
+                        {(item.Service as any)?.Category?.name && (
+                            <Badge variant="outline" className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                                {(item.Service as any).Category.name[locale as "en" | "ar"] || (item.Service as any).Category.name.ar || (item.Service as any).Category.name.en}
+                            </Badge>
+                        )}
                         <h4 className="font-semibold text-base truncate">
                             {item.Service?.name[locale as "en" | "ar"] || item.Service?.name.en}
                         </h4>
@@ -82,21 +87,33 @@ export default function OrderItemsList({ items, storeCommission }: { items: ApiR
                     </div>
                 </div>
 
-                <div className="text-sm text-muted-foreground mt-1">
-                    <span className="font-medium">{t("Quantity")}:</span> {item.quantity} |{" "}
-                    <span className="font-medium">{t("Size")}:</span>{" "}
-                    {item.Size?.name[locale as "en" | "ar"] || item.Size?.name.en}
+                <div className="text-sm text-muted-foreground mt-1 flex flex-wrap items-center gap-2">
+                    <span><span className="font-medium">{t("Quantity")}:</span> {item.quantity}</span>
+                    {item.Size?.name && (
+                        <>
+                            <span>|</span>
+                            <span>
+                                <span className="font-medium">{t("Size")}:</span>{" "}
+                                {item.Size?.name[locale as "en" | "ar"] || item.Size?.name.en}
+                                {(item.Size as any)?.price ? ` (+${(item.Size as any).price})` : ""}
+                            </span>
+                        </>
+                    )}
                 </div>
 
                 {item.OrderItemAddons.length > 0 && (
                     <div className="mt-2 text-sm">
                         <span className="font-medium text-muted-foreground">{t("Addons")}: </span>
                         <div className="flex flex-wrap gap-2 mt-1">
-                            {item.OrderItemAddons.map((addon) => (
-                                <Badge key={addon.id} variant="secondary" className="text-xs">
-                                    {addon.Addon.name[locale as "en" | "ar"] || addon.Addon.name.en}
-                                </Badge>
-                            ))}
+                            {item.OrderItemAddons.map((addon) => {
+                                const addonName = addon.Addon.name[locale as "en" | "ar"] || addon.Addon.name.en;
+                                const addonPrice = (addon.Addon as any)?.price;
+                                return (
+                                    <Badge key={addon.id} variant="secondary" className="text-xs">
+                                        • {addonName} {addonPrice ? `(+${addonPrice})` : ""}
+                                    </Badge>
+                                );
+                            })}
                         </div>
                     </div>
                 )}

@@ -585,23 +585,36 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
               </tr>
             </thead>
             <tbody>
-              {data?.OrderItems?.map((item: any, idx: number) => (
-                <tr key={idx} className="border-b border-dotted border-gray-300">
-                  <td className="py-2 text-right">
-                    <span className="font-bold">{getLocalizedName(item?.Service?.name) || item?.Service?.name || "—"}</span>
-                    {item?.Size?.name && (
-                      <div className="text-[10px] text-gray-500 font-sans">· الحجم: {getLocalizedName(item.Size.name)}</div>
-                    )}
-                    {item?.OrderItemAddons && item.OrderItemAddons.length > 0 && (
-                      <div className="text-[10px] text-gray-500 font-sans leading-tight">
-                        · إضافات: {item.OrderItemAddons.map((oia: any) => getLocalizedName(oia?.Addon?.name)).filter(Boolean).join("، ")}
-                      </div>
-                    )}
-                  </td>
-                  <td className="text-center py-2 font-bold font-sans">{item.quantity}</td>
-                  <td className="text-left py-2 font-sans">{formatMoneyVal(item.price * item.quantity)} ج.م</td>
-                </tr>
-              ))}
+              {data?.OrderItems?.map((item: any, idx: number) => {
+                const categoryName = getLocalizedName(item?.Service?.Category?.name);
+                return (
+                  <tr key={idx} className="border-b border-dotted border-gray-300">
+                    <td className="py-2 text-right">
+                      {categoryName && (
+                        <div className="text-[10px] font-bold text-slate-700 dark:text-slate-300">[{categoryName}]</div>
+                      )}
+                      <span className="font-bold">{getLocalizedName(item?.Service?.name) || item?.Service?.name || "—"}</span>
+                      {item?.Size?.name && (
+                        <div className="text-[10px] text-gray-500 font-sans">
+                          · الحجم: {getLocalizedName(item.Size.name)}
+                          {item.Size.price ? ` (+${formatMoneyVal(item.Size.price)} ج.م)` : ""}
+                        </div>
+                      )}
+                      {item?.OrderItemAddons && item.OrderItemAddons.length > 0 && (
+                        <div className="text-[10px] text-gray-500 font-sans leading-tight">
+                          · إضافات: {item.OrderItemAddons.map((oia: any) => {
+                            const addonName = getLocalizedName(oia?.Addon?.name);
+                            const addonPrice = oia?.Addon?.price ? ` (+${formatMoneyVal(oia.Addon.price)} ج.م)` : "";
+                            return `${addonName}${addonPrice}`;
+                          }).filter(Boolean).join("، ")}
+                        </div>
+                      )}
+                    </td>
+                    <td className="text-center py-2 font-bold font-sans">{item.quantity}</td>
+                    <td className="text-left py-2 font-sans">{formatMoneyVal(item.price * item.quantity)} ج.م</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
