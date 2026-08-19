@@ -13,7 +13,7 @@ export const endpoints = {
   logs: "/api/logs",
   userStatistics: "/api/users/statistics",
   permissions: "/api/permissions",
-  systemPermissions: '/api/permissions/system',
+  systemPermissions: '/api/permissions',
   block: "/block",
   customers: "/api/customers", // PAGE , FORM
   banners: "/api/banners",
