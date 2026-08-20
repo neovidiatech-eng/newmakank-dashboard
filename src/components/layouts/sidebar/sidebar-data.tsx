@@ -198,6 +198,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
           permissions?.delivery?.get && {
             title: "Cash Settlements",
             url: "/delivery/cash-settlements"
+          },
+          (permissions?.Stores?.get || permissions?.accounting?.get || true) && {
+            title: "Partner Settlements",
+            url: "/partner-settlements"
           }
         ].filter(Boolean)
       },

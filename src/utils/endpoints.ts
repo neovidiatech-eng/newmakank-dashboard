@@ -41,6 +41,8 @@ export const endpoints = {
   users: "/api/users",
   stores: "/api/stores",
   store: "/store",
+  storePartner: "/partner",
+  partnerSettlements: "/api/stores/partner-settlements",
   deliverySchedule: "/api/deliveryData/schedule",
   rating: '/api/rating',
   roles: "/api/roles",

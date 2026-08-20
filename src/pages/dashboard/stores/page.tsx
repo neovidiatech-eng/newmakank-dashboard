@@ -15,15 +15,25 @@ export default async function page({ searchParams }: { searchParams: SearchParam
   return (
     <>
       <CustomHeader />
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <Link href="/stores">
-          <Badge variant={!resolvedSearchParams?.isStoreAccepted ? "default" : "outline"} className="cursor-pointer px-3 py-1.5">
-            {t("Stores")}
+          <Badge variant={!resolvedSearchParams?.isStoreAccepted && !resolvedSearchParams?.isPartner ? "default" : "outline"} className="cursor-pointer px-3 py-1.5">
+            {t("Stores") || "جميع المتاجر"}
+          </Badge>
+        </Link>
+        <Link href="/stores?isPartner=true">
+          <Badge variant={resolvedSearchParams?.isPartner === "true" ? "default" : "outline"} className="cursor-pointer px-3 py-1.5 bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-400">
+            🤝 {t("Partner Stores") || "المطاعم الشريكة"}
           </Badge>
         </Link>
         <Link href="/stores?isStoreAccepted=false">
           <Badge variant={resolvedSearchParams?.isStoreAccepted === "false" ? "default" : "outline"} className="cursor-pointer px-3 py-1.5">
-            {t("Pending Review")}
+            {t("Pending Review") || "قيد المراجعة"}
+          </Badge>
+        </Link>
+        <Link href="/partner-settlements">
+          <Badge variant="outline" className="cursor-pointer px-3 py-1.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-400 ms-auto">
+            📊 {t("Partner Settlements Report") || "تقرير تسويات الشركاء"}
           </Badge>
         </Link>
       </div>
@@ -38,6 +48,16 @@ export default async function page({ searchParams }: { searchParams: SearchParam
             type: 'selectPaginated',
             isMulti: true,
             apiUrl: ["categories"]
+          },
+          {
+            name: "isPartner",
+            type: "select",
+            width: 3,
+            label: t("Partner Status") || "نوع المتجر",
+            options: [
+              { label: t("Partner Stores") || "مطاعم شريكة فقط", value: "true" },
+              { label: t("Non-Partner Stores") || "مطاعم غير شريكة", value: "false" }
+            ]
           },
           {
             name: "isStoreAccepted",

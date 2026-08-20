@@ -9,6 +9,7 @@ import { Ban, CheckCircle } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { StoreStatusSelect } from "@/components/pages/_stores/StoreStatusSelect";
 import { StoreApprovalAction } from "@/components/pages/_stores/StoreApprovalAction";
+import { TogglePartnerStatus } from "@/components/pages/_stores/TogglePartnerStatus";
 
 export default function StoresColumns(): ColumnDef<Record<string, unknown>>[] {
   const t = useTranslations();
@@ -23,6 +24,20 @@ export default function StoresColumns(): ColumnDef<Record<string, unknown>>[] {
           email={row.original.name?.ar as string | null | undefined}
         />
       )
+    },
+    {
+      accessorKey: "isPartner",
+      header: () => <IconHeader columnKey="Partner Store" />,
+      cell: ({ row }) => {
+        const storeId = row.original.id as number | string;
+        const isPartner = Boolean(row.original.isPartner);
+        return (
+          <TogglePartnerStatus
+            storeId={storeId}
+            initialIsPartner={isPartner}
+          />
+        );
+      }
     },
     {
       accessorKey: "cover",
