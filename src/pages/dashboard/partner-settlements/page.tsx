@@ -78,9 +78,34 @@ export default function PartnerSettlementsPage() {
       const summaryData = responseData.summary ?? null;
       const storesData = Array.isArray(responseData.stores) ? responseData.stores : [];
       
-      setSummary(summaryData);
-      setStores(storesData);
-      setTotalCount(response?.data?.meta?.total ?? storesData.length);
+      const normalizedSummary: SettlementSummary | null = summaryData ? {
+        totalPartnerStores: Number(summaryData.totalPartnerStores ?? 0),
+        totalOrdersCount: Number(summaryData.totalOrdersCount ?? summaryData.totalDeliveredOrders ?? 0),
+        totalSales: Number(summaryData.totalSales ?? summaryData.totalProductsValue ?? 0),
+        totalPlatformCommission: Number(summaryData.totalPlatformCommission ?? summaryData.totalAdminCommission ?? 0),
+        totalStoreEarnings: Number(summaryData.totalStoreEarnings ?? summaryData.netTotalPayableToStores ?? 0),
+        totalCashCollectedByDrivers: Number(summaryData.totalCashCollectedByDrivers ?? 0),
+        offlinePartnerTotal: Number(summaryData.offlinePartnerTotal ?? 0),
+        onlinePartnerTotal: Number(summaryData.onlinePartnerTotal ?? 0),
+      } : null;
+
+      const normalizedStores: PartnerStoreSettlement[] = storesData.map((item: any) => ({
+        storeId: Number(item.storeId ?? item.id ?? 0),
+        storeName: item.storeName ?? item.name ?? "—",
+        storeLogo: item.storeLogo ?? item.logo ?? "",
+        totalOrdersCount: Number(item.totalOrdersCount ?? item.totalDeliveredOrders ?? 0),
+        totalSales: Number(item.totalSales ?? item.totalProductsPrice ?? 0),
+        totalPlatformCommission: Number(item.totalPlatformCommission ?? item.totalAdminCommission ?? 0),
+        totalStoreEarnings: Number(item.totalStoreEarnings ?? item.netAmountDueToStore ?? 0),
+        totalCashCollectedByDrivers: Number(item.totalCashCollectedByDrivers ?? 0),
+        offlinePartnerTotal: Number(item.offlinePartnerTotal ?? 0),
+        onlinePartnerTotal: Number(item.onlinePartnerTotal ?? 0),
+        storeWalletBalance: Number(item.storeWalletBalance ?? item.walletBalance ?? 0)
+      }));
+
+      setSummary(normalizedSummary);
+      setStores(normalizedStores);
+      setTotalCount(response?.data?.meta?.total ?? normalizedStores.length);
     } catch (error: any) {
       console.error("Failed to fetch partner settlements:", error);
       toast.error(error?.response?.data?.message || error?.message || "فشل جلب تقارير تسويات الشركاء");
