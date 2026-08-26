@@ -3,8 +3,13 @@ type AppEnvKey =
   | "VITE_API_IMG_URL"
   | "VITE_GOOGLE_MAP_API_KEY";
 
+const DEFAULT_ENV_MAP: Partial<Record<AppEnvKey, string>> = {
+  VITE_API_URL: "https://api.makanak-app.com",
+  VITE_API_IMG_URL: "https://api.makanak-app.com/api/media?media="
+};
+
 export function getEnv(name: AppEnvKey, fallback = ""): string {
-  return import.meta.env[name] || fallback;
+  return import.meta.env[name] || DEFAULT_ENV_MAP[name] || fallback;
 }
 
 export function requireEnv(name: AppEnvKey): string {
