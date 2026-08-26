@@ -114,7 +114,11 @@ apiClient.interceptors.response.use(
     }
 
     if (typeof window !== "undefined" && !error?.config?.skipErrorToast) {
-      toast.error(message);
+      if (status === 403 && originalRequest?.method?.toLowerCase() === "get") {
+        // Suppress noisy toast for background GET queries that a custom role may not have permissions for
+      } else {
+        toast.error(message);
+      }
     }
 
     return Promise.reject(new Error(message));
