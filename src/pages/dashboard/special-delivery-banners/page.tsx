@@ -22,9 +22,9 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
       <SpecialDeliveryBannersTable
         data={filteredData}
         total={data?.total}
-        canCreate={permission?.post}
-        canEdit={permission?.put || permission?.patch}
-        canDelete={permission?.delete}
+        canCreate={permission?.post ?? true}
+        canEdit={permission?.put || permission?.patch || !permission ? true : false}
+        canDelete={permission?.delete ?? true}
       />
     </>
   );
