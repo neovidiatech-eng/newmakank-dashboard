@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { extractFormDefaultInputs } from "@/utils/extractFormDefaultInputs";
 import { extractFormNameInputs } from "@/utils/extractFormNameInputs";
@@ -25,12 +25,17 @@ export default function useUsersLogic({ data }: { data?: UsersType }) {
   });
 
   const onSubmit = async (formData: UsersType) => {
+    const extracted = extractFormNameInputs({ inputs, data: formData });
+    const payload =
+      typeof extracted === "object" && !(extracted instanceof FormData) && (extracted as any)?.roleId
+        ? { ...extracted, roleId: Number((extracted as any).roleId) }
+        : extracted;
+
     await formAction({
       data,
-      formData: extractFormNameInputs({ inputs, data: formData }),
+      formData: payload,
       endpoint: ["users"],
       reset: reset,
-
       t
     });
   };
