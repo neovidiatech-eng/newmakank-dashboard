@@ -66,7 +66,7 @@ export default function StoreDetailsPage({
       {/* Hero + commission action in one strip */}
       <div className="space-y-3">
         <StoreHero data={data} />
-        <div className="flex justify-end items-center gap-4 px-1">
+        <div className="flex flex-wrap justify-end items-center gap-2 px-1">
           <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border">
             <span>{t("Store Commission")}:</span>
             <span className="text-foreground font-semibold">{commissionLabel}</span>

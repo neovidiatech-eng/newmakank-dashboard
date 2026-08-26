@@ -47,16 +47,16 @@ export default function CustomTabs({
   const containerClass = `${className} ${dir === "rtl" ? "rtl" : ""}`;
 
   const listClass = [
-    "inline-flex w-full items-center gap-1",
+    "flex w-full items-center gap-1",
     "rounded-xl bg-muted/60 p-1",
     "border border-border/60",
-    "mx-auto flex-wrap",
+    "overflow-x-auto scrollbar-none",
     dir === "rtl" ? "flex-row-reverse" : "",
     tabsListClassName,
   ].join(" ");
 
   const triggerClass = [
-    "relative flex-1",
+    "relative shrink-0",
     "inline-flex items-center justify-center gap-2",
     "whitespace-nowrap rounded-lg px-3 py-2",
     "text-sm font-medium",
