@@ -74,7 +74,7 @@ export function ApplyTemplateButton({ storeId }: ApplyTemplateButtonProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">{t("applyTemplate")}</Button>
+        <Button variant="outline" size="sm">{t("applyTemplate")}</Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md">

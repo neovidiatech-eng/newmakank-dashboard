@@ -66,7 +66,8 @@ export default function StoreDetailsPage({
       {/* Hero + commission action in one strip */}
       <div className="space-y-3">
         <StoreHero data={data} />
-        <div className="flex flex-wrap justify-end items-center gap-2 px-1">
+        {/* Info badges — commission & discount */}
+        <div className="flex flex-wrap items-center gap-2 px-1">
           <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border">
             <span>{t("Store Commission")}:</span>
             <span className="text-foreground font-semibold">{commissionLabel}</span>
@@ -79,33 +80,41 @@ export default function StoreDetailsPage({
               <span className="text-xs">({t(currentDiscountType)})</span>
             </div>
           )}
-          <StoreManagedByAdminToggle
-            storeId={Number(data.id)}
-            initialEnabled={(data as any).managedByAdmin}
-          />
-          <StoreDiscountButton
-            storeId={Number(data.id)}
-            initialDiscountType={currentDiscountType}
-            initialDiscountValue={currentDiscount}
-          />
-          <ApplyTemplateButton storeId={Number(data.id)} />
-          <StorePrepTimeButton
-            storeId={Number(data.id)}
-            initialPrepTime={Number((data as any)?.prepTimeMinutes ?? 0)}
-            initialDeliveryMin={Number((data as any)?.deliveryTimeMinMinutes ?? 0)}
-            initialDeliveryMax={Number((data as any)?.deliveryTimeMaxMinutes ?? 0)}
-            initialMinOrderAmount={Number((data as any)?.minOrderAmount ?? 0)}
-          />
-          <StoreCommotionButton
-            storeId={Number(data.id)}
-            initialValue={currentCommission}
-            initialType={currentCommissionType}
-          />
-          <ResetPeriodButton
-            endPoint={["storeResetPeriod"]}
-            label={t("Reset Store Period") || "تصفير فترة المتجر"}
-            variant="secondary"
-          />
+        </div>
+
+        {/* Action buttons — scrollable row on mobile */}
+        <div className="flex items-center gap-2 px-1 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex items-center gap-2 shrink-0">
+            <StoreManagedByAdminToggle
+              storeId={Number(data.id)}
+              initialEnabled={(data as any).managedByAdmin}
+            />
+          </div>
+          <div className="flex items-center gap-2 shrink-0 flex-nowrap">
+            <StoreDiscountButton
+              storeId={Number(data.id)}
+              initialDiscountType={currentDiscountType}
+              initialDiscountValue={currentDiscount}
+            />
+            <ApplyTemplateButton storeId={Number(data.id)} />
+            <StorePrepTimeButton
+              storeId={Number(data.id)}
+              initialPrepTime={Number((data as any)?.prepTimeMinutes ?? 0)}
+              initialDeliveryMin={Number((data as any)?.deliveryTimeMinMinutes ?? 0)}
+              initialDeliveryMax={Number((data as any)?.deliveryTimeMaxMinutes ?? 0)}
+              initialMinOrderAmount={Number((data as any)?.minOrderAmount ?? 0)}
+            />
+            <StoreCommotionButton
+              storeId={Number(data.id)}
+              initialValue={currentCommission}
+              initialType={currentCommissionType}
+            />
+            <ResetPeriodButton
+              endPoint={["storeResetPeriod"]}
+              label={t("Reset Store Period") || "تصفير فترة المتجر"}
+              variant="secondary"
+            />
+          </div>
         </div>
       </div>
 

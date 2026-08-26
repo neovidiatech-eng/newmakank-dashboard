@@ -156,7 +156,7 @@ export function StoreDiscountButton({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-1.5">
           <Percent className="h-4 w-4" />
           {t("Store Discount")}
         </Button>

@@ -106,7 +106,7 @@ export function StorePrepTimeButton({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2 bg-background border border-border">
+        <Button variant="outline" size="sm" className="flex items-center gap-1.5 bg-background border border-border">
           <Clock className="h-4 w-4" />
           <span>{t("setPrepTime") || "تعديل وقت التحضير والتوصيل"}</span>
         </Button>

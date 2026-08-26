@@ -78,7 +78,7 @@ export function StoreCommotionButton({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary">{t("setCommotion")}</Button>
+        <Button variant="secondary" size="sm">{t("setCommotion")}</Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md">
