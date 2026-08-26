@@ -92,7 +92,7 @@ export default function RolesFormPage({
                   render={({ field }) => {
                     const selected: string[] =
                       (field.value as unknown as string[]) ?? [];
-                    const allIds = group.methods.map(m => String(m.id));
+                    const allIds = (group.methods ?? []).map(m => String(m.id));
                     const isAllSelected =
                       allIds.length > 0 &&
                       allIds.every(id => selected.includes(id));
