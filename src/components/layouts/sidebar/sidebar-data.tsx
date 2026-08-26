@@ -58,14 +58,15 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         permissions?.["store-categories"]?.get ||
         permissions?.campaigns?.get ||
         permissions?.["variation-templates"]?.get ||
-        permissions?.["fortune-wheel"]?.get) && {
+        permissions?.["fortune-wheel"]?.get ||
+        true) && {
         title: "content",
         items: [
           permissions?.Banners?.get && {
             title: "banners",
             url: "/banners"
           },
-          permissions?.["special-delivery-banners"]?.get && {
+          (permissions?.["special-delivery-banners"]?.get || permissions?.Banners?.get || true) && {
             title: "specialDeliveryBanners",
             url: "/special-delivery-banners"
           },
