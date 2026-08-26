@@ -10,7 +10,7 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         title: "financialOverview",
         url: "/dashboard/financial-overview"
       },
-      (permissions?.statistics?.get || permissions?.Users?.get || permissions?.Stores?.get || permissions?.delivery?.get) && {
+      (permissions?.statistics?.get || permissions?.analytics?.get) && {
         title: "activityAnalytics",
         url: "/analytics"
       },
