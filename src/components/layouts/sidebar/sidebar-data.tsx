@@ -50,27 +50,32 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
       },
 
       (permissions?.Banners?.get ||
+        permissions?.banners?.get ||
         permissions?.["special-delivery-banners"]?.get ||
+        permissions?.specialDeliveryBanners?.get ||
         permissions?.Rating?.get ||
+        permissions?.rating?.get ||
         permissions?.Coupons?.get ||
+        permissions?.coupons?.get ||
         permissions?.Service?.get ||
+        permissions?.services?.get ||
         permissions?.["Social Media"]?.get ||
+        permissions?.socialMedia?.get ||
         permissions?.["store-categories"]?.get ||
         permissions?.campaigns?.get ||
         permissions?.["variation-templates"]?.get ||
-        permissions?.["fortune-wheel"]?.get ||
-        true) && {
+        permissions?.["fortune-wheel"]?.get) && {
         title: "content",
         items: [
-          permissions?.Banners?.get && {
+          (permissions?.Banners?.get || permissions?.banners?.get) && {
             title: "banners",
             url: "/banners"
           },
-          (permissions?.["special-delivery-banners"]?.get || permissions?.Banners?.get || true) && {
+          (permissions?.["special-delivery-banners"]?.get || permissions?.specialDeliveryBanners?.get || permissions?.Banners?.get || permissions?.banners?.get) && {
             title: "specialDeliveryBanners",
             url: "/special-delivery-banners"
           },
-          (permissions?.Banners?.get || permissions?.["fortune-wheel"]?.get) && {
+          (permissions?.Banners?.get || permissions?.banners?.get || permissions?.["fortune-wheel"]?.get) && {
             title: "fortuneWheel",
             url: "/banners/fortune-wheel"
           },
@@ -78,19 +83,19 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
             title: "campaignsCenter",
             url: "/campaigns"
           },
-          permissions?.Rating?.get && {
+          (permissions?.Rating?.get || permissions?.rating?.get) && {
             title: "rating",
             url: "/rating"
           },
-          permissions?.Coupons?.get && {
+          (permissions?.Coupons?.get || permissions?.coupons?.get) && {
             title: "coupons",
             url: "/coupons"
           },
-          permissions?.["variation-templates"]?.get && {
+          (permissions?.["variation-templates"]?.get || permissions?.variationTemplate?.get) && {
             title: "variationTemplate",
             url: "/variationTemplate"
           },
-          permissions?.["Social Media"]?.get && {
+          (permissions?.["Social Media"]?.get || permissions?.socialMedia?.get) && {
             title: "socialMedia",
             url: "/socialMedia"
           }
@@ -130,39 +135,39 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
             title: "customers",
             url: "/customers"
           },
-          true && {
+          (permissions?.notification?.get || permissions?.notifications?.get || permissions?.["system-notifications"]?.get || permissions?.Roles?.get) && {
             title: "notifications",
             url: "/notifications"
           }
         ].filter(Boolean)
       },
 
-      (permissions?.Cities?.get || permissions?.Zones?.get) && {
+      (permissions?.Cities?.get || permissions?.cities?.get || permissions?.Zones?.get || permissions?.zones?.get) && {
         title: "locations",
         items: [
-          permissions?.Cities?.get && {
+          (permissions?.Cities?.get || permissions?.cities?.get) && {
             title: "cities",
             url: "/cities"
           },
-          permissions?.Zones?.get && {
+          (permissions?.Zones?.get || permissions?.zones?.get) && {
             title: "zones",
             url: "/zones"
           }
         ].filter(Boolean)
       },
 
-      (permissions?.Orders?.get || permissions?.Complaints?.get) && {
+      (permissions?.Orders?.get || permissions?.orders?.get || permissions?.Complaints?.get || permissions?.complaints?.get) && {
         title: "orders & support",
         items: [
-          permissions?.Orders?.get && {
+          (permissions?.Orders?.get || permissions?.orders?.get) && {
             title: "orders",
             url: "/orders"
           },
-          permissions?.Orders?.get && {
+          (permissions?.Orders?.get || permissions?.orders?.get) && {
             title: "archivedOrders",
             url: "/orders/archived"
           },
-          permissions?.Complaints?.get && {
+          (permissions?.Complaints?.get || permissions?.complaints?.get) && {
             title: "complaint",
             url: "/complaint"
           }
@@ -173,7 +178,9 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         permissions?.fund?.get ||
         permissions?.transactions?.get ||
         permissions?.wallet?.get ||
-        permissions?.delivery?.get) && {
+        permissions?.delivery?.get ||
+        permissions?.Stores?.get ||
+        permissions?.accounting?.get) && {
         title: "accounting",
         items: [
           permissions?.withdraw?.get && {
@@ -192,21 +199,21 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
             title: "wallet",
             url: "/wallet"
           },
-          permissions?.delivery?.get && {
+          (permissions?.delivery?.get || permissions?.withdraw?.get) && {
             title: "Driver Withdrawals",
             url: "/delivery/withdrawals"
           },
-          permissions?.delivery?.get && {
+          (permissions?.delivery?.get || permissions?.withdraw?.get) && {
             title: "Cash Settlements",
             url: "/delivery/cash-settlements"
           },
-          (permissions?.Stores?.get || permissions?.accounting?.get || true) && {
+          (permissions?.Stores?.get || permissions?.accounting?.get || permissions?.withdraw?.get) && {
             title: "Partner Settlements",
             url: "/partner-settlements"
           }
         ].filter(Boolean)
       },
-      permissions?.settings?.get && {
+      (permissions?.settings?.get || permissions?.Settings?.get) && {
         title: "settings",
         url: "/settings"
       }

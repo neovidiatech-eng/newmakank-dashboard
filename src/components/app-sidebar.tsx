@@ -62,14 +62,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   });
 
   const filterLink = useMemo(() => {
-    const generated = links({ permissions: (permissionsQuery.data ?? {}) as Permission });
+    const profile = profileQuery.data?.data?.user;
+    const isSuperAdmin =
+      (profile?.roleKey === "Admin" || profile?.Role?.roleKey === "Admin") &&
+      (profile?.Role?.default === true || profile?.default === true);
 
-    if (generated.length > 0) {
-      return generated;
+    if (isSuperAdmin) {
+      if (permissionsQuery.data && Object.keys(permissionsQuery.data).length > 0) {
+        return links({ permissions: permissionsQuery.data });
+      }
+      return links({ permissions: FALLBACK_SIDEBAR_PERMISSIONS });
     }
 
-    return links({ permissions: FALLBACK_SIDEBAR_PERMISSIONS });
-  }, [permissionsQuery.data]);
+    if (permissionsQuery.data) {
+      return links({ permissions: permissionsQuery.data });
+    }
+
+    return [];
+  }, [permissionsQuery.data, profileQuery.data]);
   const profile = profileQuery.data?.data?.user;
 
   return (
