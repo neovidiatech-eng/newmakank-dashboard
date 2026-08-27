@@ -161,21 +161,53 @@ export default function SendNotificationForm() {
         if (targetUserIds?.length) {
           targetUserIds.forEach((id) => fd.append("targetUserIds[]", String(id)));
         }
-        if (clickTargetType) fd.append("clickTargetType", clickTargetType);
-        if (clickStoreId) fd.append("clickStoreId", clickStoreId);
-        if (clickUrl) fd.append("clickUrl", clickUrl);
+        if (clickTargetType) {
+          fd.append("clickTargetType", clickTargetType);
+          if (clickTargetType === "EXTERNAL_URL" && clickUrl) {
+            fd.append("clickUrl", clickUrl);
+          } else if (clickStoreId) {
+            // Map clickTargetType to the correct backend field name
+            const clickIdFieldName =
+              clickTargetType === "CATEGORY"       ? "clickCategoryId" :
+              clickTargetType === "SERVICE"        ? "clickServiceId"  :
+              clickTargetType === "ZONE"           ? "clickZoneId"     :
+              clickTargetType === "ORDER"          ? "clickOrderId"    :
+              clickTargetType === "COUPON"         ? "clickCouponId"   :
+              clickTargetType === "SPECIAL_DRIVER" ? "clickDeliveryId" :
+                                                     "clickStoreId";
+            fd.append(clickIdFieldName, clickStoreId);
+          }
+        }
         fd.append("image", imageFile);
         payload = fd as any;
       } else {
+        // Build the correct click target fields for JSON
+        const clickFields: Record<string, any> = {};
+        if (clickTargetType) {
+          clickFields.clickTargetType = clickTargetType;
+          if (clickTargetType === "EXTERNAL_URL" && clickUrl) {
+            clickFields.clickUrl = clickUrl;
+          } else if (clickStoreId) {
+            // Map clickTargetType to the correct backend field name
+            const clickIdFieldName =
+              clickTargetType === "CATEGORY"       ? "clickCategoryId" :
+              clickTargetType === "SERVICE"        ? "clickServiceId"  :
+              clickTargetType === "ZONE"           ? "clickZoneId"     :
+              clickTargetType === "ORDER"          ? "clickOrderId"    :
+              clickTargetType === "COUPON"         ? "clickCouponId"   :
+              clickTargetType === "SPECIAL_DRIVER" ? "clickDeliveryId" :
+                                                     "clickStoreId";
+            clickFields[clickIdFieldName] = Number(clickStoreId);
+          }
+        }
+
         // application/json
         payload = {
           title,
           body,
           targetType,
           ...(targetUserIds?.length ? { targetUserIds } : {}),
-          ...(clickTargetType ? { clickTargetType } : {}),
-          ...(clickStoreId ? { clickStoreId: Number(clickStoreId) } : {}),
-          ...(clickUrl ? { clickUrl } : {}),
+          ...clickFields,
         };
       }
 
@@ -208,7 +240,7 @@ export default function SendNotificationForm() {
     }
   };
 
-  const needsClickId = ["STORE", "CATEGORY", "SERVICE", "ZONE", "ORDER", "COUPON"].includes(
+  const needsClickId = ["STORE", "CATEGORY", "SERVICE", "ZONE", "ORDER", "COUPON", "SPECIAL_DRIVER"].includes(
     clickTargetType
   );
 
@@ -424,18 +456,19 @@ export default function SendNotificationForm() {
             </Select>
           </div>
 
-          {/* Click Store ID (when applicable) */}
+          {/* Click ID input (when applicable) */}
           {needsClickId && (
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">
                 معرّف{" "}
-                {clickTargetType === "STORE"
-                  ? "المحل"
-                  : clickTargetType === "ORDER"
-                  ? "الطلب"
-                  : clickTargetType === "COUPON"
-                  ? "الكوبون"
-                  : "العنصر"}{" "}
+                {clickTargetType === "STORE"         ? "المحل"
+                : clickTargetType === "CATEGORY"     ? "الفئة"
+                : clickTargetType === "SERVICE"      ? "المنتج/الخدمة"
+                : clickTargetType === "ZONE"         ? "المنطقة"
+                : clickTargetType === "ORDER"        ? "الطلب"
+                : clickTargetType === "COUPON"       ? "الكوبون"
+                : clickTargetType === "SPECIAL_DRIVER" ? "المندوب"
+                : "العنصر"}{" "}
                 (ID)
               </Label>
               <Input
