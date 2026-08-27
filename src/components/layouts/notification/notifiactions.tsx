@@ -19,7 +19,6 @@ type Notification = {
 
 export function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  console.log(notifications);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,10 +35,9 @@ export function Notifications() {
       });
 
       if (response?.success && response?.data) {
-        // setNotifications([]);
         setNotifications(response?.data);
-        // const unreadNotifications = response?.data?.filter((n: Notification) => !n.read).length;
-        setUnreadCount(0);
+        const unread = (response?.data as any[]).filter((n: any) => !n.read).length;
+        setUnreadCount(unread);
       }
     } catch (error) {
       console.error("Failed to fetch notifications:", error);

@@ -8,8 +8,8 @@ export const endpoints = {
   modules: "/api/modules", // PAGE , FORM
   user: "/api/user",
   "my-profile": "/api/users/me",
-  notifications: "/api/notification/notifications",
-  readAllNotifications: "/api/notification/notifications/read-all",
+  notifications: "/api/notification",
+  readAllNotifications: "/api/notification/mark-read",
   logs: "/api/logs",
   userStatistics: "/api/users/statistics",
   permissions: "/api/permissions",
