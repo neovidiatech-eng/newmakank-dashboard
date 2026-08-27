@@ -182,7 +182,13 @@ export default function DashboardPage() {
                       productPrice = Math.max(0, total - deliveryPrice - tax);
                     }
 
-                    const deliveryName = order.delivery?.user?.name || order.delivery?.name || "—";
+                    const deliveryName =
+                      order.Delivery?.User?.name ||
+                      order.delivery?.User?.name ||
+                      order.delivery?.user?.name ||
+                      order.Delivery?.user?.name ||
+                      order.delivery?.name ||
+                      "—";
 
                     return (
                       <TableRow key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
