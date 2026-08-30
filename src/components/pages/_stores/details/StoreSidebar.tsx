@@ -1,7 +1,7 @@
 import { stores } from "@/pages/dashboard/stores/types";
 import MapPointerInput from "@/components/common/Inputs/map/MapPointerInput";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Power } from "lucide-react";
+import { Clock, MapPin, Power } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { StoreStatusSelect } from "../StoreStatusSelect";
 
@@ -11,7 +11,6 @@ interface StoreSidebarProps {
 
 export function StoreSidebar({ data }: StoreSidebarProps) {
   const t = useTranslations();
-  console.log(data, "sda;e2ds");
 
   return (
     <div className="space-y-5">
@@ -25,6 +24,53 @@ export function StoreSidebar({ data }: StoreSidebarProps) {
         </CardHeader>
         <CardContent>
           <StoreStatusSelect storeId={data.id} initialStatus={data.status || "OPEN"} />
+        </CardContent>
+      </Card>
+
+      {/* Operations & Delivery Settings */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground uppercase tracking-wide">
+            <Clock className="h-4 w-4 text-primary" />
+            {t("Operations & Orders Settings") || "إعدادات التشغيل والطلبات"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <div className="flex items-center justify-between border-b pb-2">
+            <span className="text-muted-foreground">
+              {t("Default Prep Time") || "وقت التحضير الافتراضي للمتجر"}:
+            </span>
+            <span className="font-semibold text-foreground">
+              {(data as any)?.prepTimeMinutes ?? 0} {t("min") || "دقيقة"}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between border-b pb-2">
+            <span className="text-muted-foreground">
+              {t("Min Delivery Time") || "وقت التوصيل (الحد الأدنى)"}:
+            </span>
+            <span className="font-semibold text-foreground">
+              {(data as any)?.deliveryTimeMinMinutes ?? 0} {t("min") || "دقائق"}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between border-b pb-2">
+            <span className="text-muted-foreground">
+              {t("Max Delivery Time") || "وقت التوصيل (الحد الأقصى)"}:
+            </span>
+            <span className="font-semibold text-foreground">
+              {(data as any)?.deliveryTimeMaxMinutes ?? 0} {t("min") || "دقائق"}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">
+              {t("Min Order Amount") || "الحد الأدنى لقيمة الطلب"}:
+            </span>
+            <span className="font-semibold text-foreground">
+              {(data as any)?.minOrderAmount ?? 0} {t("EGP") || "ج.م"}
+            </span>
+          </div>
         </CardContent>
       </Card>
 

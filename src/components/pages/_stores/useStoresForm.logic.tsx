@@ -47,6 +47,10 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       templateId: ((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
                   ? String((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
                   : "",
+      prepTimeMinutes: (data as any)?.prepTimeMinutes ?? 0,
+      deliveryTimeMinMinutes: (data as any)?.deliveryTimeMinMinutes ?? 0,
+      deliveryTimeMaxMinutes: (data as any)?.deliveryTimeMaxMinutes ?? 0,
+      minOrderAmount: (data as any)?.minOrderAmount ?? 0,
       map: data?.lat && data?.lng ? { lat: data.lat, lng: data.lng } : undefined
     } as StoresType
   });
@@ -113,6 +117,14 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       // rather than blocking store creation over a manual sort number nobody filled in.
       storeOrder:
         rest.storeOrder !== undefined && rest.storeOrder !== "" ? Number(rest.storeOrder) : 0,
+      prepTimeMinutes:
+        rest.prepTimeMinutes !== undefined && rest.prepTimeMinutes !== "" ? Number(rest.prepTimeMinutes) : 0,
+      deliveryTimeMinMinutes:
+        rest.deliveryTimeMinMinutes !== undefined && rest.deliveryTimeMinMinutes !== "" ? Number(rest.deliveryTimeMinMinutes) : 0,
+      deliveryTimeMaxMinutes:
+        rest.deliveryTimeMaxMinutes !== undefined && rest.deliveryTimeMaxMinutes !== "" ? Number(rest.deliveryTimeMaxMinutes) : 0,
+      minOrderAmount:
+        rest.minOrderAmount !== undefined && rest.minOrderAmount !== "" ? Number(rest.minOrderAmount) : 0,
       ...(!isEdit && templateId ? { templateId: Number(templateId) } : {}),
       User: JSON.stringify({
         name: UserName,

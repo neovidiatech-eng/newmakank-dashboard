@@ -12,6 +12,11 @@ export const StoresInputs = ({ isEdit, isAdmin }: {
     { name: "cover", type: "img", cardId: 'info', width: 3 },
     { name: "storeOrder", type: "number", cardId: 'info', width: 3, min: 0 },
 
+    { name: "prepTimeMinutes", type: "number", cardId: 'operations', width: 3, min: 0 },
+    { name: "deliveryTimeMinMinutes", type: "number", cardId: 'operations', width: 3, min: 0 },
+    { name: "deliveryTimeMaxMinutes", type: "number", cardId: 'operations', width: 3, min: 0 },
+    { name: "minOrderAmount", type: "number", cardId: 'operations', width: 3, min: 0 },
+
     {
       name: 'map',
       type: 'map' as const,

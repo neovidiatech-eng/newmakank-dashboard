@@ -1,5 +1,5 @@
 import CustomForm from "@/components/common/Form/CustomForm";
-import { Info, MapPin, Store, User } from "lucide-react";
+import { Clock, Info, MapPin, Store, User } from "lucide-react";
 import type { StoresType } from "./stores.schema";
 import useStoresLogic from "./useStoresForm.logic";
 
@@ -24,6 +24,12 @@ export default function StoresFormPage({ data }: { data?: StoresType }) {
 					title: t("Store Details"),
 					width: 6,
 					icon: <Info className="size-4" />,
+				},
+				{
+					id: "operations",
+					title: t("Operations & Orders Settings") || "إعدادات التشغيل والطلبات",
+					width: 6,
+					icon: <Clock className="size-4" />,
 				},
 				{
 					id: "location",
