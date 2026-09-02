@@ -33,6 +33,11 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
     return methods.includes("manage");
   });
 
+  const ownerUser =
+    Array.isArray((data as any)?.User) && (data as any)?.User.length > 0
+      ? (data as any)?.User[0]
+      : (data as any)?.User || (data as any)?.user || {};
+
   const inputs = StoresInputs({ isEdit, isAdmin });
   const {
     control,
@@ -44,6 +49,9 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
     resolver: zodResolver(StoresSchema(t, isEdit)),
     defaultValues: {
       ...extractFormDefaultInputs(inputs, data),
+      UserName: ownerUser?.name || (data as any)?.UserName || "",
+      userEmail: ownerUser?.email || (data as any)?.userEmail || "",
+      userPhone: ownerUser?.phone || (data as any)?.userPhone || "",
       templateId: ((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
                   ? String((data as any)?.template?.id || data?.templateId || (data as any)?.storeTemplateId || (data as any)?.StoreTemplate?.id || (data as any)?.storeTemplate?.id) 
                   : "",
@@ -98,13 +106,19 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
     const { map, userEmail, userPass, userPhone, UserName, templateId, ...rest } = formData as any;
 
     let formattedPhone = userPhone;
-    if (formattedPhone && !isEdit) {
+    if (formattedPhone) {
       formattedPhone = formattedPhone.replace(/^(\+20|0020|20)/, "");
       if (formattedPhone.startsWith("0")) {
         formattedPhone = formattedPhone.substring(1);
       }
       formattedPhone = "+20" + formattedPhone;
     }
+
+    const userObj: Record<string, string> = {};
+    if (UserName && String(UserName).trim()) userObj.name = String(UserName).trim();
+    if (userEmail && String(userEmail).trim()) userObj.email = String(userEmail).trim();
+    if (userPass && String(userPass).trim()) userObj.password = String(userPass).trim();
+    if (formattedPhone && String(formattedPhone).trim()) userObj.phone = String(formattedPhone).trim();
 
     const formattedData = {
       ...rest,
@@ -126,12 +140,7 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       minOrderAmount:
         rest.minOrderAmount !== undefined && rest.minOrderAmount !== "" ? Number(rest.minOrderAmount) : 0,
       ...(!isEdit && templateId ? { templateId: Number(templateId) } : {}),
-      User: JSON.stringify({
-        name: UserName,
-        email: userEmail,
-        ...(userPass ? { password: userPass } : {}),
-        phone: formattedPhone
-      })
+      ...(Object.keys(userObj).length > 0 ? { User: JSON.stringify(userObj) } : {})
     };
     const res = await formAction({
       data,
