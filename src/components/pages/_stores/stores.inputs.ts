@@ -16,6 +16,7 @@ export const StoresInputs = ({ isEdit, isAdmin }: {
     { name: "deliveryTimeMinMinutes", type: "number", cardId: 'operations', width: 3, min: 0 },
     { name: "deliveryTimeMaxMinutes", type: "number", cardId: 'operations', width: 3, min: 0 },
     { name: "minOrderAmount", type: "number", cardId: 'operations', width: 3, min: 0 },
+    { name: "announcement", type: "textarea", cardId: 'operations', width: 12, placeholder: "اكتب هنا رسالة أو تنبيه يظهر للعملاء في تطبيق الموبايل (اختياري)" },
 
     {
       name: 'map',

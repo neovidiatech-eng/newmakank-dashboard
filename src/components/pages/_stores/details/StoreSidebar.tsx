@@ -1,7 +1,7 @@
 import { stores } from "@/pages/dashboard/stores/types";
 import MapPointerInput from "@/components/common/Inputs/map/MapPointerInput";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, MapPin, Power } from "lucide-react";
+import { Clock, MapPin, Megaphone, Power } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { StoreStatusSelect } from "../StoreStatusSelect";
 
@@ -26,6 +26,23 @@ export function StoreSidebar({ data }: StoreSidebarProps) {
           <StoreStatusSelect storeId={data.id} initialStatus={data.status || "OPEN"} />
         </CardContent>
       </Card>
+
+      {/* Store Announcement (if present) */}
+      {(data as any)?.announcement && (
+        <Card className="border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <Megaphone className="h-4 w-4 flex-shrink-0" />
+              {t("Store Announcement") || "رسالة / تنبيه المطعم للعملاء"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-foreground/90 leading-relaxed whitespace-pre-line bg-background/50 p-3 rounded-lg border border-amber-500/20">
+              {(data as any).announcement}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Operations & Delivery Settings */}
       <Card>

@@ -18,6 +18,7 @@ prepTimeMinutes: z.union([z.number(), z.string()]).optional(),
 deliveryTimeMinMinutes: z.union([z.number(), z.string()]).optional(),
 deliveryTimeMaxMinutes: z.union([z.number(), z.string()]).optional(),
 minOrderAmount: z.union([z.number(), z.string()]).optional(),
+announcement: z.string().nullable().optional(),
 lat:StringNotReq(),
 lng:StringNotReq(),
 map: z.object({

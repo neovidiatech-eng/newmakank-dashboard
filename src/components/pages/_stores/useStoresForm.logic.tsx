@@ -59,6 +59,7 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       deliveryTimeMinMinutes: (data as any)?.deliveryTimeMinMinutes ?? 0,
       deliveryTimeMaxMinutes: (data as any)?.deliveryTimeMaxMinutes ?? 0,
       minOrderAmount: (data as any)?.minOrderAmount ?? 0,
+      announcement: (data as any)?.announcement ?? "",
       map: data?.lat && data?.lng ? { lat: data.lat, lng: data.lng } : undefined
     } as StoresType
   });
@@ -139,6 +140,10 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
         rest.deliveryTimeMaxMinutes !== undefined && rest.deliveryTimeMaxMinutes !== "" ? Number(rest.deliveryTimeMaxMinutes) : 0,
       minOrderAmount:
         rest.minOrderAmount !== undefined && rest.minOrderAmount !== "" ? Number(rest.minOrderAmount) : 0,
+      announcement:
+        rest.announcement !== undefined
+          ? (rest.announcement && String(rest.announcement).trim() ? String(rest.announcement).trim() : null)
+          : undefined,
       ...(!isEdit && templateId ? { templateId: Number(templateId) } : {}),
       ...(Object.keys(userObj).length > 0 ? { User: JSON.stringify(userObj) } : {})
     };
