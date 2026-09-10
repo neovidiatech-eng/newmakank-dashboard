@@ -27,12 +27,15 @@ import { PriceAmount } from "@/components/PriceAmount";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { useTranslations } from "@/lib/i18n";
 import { useSearchParams, useRouter, usePathname } from "@/lib/navigation";
+import { useCityStore } from "@/store/cityStore";
+import CitySelector from "@/components/shared/CitySelector";
 
 export default function AnalyticsPage(): JSX.Element {
   const t = useTranslations();
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { selectedCityId } = useCityStore();
 
   const urlTab = searchParams.get("tab") as "drivers" | "stores" | "customers" | null;
   const [activeTabState, setActiveTabState] = useState<"drivers" | "stores" | "customers">("drivers");
@@ -82,7 +85,8 @@ export default function AnalyticsPage(): JSX.Element {
 
   // Build extraParams with includeStats and optional date range
   const dateParams: Record<string, unknown> = {
-    includeStats: true
+    includeStats: true,
+    ...(selectedCityId ? { cityId: selectedCityId } : {})
   };
   if (startDate) {
     dateParams.fromDate = startDate;
@@ -95,12 +99,12 @@ export default function AnalyticsPage(): JSX.Element {
 
   // Fetch driver summary statistics safely via hook
   const { data: driverRes } = useApiQuery({
-    queryKey: ["deliverySummaryData"],
+    queryKey: ["deliverySummaryData", selectedCityId ? { cityId: selectedCityId } : {}],
     endPoint: ["delivery"],
-    params: { limit: 1, includeStats: true }
+    params: { limit: 1, includeStats: true, ...(selectedCityId ? { cityId: selectedCityId } : {}) }
   });
 
-  const driverSummary = driverRes?.data?.summary || driverRes?.summary || null;
+  const driverSummary = (driverRes?.data as any)?.summary || (driverRes as any)?.summary || null;
 
   // Columns definition for Driver Analytics
   const driverColumns = [
@@ -225,6 +229,9 @@ export default function AnalyticsPage(): JSX.Element {
             <p className="text-sm text-muted-foreground mt-1">
               مركز موحد لمتابعة الأكثر والأقل نشاطاً والإلغاءات والمبيعات للعملاء والمتاجر والمناديب.
             </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <CitySelector />
           </div>
         </div>
 

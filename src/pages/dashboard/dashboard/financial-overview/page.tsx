@@ -31,6 +31,8 @@ import {
   ChevronLeft
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useCityStore } from "@/store/cityStore";
+import CitySelector from "@/components/shared/CitySelector";
 
 function formatMoney(value: number | string | null | undefined, locale: string) {
   const numberValue = Number(value ?? 0);
@@ -44,6 +46,7 @@ function formatMoney(value: number | string | null | undefined, locale: string) 
 export default function FinancialOverviewPage() {
   const t = useTranslations();
   const locale = useLocale();
+  const { selectedCityId } = useCityStore();
 
   // Period Filter State
   const [periodFilter, setPeriodFilter] = useState<string>("THIS_MONTH");
@@ -60,8 +63,11 @@ export default function FinancialOverviewPage() {
     } else if (periodFilter) {
       params.periodFilter = periodFilter;
     }
+    if (selectedCityId) {
+      params.cityId = String(selectedCityId);
+    }
     return params;
-  }, [periodFilter, fromDate, toDate]);
+  }, [periodFilter, fromDate, toDate, selectedCityId]);
 
   const { data: response, isLoading } = useApiQuery({
     queryKey: ["financialOverview", JSON.stringify(queryParams)],
@@ -99,7 +105,8 @@ export default function FinancialOverviewPage() {
         </div>
 
         {/* Date Filter Toolbar */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <CitySelector />
           <div className="flex flex-wrap items-center gap-1.5 bg-card p-1.5 rounded-xl border shadow-sm">
             {[
               { id: "TODAY", label: "اليوم" },

@@ -13,6 +13,8 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { useCityStore } from "@/store/cityStore";
+import CitySelector from "@/components/shared/CitySelector";
 
 function formatMoney(value: number | string | null | undefined, locale: string) {
   const numberValue = Number(value ?? 0);
@@ -27,29 +29,32 @@ export default function DashboardPage() {
   const [searchParams] = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("limit")) || 10;
+  const { selectedCityId } = useCityStore();
+  const cityParam = selectedCityId ? { cityId: selectedCityId } : {};
 
   // 1. Overview API Calls
   const { data: statsResponse } = useApiQuery({
-    queryKey: ["statistics"],
-    endPoint: ["statistics"]
+    queryKey: ["statistics", cityParam],
+    endPoint: ["statistics"],
+    params: cityParam
   });
 
   const { data: ordersResponse } = useApiQuery({
-    queryKey: ["orders", { limit, page }],
+    queryKey: ["orders", { limit, page, ...cityParam }],
     endPoint: ["orders"],
-    params: { limit, page }
+    params: { limit, page, ...cityParam }
   });
 
   const { data: deliveryResponse } = useApiQuery({
-    queryKey: ["delivery", { limit: 1 }],
+    queryKey: ["delivery", { limit: 1, ...cityParam }],
     endPoint: ["delivery"],
-    params: { limit: 1 }
+    params: { limit: 1, ...cityParam }
   });
 
   const { data: openStoresResponse } = useApiQuery({
-    queryKey: ["stores", { limit: 1 }],
+    queryKey: ["stores", { limit: 1, ...cityParam }],
     endPoint: ["stores"],
-    params: { limit: 1 }
+    params: { limit: 1, ...cityParam }
   });
 
   // Data mapping for Overview
@@ -76,6 +81,9 @@ export default function DashboardPage() {
           <p className="text-sm text-muted-foreground mt-1">
             {t("Overview description") || "نظرة عامة على أداء المتجر والطلبات والعملاء والمناديب."}
           </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <CitySelector />
         </div>
       </div>
 

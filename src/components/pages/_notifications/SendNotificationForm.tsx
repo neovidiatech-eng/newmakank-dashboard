@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { fetchHelper } from "@/api/fetch";
 import { toast } from "sonner";
+import CitySelector from "@/components/shared/CitySelector";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TargetType = "ALL" | "CUSTOMER" | "STORE" | "DELIVERY" | "SELECTED_USERS";
@@ -75,6 +76,7 @@ export default function SendNotificationForm() {
   const [titleEn, setTitleEn] = useState("");
   const [body, setBody] = useState("");
   const [targetType, setTargetType] = useState<TargetType>("ALL");
+  const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState("");
   const [clickTargetType, setClickTargetType] = useState<ClickTargetType>("");
   const [clickStoreId, setClickStoreId] = useState("");
@@ -108,6 +110,7 @@ export default function SendNotificationForm() {
     setTitleEn("");
     setBody("");
     setTargetType("ALL");
+    setSelectedCityId(null);
     setSelectedUserIds("");
     setClickTargetType("");
     setClickStoreId("");
@@ -149,6 +152,8 @@ export default function SendNotificationForm() {
               .filter((n) => !isNaN(n))
           : undefined;
 
+      const isTargetWithCity = targetType === "CUSTOMER" || targetType === "DELIVERY";
+
       if (imageFile) {
         // multipart/form-data
         const fd = new FormData();
@@ -160,6 +165,9 @@ export default function SendNotificationForm() {
         fd.append("targetType", targetType);
         if (targetUserIds?.length) {
           targetUserIds.forEach((id) => fd.append("targetUserIds[]", String(id)));
+        }
+        if (isTargetWithCity && selectedCityId) {
+          fd.append("cityId", String(selectedCityId));
         }
         if (clickTargetType) {
           fd.append("clickTargetType", clickTargetType);
@@ -202,11 +210,13 @@ export default function SendNotificationForm() {
         }
 
         // application/json
+        const cityField = isTargetWithCity && selectedCityId ? { cityId: Number(selectedCityId) } : {};
         payload = {
           title,
           body,
           targetType,
           ...(targetUserIds?.length ? { targetUserIds } : {}),
+          ...cityField,
           ...clickFields,
         };
       }
@@ -217,7 +227,7 @@ export default function SendNotificationForm() {
         body: payload,
       });
 
-      if (!res?.success && res?.status !== true) throw res;
+      if (!res?.success && (res as any)?.status !== true) throw res;
 
       const data = res?.data as NotificationResult | undefined;
       setResult(data ?? { sentCount: 0, failedCount: 0 });
@@ -399,6 +409,23 @@ export default function SendNotificationForm() {
               ))}
             </div>
           </div>
+
+          {/* City Selector for Customer or Delivery */}
+          {(targetType === "CUSTOMER" || targetType === "DELIVERY") && (
+            <div className="space-y-1.5 pt-2 border-t border-border">
+              <Label className="text-xs font-semibold">
+                تحديد المدينة (اختياري — اتركها "كل المدن" للجميع)
+              </Label>
+              <CitySelector
+                value={selectedCityId}
+                onChange={(id) => setSelectedCityId(id)}
+                className="w-full h-10 rounded-xl text-sm"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                يمكنك تخصيص إرسال الإشعار لـ {targetType === "CUSTOMER" ? "عملاء" : "مناديب"} مدينة معينة فقط
+              </p>
+            </div>
+          )}
 
           {/* Selected User IDs */}
           {targetType === "SELECTED_USERS" && (

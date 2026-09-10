@@ -51,9 +51,21 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
     });
   }
   const filters: FormInput[] = [
-    { "name": "search", "type": "text", "width": 3 },
-    { "name": "fromDate", "type": "date", "width": 3 },
-    { "name": "toDate", "type": "date", "width": 3 },
+    { name: "search", type: "text", width: 3 },
+    {
+      name: "cityId",
+      key: "cityId",
+      type: "selectPaginated",
+      apiUrl: ["cities"],
+      endPoint: ["cities"],
+      placeholder: "المدينة",
+      labelKey: "name",
+      valueKey: "id",
+      idKey: "id",
+      width: 3
+    } as any,
+    { name: "fromDate", type: "date", width: 3 },
+    { name: "toDate", type: "date", width: 3 },
   ];
 
   return (
