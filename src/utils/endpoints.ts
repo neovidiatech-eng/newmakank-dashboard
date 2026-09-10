@@ -112,6 +112,8 @@ export const endpoints = {
   customerCategories: "/api/categories",
   customerCategoriesAssign: "/api/customer-categories/assign",
   storeTemplates: "/api/store-templates",
+  templateStores: "/stores",
+  templateStoresOrder: "/order",
   applyTemplate: "/apply-template",
   appliedTemplates: "/applied-templates",
   approval: "/approval",
