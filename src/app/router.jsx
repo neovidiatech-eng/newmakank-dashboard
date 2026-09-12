@@ -305,6 +305,10 @@ export const router = createBrowserRouter([
     errorElement: <RouteErrorPage />,
     children: [
       {
+        index: true,
+        element: <Navigate to="dashboard" replace />,
+      },
+      {
         element: <PublicRoute />,
         children: authRoutes,
       },
@@ -313,9 +317,19 @@ export const router = createBrowserRouter([
         children: [
           {
             element: <DashboardLayout />,
-            children: dashboardRoutes,
+            children: [
+              {
+                index: true,
+                element: <Navigate to="dashboard" replace />,
+              },
+              ...dashboardRoutes,
+            ],
           },
         ],
+      },
+      {
+        path: "*",
+        element: <Navigate to="dashboard" replace />,
       },
     ],
   },
