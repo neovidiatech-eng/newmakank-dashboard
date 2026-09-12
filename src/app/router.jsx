@@ -12,6 +12,7 @@ import LanguageSwitcher from "@/components/language-switcher";
 import PageTransitionWrapper from "@/components/layouts/PageTransitionWrapper";
 import LogoutConfirmButton from "@/components/layouts/header/components/LogoutConfirmButton";
 import { AppStatusToggle } from "@/components/layouts/header/components/AppStatusToggle";
+import { ZonePricingToggle } from "@/components/layouts/header/components/ZonePricingToggle";
 import ThemeSwitcher from "@/components/theme-switcher";
 import {
   SidebarInset,
@@ -271,6 +272,8 @@ function DashboardLayout() {
             <LogoutConfirmButton />
             <LanguageSwitcher />
             <ThemeSwitcher />
+            <div className="h-5 w-px bg-border mx-1" />
+            <ZonePricingToggle />
             <div className="h-5 w-px bg-border mx-1" />
             <AppStatusToggle />
           </div>
