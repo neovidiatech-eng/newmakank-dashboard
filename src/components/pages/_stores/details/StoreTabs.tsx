@@ -12,6 +12,7 @@ import OffersColumns from "@/pages/dashboard/offers/OffersColumns";
 import { useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "@/lib/navigation";
 import BulkUploadControl from "./BulkUploadControl";
+import { StoreReportDialog } from "./StoreReportDialog";
 
 interface StoreTabsProps {
   branches: ApiResponse<any[]>;
@@ -201,20 +202,33 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
         </div>
       ),
       content: (
-        <TableBasic
-          data={orders?.data}
-          columns={ordersColumns}
-          cardHeader={t("Store Orders")}
-          hideCreateNew
-          isInnerTable={false}
-          pagination={{
-            total: orders?.total
-          }}
-          tableActions={{
-            onInfo: true,
-            fixedActions: true
-          }}
-        />
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card p-4 rounded-xl border shadow-xs">
+            <div>
+              <h3 className="font-bold text-base text-foreground">
+                {t("Store Orders")}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                سحب تقرير أداء المتجر الشامل وحسابات الطلبات والعمولة والطلبات الملغاة (طباعة PDF وتصدير منسق)
+              </p>
+            </div>
+            <StoreReportDialog storeId={storeId} />
+          </div>
+          <TableBasic
+            data={orders?.data}
+            columns={ordersColumns}
+            cardHeader={t("Store Orders")}
+            hideCreateNew
+            isInnerTable={false}
+            pagination={{
+              total: orders?.total
+            }}
+            tableActions={{
+              onInfo: true,
+              fixedActions: true
+            }}
+          />
+        </div>
       )
     },
     {

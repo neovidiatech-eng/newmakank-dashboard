@@ -11,6 +11,7 @@ import { StoreTabs } from "./details/StoreTabs";
 import { StoreManagedByAdminToggle } from "./details/StoreManagedByAdminToggle";
 import { StoreDiscountButton } from "./details/StoreDiscountButton";
 import { StorePrepTimeButton } from "./details/StorePrepTimeButton";
+import { StoreReportDialog } from "./details/StoreReportDialog";
 import { useTranslations } from "@/lib/i18n";
 import { AlertTriangle } from "lucide-react";
 
@@ -113,6 +114,10 @@ export default function StoreDetailsPage({
               endPoint={["storeResetPeriod"]}
               label={t("Reset Store Period") || "تصفير فترة المتجر"}
               variant="secondary"
+            />
+            <StoreReportDialog
+              store={data}
+              storeId={Number(data.id)}
             />
           </div>
         </div>
