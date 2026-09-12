@@ -2690,6 +2690,8 @@
   "is24hour": "24 Hours",
   "restaurantDeliverySettings": "Restaurant Order Delivery",
   "restaurantDeliverySettingsDescription": "Pricing applied when a customer orders from a restaurant inside the app (normal delivery/pickup). Priority: a zone with a fixed delivery price (set on the Zones screen) is used first, based on the customer's real address — falls back to base fee + per-km below only when the zone has no price set.",
+  "globalZonePricingEnabled": "Zone Pricing (All Stores)",
+  "globalZonePricingEnabledDescription": "When enabled, the zone price (store-specific or app-wide) is used for all orders. When disabled, zone prices are ignored entirely for every store and the km formula is always applied instead. Custom Delivery pricing is never affected by this toggle.",
   "customDeliverySettings": "Purchase & Restaurant Delivery",
   "customDeliverySettingsDescription": "Separate pricing for Purchase and Restaurant delivery drivers (independent courier). Priority: if the trip is exactly 2 stops (pickup + one dropoff) and the dropoff's zone has a fixed price set (Zones screen), that price is used instead of the formula below. 3+ stop trips always use the formula.",
   "geofenceSettings": "Pickup & Delivery Geofence",

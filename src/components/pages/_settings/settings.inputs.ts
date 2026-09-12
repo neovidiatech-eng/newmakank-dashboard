@@ -58,6 +58,9 @@ const SETTING_GROUPS: Record<string, string> = {
   shippingKMCharge: "restaurant_delivery",
   deliveryCommission: "restaurant_delivery",
   pickupEnabled: "restaurant_delivery",
+  // Global toggle: when off, zone prices are skipped for ALL stores and the
+  // km formula always applies (custom delivery is never affected).
+  globalZonePricingEnabled: "restaurant_delivery",
   // Independent "custom delivery" (courier-only, no restaurant involved) pricing —
   // covers both the PURCHASE/RESTAURANT kinds.
   customDeliveryEnabled: "custom_delivery",
