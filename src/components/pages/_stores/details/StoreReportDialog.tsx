@@ -132,7 +132,16 @@ export function StoreReportDialog({
         }
       }
 
-      setOrders(fetchedOrders);
+      // Deduplicate orders by id to match Flutter ordersMap behavior exactly
+      const uniqueMap = new Map();
+      for (const o of fetchedOrders) {
+        if (o?.id != null) {
+          uniqueMap.set(o.id, o);
+        }
+      }
+      const finalOrders = uniqueMap.size > 0 ? Array.from(uniqueMap.values()) : fetchedOrders;
+
+      setOrders(finalOrders);
     } catch (err) {
       console.error("Error loading store orders for report:", err);
     } finally {
@@ -154,11 +163,83 @@ export function StoreReportDialog({
     return raw.ar || raw.en || "المتجر";
   }, [storeData]);
 
+  // Financial calculation helpers matching Flutter makank_restaurant store_performance_report_screen.dart
+  const getOrderNet = useCallback((o: any): number => {
+    const direct = Number(
+      o.financialBreakdown?.storeNetEarnings ??
+      o.storeNetEarnings ??
+      0
+    );
+    if (direct > 0) return direct;
+
+    const rawVal = Number(
+      o.financialBreakdown?.productSubtotal ??
+      o.productSubtotal ??
+      o.price ??
+      o.totalPriceAfterDiscount ??
+      o.totalPrice ??
+      0
+    );
+    const commFee = Number(
+      o.financialBreakdown?.adminCommission ??
+      o.financialBreakdown?.storeCommission ??
+      o.adminCommission ??
+      o.commissionFee ??
+      0
+    );
+    const comm = commFee > 0
+      ? commFee
+      : +(rawVal * (customCommission / 100)).toFixed(2);
+    return Math.max(0, +(rawVal - comm).toFixed(2));
+  }, [customCommission]);
+
+  const getOrderCommission = useCallback((o: any): number => {
+    const fee = Number(
+      o.financialBreakdown?.adminCommission ??
+      o.financialBreakdown?.storeCommission ??
+      o.adminCommission ??
+      o.commissionFee ??
+      0
+    );
+    if (fee > 0) return fee;
+
+    const rawVal = Number(
+      o.financialBreakdown?.productSubtotal ??
+      o.productSubtotal ??
+      o.price ??
+      o.totalPriceAfterDiscount ??
+      o.totalPrice ??
+      0
+    );
+    const net = getOrderNet(o);
+    if (rawVal > net) {
+      return +(rawVal - net).toFixed(2);
+    }
+    return +(rawVal * (customCommission / 100)).toFixed(2);
+  }, [customCommission, getOrderNet]);
+
+  const getOrderValue = useCallback((o: any): number => {
+    const net = getOrderNet(o);
+    const comm = getOrderCommission(o);
+    const rawVal = Number(
+      o.financialBreakdown?.productSubtotal ??
+      o.productSubtotal ??
+      o.price ??
+      0
+    );
+    if (rawVal >= net + comm && rawVal > 0) {
+      return rawVal;
+    }
+    return +(net + comm).toFixed(2);
+  }, [getOrderNet, getOrderCommission]);
+
   // Metrics calculation
   const reportMetrics = useMemo(() => {
     const totalOrders = orders.length;
 
-    const completedOrders = orders.filter(o => o.status === "DELIVERED");
+    const completedOrders = orders.filter(
+      o => o.status === "DELIVERED" || o.status === "COMPLETED"
+    );
     const cancelledOrders = orders.filter(
       o => o.status === "CANCELLED" || o.status === "REJECTED"
     );
@@ -185,32 +266,29 @@ export function StoreReportDialog({
     const cashRate =
       totalOrders > 0 ? ((cashOrders.length / totalOrders) * 100).toFixed(1) : "0";
 
-    // Financials
-    const totalCompletedValue = completedOrders.reduce((sum, o) => {
-      const val = Number(o.price ?? o.totalPriceAfterDiscount ?? o.totalPrice ?? 0);
-      return sum + val;
-    }, 0);
+    // Financials matching Flutter app
+    const totalCompletedValue = +(
+      completedOrders.reduce((sum, o) => sum + getOrderValue(o), 0)
+    ).toFixed(2);
 
-    const totalVisaCompletedValue = completedOrders
-      .filter(o => o.paymentMethod && o.paymentMethod !== "CASH")
-      .reduce((sum, o) => {
-        const val = Number(o.price ?? o.totalPriceAfterDiscount ?? o.totalPrice ?? 0);
-        return sum + val;
-      }, 0);
+    const totalVisaCompletedValue = +(
+      completedOrders
+        .filter(o => o.paymentMethod && o.paymentMethod !== "CASH")
+        .reduce((sum, o) => sum + getOrderValue(o), 0)
+    ).toFixed(2);
 
-    const totalCashCompletedValue = completedOrders
-      .filter(o => o.paymentMethod === "CASH" || !o.paymentMethod)
-      .reduce((sum, o) => {
-        const val = Number(o.price ?? o.totalPriceAfterDiscount ?? o.totalPrice ?? 0);
-        return sum + val;
-      }, 0);
+    const totalCashCompletedValue = +(
+      completedOrders
+        .filter(o => o.paymentMethod === "CASH" || !o.paymentMethod)
+        .reduce((sum, o) => sum + getOrderValue(o), 0)
+    ).toFixed(2);
+
+    const netStoreEntitlement = +(
+      completedOrders.reduce((sum, o) => sum + getOrderNet(o), 0)
+    ).toFixed(2);
 
     const appCommissionValue = +(
-      totalCompletedValue *
-      (customCommission / 100)
-    ).toFixed(2);
-    const netStoreEntitlement = +(
-      totalCompletedValue - appCommissionValue
+      completedOrders.reduce((sum, o) => sum + getOrderCommission(o), 0)
     ).toFixed(2);
 
     const avgOrderValue =
@@ -252,7 +330,7 @@ export function StoreReportDialog({
       minDate,
       maxDate
     };
-  }, [orders, customCommission]);
+  }, [orders, customCommission, getOrderValue, getOrderCommission, getOrderNet]);
 
   // Trigger browser print
   const handlePrint = () => {
@@ -324,10 +402,10 @@ export function StoreReportDialog({
       ],
       ...orders.map(o => {
         const orderDate = new Date(o.createdAt || o.date);
-        const isCompleted = o.status === "DELIVERED";
-        const val = Number(o.price ?? o.totalPriceAfterDiscount ?? o.totalPrice ?? 0);
-        const comm = isCompleted ? +(val * (customCommission / 100)).toFixed(2) : 0;
-        const net = isCompleted ? +(val - comm).toFixed(2) : 0;
+        const isCompleted = o.status === "DELIVERED" || o.status === "COMPLETED";
+        const val = getOrderValue(o);
+        const comm = isCompleted ? getOrderCommission(o) : 0;
+        const net = isCompleted ? getOrderNet(o) : 0;
 
         return [
           o.id,
@@ -630,8 +708,6 @@ export function StoreReportDialog({
                     </p>
                     <p className="mt-1">
                       إجمالي عمولة مكانك:{" "}
-                      <span className="font-semibold">{reportMetrics.totalCompletedValue} جنيه</span> ×{" "}
-                      <span className="font-semibold">%{customCommission}</span> ={" "}
                       <span className="font-bold text-gray-900">{reportMetrics.appCommissionValue} جنيه</span>
                     </p>
                   </div>
@@ -674,11 +750,11 @@ export function StoreReportDialog({
                     <tbody className="divide-y divide-gray-200">
                       {orders.map((o, idx) => {
                         const orderDate = new Date(o.createdAt || o.date);
-                        const isCompleted = o.status === "DELIVERED";
+                        const isCompleted = o.status === "DELIVERED" || o.status === "COMPLETED";
                         const isCancelled = o.status === "CANCELLED" || o.status === "REJECTED";
-                        const val = Number(o.price ?? o.totalPriceAfterDiscount ?? o.totalPrice ?? 0);
-                        const comm = isCompleted ? +(val * (customCommission / 100)).toFixed(2) : 0;
-                        const net = isCompleted ? +(val - comm).toFixed(2) : 0;
+                        const val = getOrderValue(o);
+                        const comm = isCompleted ? getOrderCommission(o) : 0;
+                        const net = isCompleted ? getOrderNet(o) : 0;
 
                         return (
                           <tr key={o.id || idx} className={isCancelled ? "bg-red-50/40 text-gray-500" : ""}>
