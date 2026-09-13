@@ -209,7 +209,7 @@ export function StoreTabs({ branches, categories, orders, services, appliedTempl
                 {t("Store Orders")}
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                سحب تقرير أداء المتجر الشامل وحسابات الطلبات والعمولة والطلبات الملغاة (طباعة PDF وتصدير منسق)
+                سحب تقرير أداء المتجر الشامل وحسابات الطلبات والعمولة والطلبات الملغاة (تحميل Excel و PDF)
               </p>
             </div>
             <StoreReportDialog storeId={storeId} />

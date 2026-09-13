@@ -476,7 +476,7 @@ export function StoreReportDialog({
             className="flex items-center gap-2 border-primary/30 hover:bg-primary/10 text-primary font-medium"
           >
             <FileText className="w-4 h-4" />
-            <span>تقرير أداء وحسابات المتجر</span>
+            <span>تقرير أداء وحسابات المتجر (Excel & PDF)</span>
           </Button>
         )}
       </DialogTrigger>
@@ -556,27 +556,26 @@ export function StoreReportDialog({
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
 
+            {/* Excel export */}
+            <Button
+              size="sm"
+              onClick={handleExportExcel}
+              disabled={loading || orders.length === 0}
+              className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-sm"
+            >
+              <Download className="w-4 h-4" />
+              <span>تحميل Excel (.xlsx)</span>
+            </Button>
+
             {/* Print button */}
             <Button
               size="sm"
               onClick={handlePrint}
               disabled={loading || orders.length === 0}
-              className="h-9 gap-1.5 bg-blue-600 hover:bg-blue-700 text-white"
+              className="h-9 gap-1.5 bg-red-600 hover:bg-red-700 text-white font-medium shadow-sm"
             >
               <Printer className="w-4 h-4" />
-              <span>طباعة / حفظ PDF</span>
-            </Button>
-
-            {/* Excel export */}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleExportExcel}
-              disabled={loading || orders.length === 0}
-              className="h-9 gap-1.5 border-emerald-600 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
-            >
-              <Download className="w-4 h-4" />
-              <span>تصدير Excel منسق</span>
+              <span>تحميل / طباعة PDF</span>
             </Button>
           </div>
         </div>
@@ -609,6 +608,36 @@ export function StoreReportDialog({
                 <p className="text-sm text-gray-500">
                   الفترة: من {reportMetrics.minDate || "البداية"} إلى {reportMetrics.maxDate || "الآن"}
                 </p>
+              </div>
+
+              {/* شريط التحميل السريع العلوي (مخفي أثناء الطباعة) */}
+              <div className="no-print bg-slate-50 border border-slate-200 rounded-lg p-3 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-2">
+                  <Download className="w-4 h-4 text-slate-600" />
+                  <span className="text-xs font-bold text-slate-800">
+                    خيارات تحميل وتصدير التقرير:
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleExportExcel}
+                    disabled={loading || orders.length === 0}
+                    className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>تحميل Excel (.xlsx)</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handlePrint}
+                    disabled={loading || orders.length === 0}
+                    className="h-8 text-xs gap-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>تحميل / طباعة PDF</span>
+                  </Button>
+                </div>
               </div>
 
               {/* أولاً: ملخص الطلبات */}
@@ -976,6 +1005,36 @@ export function StoreReportDialog({
                   </div>
                 </div>
               </section>
+
+              {/* شريط التحميل السريع السفلي (مخفي أثناء الطباعة) */}
+              <div className="no-print bg-slate-50 border border-slate-200 rounded-lg p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-2">
+                  <Download className="w-4 h-4 text-slate-600" />
+                  <span className="text-xs font-bold text-slate-800">
+                    تحميل التقرير بالكامل:
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleExportExcel}
+                    disabled={loading || orders.length === 0}
+                    className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>تحميل Excel (.xlsx)</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handlePrint}
+                    disabled={loading || orders.length === 0}
+                    className="h-8 text-xs gap-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>تحميل / طباعة PDF</span>
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </div>
