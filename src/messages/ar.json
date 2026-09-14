@@ -2936,5 +2936,12 @@
   "Confirm Reset Wallet Title": "تأكيد تصفير محفظة المندوب",
   "Reset Wallet Warning": "تنبيه: هذا الإجراء غير قابل للتراجع! سيتم تصفير: الرصيد، الكاش، العمولة، وطلبات السحب المعلقة فوراً، وسيتم رفض أي طلب سحب معلق تلقائياً.",
   "Driver Wallet Reset Successfully": "تم تصفير محفظة المندوب بنجاح",
-  "Failed To Reset Wallet": "تعذر تصفير محفظة المندوب"
+  "Failed To Reset Wallet": "تعذر تصفير محفظة المندوب",
+  "Settle Store Wallet": "تسوية وتصفير المحفظة",
+  "Confirm Settle Store Wallet Title": "تأكيد تسوية وتصفير محفظة المتجر",
+  "Settle Store Wallet Description": "سيتم تصفير رصيد المحفظة الحالي وتسجيل معاملة تسوية سحب في سجل المعاملات المالية للمتجر.",
+  "Settlement Note Placeholder": "ملاحظة التسوية (اختياري - مثلاً: تم تسليم المستحقات نقداً)",
+  "Store Wallet Settled Successfully": "تمت تسوية وتصفير محفظة المتجر بنجاح",
+  "Failed To Settle Store Wallet": "تعذر تسوية محفظة المتجر",
+  "Confirm Settlement": "تأكيد التسوية والتصفير"
 }

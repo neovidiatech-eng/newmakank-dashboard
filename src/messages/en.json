@@ -2933,5 +2933,12 @@
   "Confirm Reset Wallet Title": "Confirm Reset Driver Wallet",
   "Reset Wallet Warning": "Warning: This action cannot be undone! Current balance, cash held, commission, total withdrawn, and pending withdrawals will be zeroed and rejected immediately.",
   "Driver Wallet Reset Successfully": "Driver wallet reset successfully",
-  "Failed To Reset Wallet": "Failed to reset driver wallet"
+  "Failed To Reset Wallet": "Failed to reset driver wallet",
+  "Settle Store Wallet": "Settle & Reset Wallet",
+  "Confirm Settle Store Wallet Title": "Confirm Store Wallet Settlement",
+  "Settle Store Wallet Description": "This will zero out the current wallet balance and record a withdrawal settlement transaction in the store's financial records.",
+  "Settlement Note Placeholder": "Settlement note (optional - e.g. Paid in cash to store owner)",
+  "Store Wallet Settled Successfully": "Store wallet settled and reset successfully",
+  "Failed To Settle Store Wallet": "Failed to settle store wallet",
+  "Confirm Settlement": "Confirm Settlement & Reset"
 }

@@ -12,6 +12,7 @@ import { StoreManagedByAdminToggle } from "./details/StoreManagedByAdminToggle";
 import { StoreDiscountButton } from "./details/StoreDiscountButton";
 import { StorePrepTimeButton } from "./details/StorePrepTimeButton";
 import { StoreReportDialog } from "./details/StoreReportDialog";
+import { StoreSettleWalletButton } from "./details/StoreSettleWalletButton";
 import { useTranslations } from "@/lib/i18n";
 import { AlertTriangle } from "lucide-react";
 
@@ -49,6 +50,12 @@ export default function StoreDetailsPage({
   const discountLabel =
     currentDiscountType === "PERCENTAGE" ? `${currentDiscount}%` : String(currentDiscount);
   const hasDiscount = currentDiscount > 0;
+
+  const walletBalance =
+    ((data as any)?.branches || []).reduce(
+      (acc: number, b: any) => acc + Number(b?.Wallet?.currentBalance || 0),
+      0
+    ) || 0;
 
   const isPendingApproval = (data as any)?.isStoreAccepted === false;
 
@@ -114,6 +121,12 @@ export default function StoreDetailsPage({
               endPoint={["storeResetPeriod"]}
               label={t("Reset Store Period") || "تصفير فترة المتجر"}
               variant="secondary"
+            />
+            <StoreSettleWalletButton
+              storeId={Number(data.id)}
+              currentBalance={walletBalance}
+              storeName={typeof data.name === "string" ? data.name : (data.name as any)?.ar ?? ""}
+              isPartner={(data as any).isPartner}
             />
             <StoreReportDialog
               store={data}

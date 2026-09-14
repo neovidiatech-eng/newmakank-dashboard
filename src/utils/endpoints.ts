@@ -65,6 +65,8 @@ export const endpoints = {
   "bulk-delete": "/bulk-delete",
   resetWallet: "/reset-wallet",
   "reset-wallet": "/reset-wallet",
+  settleWallet: "/settle-wallet",
+  "settle-wallet": "/settle-wallet",
   customDelivery: "/custom-delivery",
   customDeliveryImages: "/images",
   advance: "/advance",

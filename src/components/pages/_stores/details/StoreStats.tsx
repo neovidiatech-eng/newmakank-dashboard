@@ -1,7 +1,7 @@
 import { stores } from "@/pages/dashboard/stores/types";
 import { StatCard } from "@/components/ui/dashboard-primitives";
 import ChangeTimeFormat from "@/utils/ChangeTimeFormat";
-import { CalendarDays, MapPin, ShieldCheck, Mail, Phone } from "lucide-react";
+import { CalendarDays, MapPin, ShieldCheck, Mail, Phone, Wallet } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 
 interface StoreStatsProps {
@@ -16,6 +16,12 @@ export function StoreStats({ data }: StoreStatsProps) {
   
   const email = primaryUser?.email;
   const phone = primaryUser?.phone || data?.phone;
+
+  const walletBalance =
+    ((data as any)?.branches || []).reduce(
+      (acc: number, b: any) => acc + Number(b?.Wallet?.currentBalance || 0),
+      0
+    ) || 0;
 
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -34,6 +40,12 @@ export function StoreStats({ data }: StoreStatsProps) {
         label={t("Status")}
         value={data?.status}
         valueClassName={data?.status === "OPEN" ? "text-green-600" : "text-muted-foreground"}
+      />
+      <StatCard
+        icon={Wallet}
+        label={t("Wallet Balance") || "رصيد المحفظة"}
+        value={`${Number(walletBalance).toFixed(2)} ${t("EGP") || "ج.م"}`}
+        valueClassName={walletBalance > 0 ? "text-emerald-600 font-bold" : "text-muted-foreground"}
       />
       {data?.address && <StatCard icon={MapPin} label={t("address")} value={data.address} />}
       {email && <StatCard icon={Mail} label={t("Email")} value={email} className="break-all" />}
