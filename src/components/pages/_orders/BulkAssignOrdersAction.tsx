@@ -102,7 +102,7 @@ export default function BulkAssignOrdersAction({
 
       if (!response?.success) throw response;
 
-      const deletedCount = response?.data?.deletedCount ?? response?.deletedCount ?? 0;
+      const deletedCount = response?.data?.deletedCount ?? (response as any)?.deletedCount ?? 0;
       const failedDeletions = response?.data?.failed ?? [];
 
       if (deletedCount > 0) {

@@ -85,7 +85,7 @@ export default function BranchTabs({
           </div>
         </CardContent>
       </Card>
-      <BranchStatusControl branchId={branchId} initialStatus={branch?.status as string | undefined} />
+      <BranchStatusControl branchId={branchId} initialStatus={(branch as any)?.status as string | undefined} />
     </div>
     )
   };

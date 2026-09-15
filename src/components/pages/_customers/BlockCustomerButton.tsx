@@ -39,7 +39,7 @@ export default function BlockCustomerButton({
         body: { active: !localIsActive },
       });
 
-      if (!res?.success && res?.status !== true) throw res;
+      if (!res?.success && (res as any)?.status !== true) throw res;
 
       const newState = !localIsActive;
       setLocalIsActive(newState);

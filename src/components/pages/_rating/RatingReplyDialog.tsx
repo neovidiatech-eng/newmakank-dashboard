@@ -65,7 +65,7 @@ export default function RatingReplyDialog({
           </span>
           <Button
             variant="link"
-            size="xs"
+            size="sm"
             onClick={() => {
               setReplyText(existingReply);
               setIsOpen(true);

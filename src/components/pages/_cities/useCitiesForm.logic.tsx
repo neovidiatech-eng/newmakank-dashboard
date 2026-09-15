@@ -54,12 +54,12 @@ export default function useCitiesLogic({ data }: { data?: CitiesType }) {
       payload.lng = sumLng / formData.coordinates.length;
     }
 
-    if (formData.radius !== undefined && formData.radius !== null && formData.radius !== "") {
+    if (formData.radius !== undefined && formData.radius !== null && (formData.radius as any) !== "") {
       payload.radius = Number(formData.radius);
     } else {
       delete payload.radius;
     }
-    if (formData.toleranceRadius !== undefined && formData.toleranceRadius !== null && formData.toleranceRadius !== "") {
+    if (formData.toleranceRadius !== undefined && formData.toleranceRadius !== null && (formData.toleranceRadius as any) !== "") {
       payload.toleranceRadius = Number(formData.toleranceRadius);
     } else {
       delete payload.toleranceRadius;

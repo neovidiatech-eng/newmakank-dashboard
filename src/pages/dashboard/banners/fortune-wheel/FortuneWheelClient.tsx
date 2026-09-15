@@ -46,6 +46,12 @@ type FortuneWheelItem = {
   minOrderAmount?: number | string | null;
   maxOrderAmount?: number | string | null;
   rewardExpiryHours?: number | string | null;
+  storeId?: number | null;
+  Store?: {
+    id: number;
+    name: LocalizedText;
+    logo?: string;
+  } | null;
   active?: boolean;
   isActive?: boolean;
 };
@@ -60,6 +66,7 @@ type FortuneWheelForm = {
   minOrderAmount: string;
   maxOrderAmount: string;
   rewardExpiryHours: string;
+  storeId: string;
 };
 
 const rewardTypes: RewardType[] = ["DISCOUNT", "FREE_DELIVERY", "FIXED_AMOUNT", "NONE", "CUSTOM"];
@@ -69,14 +76,13 @@ const emptyForm: FortuneWheelForm = {
   displayNameAr: "",
   displayNameEn: "",
   rewardType: "DISCOUNT",
-
-
   rewardValue: "",
   weight: "1",
   maxDiscount: "",
   minOrderAmount: "",
   maxOrderAmount: "",
-  rewardExpiryHours: "24"
+  rewardExpiryHours: "24",
+  storeId: "all"
 };
 
 const fixedRewardValues: Partial<Record<RewardType, string>> = {
@@ -119,9 +125,15 @@ export default function FortuneWheelClient() {
     queryKey: ["fortuneWheelItems"],
     endPoint: ["fortuneWheel"]
   });
+  const { data: storesRes } = useApiQuery({
+    queryKey: ["fortuneWheelStores"],
+    endPoint: ["stores"],
+    params: { limit: 200 }
+  });
 
   const settings: FortuneWheelSettings | null = settingsRes?.data ?? null;
   const items: FortuneWheelItem[] = Array.isArray(itemsRes?.data) ? itemsRes.data : [];
+  const stores: Array<{ id: number; name: any; logo?: string }> = Array.isArray(storesRes?.data) ? storesRes.data : [];
 
   const refetchAll = () => { refetchSettings(); refetchItems(); };
 
@@ -211,6 +223,7 @@ export default function FortuneWheelClient() {
     minOrderAmount: getNumberOrNull(form.minOrderAmount),
     maxOrderAmount: getNumberOrNull(form.maxOrderAmount),
     rewardExpiryHours: getNumberOrNull(form.rewardExpiryHours) ?? 24,
+    storeId: form.storeId === "all" ? null : Number(form.storeId) || null,
     isActive: true,
     sortOrder: 0
   });
@@ -287,6 +300,7 @@ export default function FortuneWheelClient() {
         item.rewardExpiryHours === null || item.rewardExpiryHours === undefined
           ? "24"
           : String(item.rewardExpiryHours),
+      storeId: item.storeId ? String(item.storeId) : "all",
     });
   };
   // const handleDeleteItem = async (id: number) => {
@@ -383,6 +397,26 @@ export default function FortuneWheelClient() {
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("titleEn")}</label>
                 <Input value={form.displayNameEn} onChange={event => updateForm("displayNameEn", event.target.value)} placeholder="10% discount" />
               </div>
+              <div className="lg:col-span-3">
+                <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">
+                  {locale === "ar" ? "المتجر المخصص (اختياري)" : "Target Store (Optional)"}
+                </label>
+                <Select value={form.storeId} onValueChange={value => updateForm("storeId", value)}>
+                  <SelectTrigger className="h-10 rounded-xl">
+                    <SelectValue placeholder={locale === "ar" ? "عام لجميع المتاجر" : "All Stores"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      {locale === "ar" ? "🌐 عام لجميع المتاجر" : "🌐 All Stores"}
+                    </SelectItem>
+                    {stores.map(store => (
+                      <SelectItem key={store.id} value={String(store.id)}>
+                        {getLocalizedText(store.name, locale)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="lg:col-span-2">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("rewardType")}</label>
                 <Select
@@ -402,28 +436,24 @@ export default function FortuneWheelClient() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="lg:col-span-2">
-                <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("rewardValue")}</label>
-                <Input value={currentRewardValue} onChange={event => updateForm("rewardValue", event.target.value)} placeholder={t("rewardValuePlaceholder")} disabled={isFixedRewardValue} />
-              </div>
-              {/* <div className="lg:col-span-1">
-                <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("weight")}</label>
-                <Input type="number" min="1" value={form.weight} onChange={event => updateForm("weight", event.target.value)} />
-              </div> */}
               <div className="flex items-end lg:col-span-1">
                 <Button type="button" className="h-10 w-full rounded-xl" onClick={handleAddItem} disabled={isSubmitting || !form.displayNameAr.trim() || !form.displayNameEn.trim()}>
                   {editingItemId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                 </Button>
               </div>
               <div className="lg:col-span-3">
+                <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("rewardValue")}</label>
+                <Input value={currentRewardValue} onChange={event => updateForm("rewardValue", event.target.value)} placeholder={t("rewardValuePlaceholder")} disabled={isFixedRewardValue} />
+              </div>
+              <div className="lg:col-span-2">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("maxDiscount")} ({t("optional")})</label>
                 <Input type="number" value={form.maxDiscount} onChange={event => updateForm("maxDiscount", event.target.value)} />
               </div>
-              <div className="lg:col-span-3">
+              <div className="lg:col-span-2">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("minOrderAmount")} ({t("optional")})</label>
                 <Input type="number" value={form.minOrderAmount} onChange={event => updateForm("minOrderAmount", event.target.value)} />
               </div>
-              <div className="lg:col-span-3">
+              <div className="lg:col-span-2">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("maxOrderAmount")} ({t("optional")})</label>
                 <Input type="number" value={form.maxOrderAmount} onChange={event => updateForm("maxOrderAmount", event.target.value)} />
               </div>
@@ -448,6 +478,7 @@ export default function FortuneWheelClient() {
               <TableHeader className="bg-gray-50 dark:bg-slate-900">
                 <TableRow>
                   <TableHead className="text-center">{t("fortuneWheelItemName")}</TableHead>
+                  <TableHead className="text-center">{locale === "ar" ? "المتجر" : "Store"}</TableHead>
                   <TableHead className="text-center">{t("rewardType")}</TableHead>
                   <TableHead className="text-center">{t("rewardValue")}</TableHead>
                   <TableHead className="text-center">{t("weight")}</TableHead>
@@ -459,13 +490,33 @@ export default function FortuneWheelClient() {
               <TableBody>
                 {sortedItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">{t("No Data")}</TableCell>
+                    <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">{t("No Data")}</TableCell>
                   </TableRow>
                 ) : sortedItems.map(item => {
                   const active = item.active ?? item.isActive ?? true;
                   return (
                     <TableRow key={item.id} className="hover:bg-gray-50 dark:hover:bg-slate-900/50">
                       <TableCell className="text-center font-medium">{getLocalizedText(item.displayName || item.name, locale)}</TableCell>
+                      <TableCell className="text-center">
+                        {item.Store ? (
+                          <div className="flex items-center justify-center gap-2">
+                            {item.Store.logo ? (
+                              <img
+                                src={item.Store.logo.startsWith("http") ? item.Store.logo : `/${item.Store.logo}`}
+                                alt=""
+                                className="h-6 w-6 rounded-full object-cover border"
+                              />
+                            ) : null}
+                            <span className="font-semibold text-primary">
+                              {getLocalizedText(item.Store.name, locale)}
+                            </span>
+                          </div>
+                        ) : (
+                          <Badge variant="secondary">
+                            {locale === "ar" ? "🌐 عام لكل المتاجر" : "🌐 All Stores"}
+                          </Badge>
+                        )}
+                      </TableCell>
                       <TableCell className="text-center"><Badge variant="outline">{t(`fortuneRewardApi.${item.rewardType || "NONE"}`)}</Badge></TableCell>
                       <TableCell className="text-center">{item.rewardValue ?? "—"}</TableCell>
                       <TableCell className="text-center">{item.weight ?? 1}</TableCell>
