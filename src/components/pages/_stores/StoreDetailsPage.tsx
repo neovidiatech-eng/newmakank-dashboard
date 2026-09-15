@@ -13,6 +13,7 @@ import { StoreDiscountButton } from "./details/StoreDiscountButton";
 import { StorePrepTimeButton } from "./details/StorePrepTimeButton";
 import { StoreReportDialog } from "./details/StoreReportDialog";
 import { StoreSettleWalletButton } from "./details/StoreSettleWalletButton";
+import { StoreSettleFortuneDiscountButton } from "./details/StoreSettleFortuneDiscountButton";
 import { useTranslations } from "@/lib/i18n";
 import { AlertTriangle } from "lucide-react";
 
@@ -57,6 +58,13 @@ export default function StoreDetailsPage({
       0
     ) || 0;
 
+  const accumulatedDiscount =
+    ((data as any)?.branches || []).reduce(
+      (acc: number, b: any) => acc + Number(b?.Wallet?.accumulatedFortuneDiscount || 0),
+      0
+    ) || 0;
+  const pendingPlatformSubsidy = accumulatedDiscount / 2;
+
   const isPendingApproval = (data as any)?.isStoreAccepted === false;
 
   return (
@@ -86,6 +94,13 @@ export default function StoreDetailsPage({
               <span>{t("Store Discount")}:</span>
               <span className="text-orange-600 dark:text-orange-400 font-semibold">{discountLabel}</span>
               <span className="text-xs">({t(currentDiscountType)})</span>
+            </div>
+          )}
+          {accumulatedDiscount > 0 && (
+            <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-amber-500/10 dark:bg-amber-500/20 px-3 py-1.5 rounded-lg border border-amber-400/40">
+              <span>{t("Unsettled Fortune Discounts") || "خصومات معلقة"}:</span>
+              <span className="text-amber-700 dark:text-amber-400 font-semibold">{accumulatedDiscount.toFixed(2)} {t("EGP") || "ج.م"}</span>
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">(دعم المنصة 50%: {pendingPlatformSubsidy.toFixed(2)} ج.م)</span>
             </div>
           )}
         </div>
@@ -127,6 +142,11 @@ export default function StoreDetailsPage({
               currentBalance={walletBalance}
               storeName={typeof data.name === "string" ? data.name : (data.name as any)?.ar ?? ""}
               isPartner={(data as any).isPartner}
+            />
+            <StoreSettleFortuneDiscountButton
+              storeId={Number(data.id)}
+              accumulatedDiscounts={accumulatedDiscount}
+              storeName={typeof data.name === "string" ? data.name : (data.name as any)?.ar ?? ""}
             />
             <StoreReportDialog
               store={data}

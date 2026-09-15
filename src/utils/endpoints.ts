@@ -67,6 +67,8 @@ export const endpoints = {
   "reset-wallet": "/reset-wallet",
   settleWallet: "/settle-wallet",
   "settle-wallet": "/settle-wallet",
+  settleFortuneDiscounts: "/settle-fortune-discounts",
+  "settle-fortune-discounts": "/settle-fortune-discounts",
   customDelivery: "/custom-delivery",
   customDeliveryImages: "/images",
   advance: "/advance",
