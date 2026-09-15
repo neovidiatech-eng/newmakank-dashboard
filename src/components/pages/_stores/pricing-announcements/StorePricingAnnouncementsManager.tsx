@@ -370,6 +370,7 @@ export default function StorePricingAnnouncementsManager() {
                 {t("Stores")}
               </Label>
               <SelectPaginated
+                name="storeId"
                 apiUrl={["stores"]}
                 idKey="id"
                 labelKey="name"
