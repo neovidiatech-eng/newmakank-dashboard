@@ -22,6 +22,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         title: "stores",
         url: "/stores"
       },
+      permissions?.Stores?.get && {
+        title: "storePricingAndAnnouncements",
+        url: "/stores/pricing-announcements"
+      },
       (permissions?.["categories"]?.get || permissions?.categories?.get) && {
         title: "categories",
         url: "/category"

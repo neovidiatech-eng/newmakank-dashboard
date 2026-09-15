@@ -31,6 +31,11 @@ export default async function page({ searchParams }: { searchParams: SearchParam
             {t("Pending Review") || "قيد المراجعة"}
           </Badge>
         </Link>
+        <Link href="/stores/pricing-announcements">
+          <Badge variant="outline" className="cursor-pointer px-3 py-1.5 bg-primary/10 text-primary border-primary/30 hover:bg-primary/20">
+            📍 {t("storePricingAndAnnouncements") || "تسعير وتنبيهات المتاجر"}
+          </Badge>
+        </Link>
         <Link href="/partner-settlements">
           <Badge variant="outline" className="cursor-pointer px-3 py-1.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-400 ms-auto">
             📊 {t("Partner Settlements Report") || "تقرير تسويات الشركاء"}
