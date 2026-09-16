@@ -24,7 +24,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
-import { useTranslations } from "@/lib/i18n";
+import { useTranslations, useLocale } from "@/lib/i18n";
 import { useRouter } from "@/lib/navigation";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { MapPinned, Save, Trash2, ToggleLeft, Loader2 } from "lucide-react";
@@ -45,6 +45,7 @@ interface ZonePricingResponse {
 
 export function StoreZonePricingTab({ storeId }: { storeId: number }) {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
@@ -59,6 +60,8 @@ export function StoreZonePricingTab({ storeId }: { storeId: number }) {
   });
 
   const zonePricingData = response?.data as ZonePricingResponse | undefined;
+  const isGlobalEnabled =
+    (response?.data as any)?.globalZonePricingEnabled !== false;
   const isEnabled = zonePricingData?.zonePricingEnabled ?? false;
   const zones = zonePricingData?.zones ?? [];
 
@@ -167,6 +170,16 @@ export function StoreZonePricingTab({ storeId }: { storeId: number }) {
         <p className="text-sm text-muted-foreground mt-1">
           {t("zonePricingDescription")}
         </p>
+        {!isGlobalEnabled && (
+          <div className="mt-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs flex items-center gap-2">
+            <span className="text-base">⚠️</span>
+            <span>
+              {locale === "ar"
+                ? "تنبيه: تسعير المناطق موقّف حالياً على مستوى المنصة من الزر العلوي. يتم تطبيق السعر الموحد (15 ج) على جميع الطلبات حتى يتم إعادة تفعيل المناطق."
+                : "Notice: Zone pricing is currently disabled globally from the top switch. The flat delivery fee applies to all orders until zone pricing is enabled."}
+            </span>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent>
