@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { fetchHelper } from "@/api/fetch";
 import SelectPaginated from "@/components/common/Inputs/select/SelectPaginatedInput";
@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import DeliveryPromotionsTab from "./DeliveryPromotionsTab";
 
 interface ZonePrice {
   zoneId: number;
@@ -76,6 +77,7 @@ export default function StorePricingAnnouncementsManager() {
     name?: string;
     logo?: string | null;
   } | null>(null);
+  const [activeTab, setActiveTab] = useState<"zone-pricing" | "promotions">("zone-pricing");
 
   // Zone Pricing State
   const [isTogglingZonePricing, setIsTogglingZonePricing] = useState(false);
@@ -252,7 +254,7 @@ export default function StorePricingAnnouncementsManager() {
   // Quick Add / Update single zone price from dropdown
   const handleQuickSetZonePrice = () => {
     if (!quickSelectedZoneId) {
-      toast.error(t("Select a Zone") || "اختر منطقة");
+      toast.error(t("Select a Zone") || "Ø§Ø®ØªØ± Ù…Ù†Ø·Ù‚Ø©");
       return;
     }
     const parsedPrice = parseFloat(quickZonePrice);
@@ -267,7 +269,7 @@ export default function StorePricingAnnouncementsManager() {
       [zoneId]: String(parsedPrice),
     }));
 
-    toast.success(t("zonePricesSaved") || "تم تعيين سعر المنطقة بالجدول");
+    toast.success(t("zonePricesSaved") || "ØªÙ… ØªØ¹ÙŠÙŠÙ† Ø³Ø¹Ø± Ø§Ù„Ù…Ù†Ø·Ù‚Ø© Ø¨Ø§Ù„Ø¬Ø¯ÙˆÙ„");
     setQuickSelectedZoneId("");
     setQuickZonePrice("");
   };
@@ -412,7 +414,7 @@ export default function StorePricingAnnouncementsManager() {
                       {savedAnnouncement && (
                         <Badge variant="secondary" className="text-xs gap-1">
                           <Megaphone className="h-3 w-3" />
-                          {t("Active") || "تنبيه نشط"}
+                          {t("Active") || "ØªÙ†Ø¨ÙŠÙ‡ Ù†Ø´Ø·"}
                         </Badge>
                       )}
                     </div>
@@ -452,6 +454,39 @@ export default function StorePricingAnnouncementsManager() {
       ) : (
         /* Main Store Controls Grid */
         <div className="space-y-6">
+
+          {/* â”€â”€ Tab Switcher â”€â”€ */}
+          <div className="flex gap-1 p-1 rounded-xl bg-muted/50 border w-fit">
+            <button
+              type="button"
+              onClick={() => setActiveTab("zone-pricing")}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "zone-pricing"
+                  ? "bg-background shadow text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Ø£Ø³Ø¹Ø§Ø± Ø§Ù„Ù…Ù†Ø§Ø·Ù‚ Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ©
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("promotions")}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "promotions"
+                  ? "bg-background shadow text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Ø§Ù„Ø¹Ø±ÙˆØ¶ ÙˆØ§Ù„Ø­Ù…Ù„Ø§Øª
+            </button>
+          </div>
+
+          {/* â”€â”€ Tab 2: Delivery Promotions â”€â”€ */}
+          {activeTab === "promotions" && <DeliveryPromotionsTab />}
+
+          {/* â”€â”€ Tab 1: Zone Pricing (existing UI, unchanged) â”€â”€ */}
+          {activeTab === "zone-pricing" && (
+            <>
           {/* Announcement Card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-3">
@@ -462,11 +497,11 @@ export default function StorePricingAnnouncementsManager() {
                 </CardTitle>
                 {savedAnnouncement ? (
                   <Badge variant="default" className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
-                    {t("Active") || "نشط حالياً"}
+                    {t("Active") || "Ù†Ø´Ø· Ø­Ø§Ù„ÙŠØ§Ù‹"}
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="text-xs text-muted-foreground">
-                    {t("None") || "لا يوجد تنبيه"}
+                    {t("None") || "Ù„Ø§ ÙŠÙˆØ¬Ø¯ ØªÙ†Ø¨ÙŠÙ‡"}
                   </Badge>
                 )}
               </div>
@@ -485,7 +520,7 @@ export default function StorePricingAnnouncementsManager() {
 
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                 <span className="text-xs text-muted-foreground">
-                  {announcementText.length} {t("characters") || "حرف"}
+                  {announcementText.length} {t("characters") || "Ø­Ø±Ù"}
                 </span>
 
                 <div className="flex items-center gap-2">
@@ -653,7 +688,7 @@ export default function StorePricingAnnouncementsManager() {
                           className="text-center font-medium pr-10"
                         />
                         <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">
-                          {t("EGP") || "ج.م"}
+                          {t("EGP") || "Ø¬.Ù…"}
                         </span>
                       </div>
 
@@ -680,17 +715,17 @@ export default function StorePricingAnnouncementsManager() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                       <div className="sm:col-span-1">
                         <Label className="text-xs text-muted-foreground mb-1 block">
-                          {t("Zone") || "المنطقة"}
+                          {t("Zone") || "Ø§Ù„Ù…Ù†Ø·Ù‚Ø©"}
                         </Label>
                         <select
                           className="flex h-9 w-full rounded-xl border border-input/70 bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring/40"
                           value={quickSelectedZoneId}
                           onChange={(e) => setQuickSelectedZoneId(e.target.value)}
                         >
-                          <option value="">{t("Select a Zone") || "-- اختر منطقة --"}</option>
+                          <option value="">{t("Select a Zone") || "-- Ø§Ø®ØªØ± Ù…Ù†Ø·Ù‚Ø© --"}</option>
                           {rawZones.map((z) => (
                             <option key={z.zoneId} value={z.zoneId}>
-                              {getZoneDisplayName(z)} ({editedPrices[z.zoneId] ? `${editedPrices[z.zoneId]} ج.م` : t("App Default")})
+                              {getZoneDisplayName(z)} ({editedPrices[z.zoneId] ? `${editedPrices[z.zoneId]} Ø¬.Ù…` : t("App Default")})
                             </option>
                           ))}
                         </select>
@@ -698,7 +733,7 @@ export default function StorePricingAnnouncementsManager() {
 
                       <div className="sm:col-span-1">
                         <Label className="text-xs text-muted-foreground mb-1 block">
-                          {t("Custom Price") || "السعر المخصص"}
+                          {t("Custom Price") || "Ø§Ù„Ø³Ø¹Ø± Ø§Ù„Ù…Ø®ØµØµ"}
                         </Label>
                         <div className="relative">
                           <Input
@@ -711,7 +746,7 @@ export default function StorePricingAnnouncementsManager() {
                             className="pr-10"
                           />
                           <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">
-                            {t("EGP") || "ج.م"}
+                            {t("EGP") || "Ø¬.Ù…"}
                           </span>
                         </div>
                       </div>
@@ -724,7 +759,7 @@ export default function StorePricingAnnouncementsManager() {
                           disabled={!quickSelectedZoneId || !quickZonePrice}
                           className="w-full h-9"
                         >
-                          {t("Apply") || "تحديد السعر"}
+                          {t("Apply") || "ØªØ­Ø¯ÙŠØ¯ Ø§Ù„Ø³Ø¹Ø±"}
                         </Button>
                       </div>
                     </div>
@@ -778,7 +813,7 @@ export default function StorePricingAnnouncementsManager() {
                           {filteredZones.length === 0 ? (
                             <TableRow>
                               <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                                {t("No data found") || "لا توجد مناطق مطابقة للبحث"}
+                                {t("No data found") || "Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ù†Ø§Ø·Ù‚ Ù…Ø·Ø§Ø¨Ù‚Ø© Ù„Ù„Ø¨Ø­Ø«"}
                               </TableCell>
                             </TableRow>
                           ) : (
@@ -813,7 +848,7 @@ export default function StorePricingAnnouncementsManager() {
                                         className="text-center pr-8"
                                       />
                                       <span className="absolute right-2.5 top-2.5 text-xs text-muted-foreground pointer-events-none">
-                                        {t("EGP") || "ج.م"}
+                                        {t("EGP") || "Ø¬.Ù…"}
                                       </span>
                                     </div>
                                   </TableCell>
@@ -903,8 +938,11 @@ export default function StorePricingAnnouncementsManager() {
               )}
             </CardContent>
           </Card>
+            </>
+          )}
         </div>
       )}
     </div>
   );
 }
+

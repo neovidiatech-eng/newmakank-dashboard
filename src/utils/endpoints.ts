@@ -134,7 +134,9 @@ export const endpoints = {
   storeDiscountRemove: "/discount/remove",
   onlineDelivery: "/api/orders",
   onlineDeliverySellerProfile: "/api/orders/online-delivery/seller-profile",
-  bundles: "/api/bundles"
+  bundles: "/api/bundles",
+  deliveryPromotions: "/api/delivery-promotions",
+  toggle: "/toggle",
 };
 // addresses
 // allPermissions
