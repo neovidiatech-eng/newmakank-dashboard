@@ -1,6 +1,7 @@
 "use client";
 
 import { fetchHelper } from "@/api/fetch";
+import { getEnv } from "@/lib/env";
 import SelectPaginated from "@/components/common/Inputs/select/SelectPaginatedInput";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -87,10 +88,20 @@ export default function StorePricingAnnouncementsManager() {
   const selectedStoreId: string | number | null =
     pricingScope === "all" ? "all" : selectedSpecificStoreId;
 
+  const imgUrl = getEnv("VITE_API_IMG_URL");
+  const getLogoUrl = (logo?: string | null) => {
+    if (!logo || logo === "null" || logo === "undefined") return null;
+    if (logo.startsWith("http://") || logo.startsWith("https://") || logo.startsWith("data:")) {
+      return logo;
+    }
+    return imgUrl ? `${imgUrl}${logo}` : logo;
+  };
+
   const [storeInfo, setStoreInfo] = useState<{
     name?: string;
     logo?: string | null;
   } | null>(null);
+  const [logoError, setLogoError] = useState(false);
   const [activeTab, setActiveTab] = useState<"zone-pricing" | "promotions">("zone-pricing");
 
   // Zone Pricing State
@@ -188,6 +199,7 @@ export default function StorePricingAnnouncementsManager() {
         name: resolvedName,
         logo: zonePricingData.logo ?? null,
       });
+      setLogoError(false);
     }
   }, [zonePricingData, locale, isAllStores]);
 
@@ -648,11 +660,12 @@ export default function StorePricingAnnouncementsManager() {
                   {selectedSpecificStoreId && (
                     <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50 border">
                       <div className="flex items-center gap-3">
-                        {storeInfo?.logo ? (
+                        {getLogoUrl(storeInfo?.logo) && !logoError ? (
                           <img
-                            src={storeInfo.logo}
-                            alt={storeInfo.name || "Store"}
+                            src={getLogoUrl(storeInfo?.logo)!}
+                            alt={storeInfo?.name || "Store"}
                             className="h-12 w-12 rounded-lg object-cover border bg-background"
+                            onError={() => setLogoError(true)}
                           />
                         ) : (
                           <div className="h-12 w-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">
