@@ -21,10 +21,16 @@ minOrderAmount: z.union([z.number(), z.string()]).optional(),
 announcement: z.string().nullable().optional(),
 lat:StringNotReq(),
 lng:StringNotReq(),
-map: z.object({
-    lat: z.number(),
-    lng: z.number(),
-}).optional(),
+map: z.object(
+  {
+    lat: z.number({ required_error: t("locationOnMapRequired") || "يرجى تحديد موقع المتجر على الخريطة" }),
+    lng: z.number({ required_error: t("locationOnMapRequired") || "يرجى تحديد موقع المتجر على الخريطة" }),
+  },
+  {
+    required_error: t("locationOnMapRequired") || "يرجى تحديد موقع المتجر على الخريطة",
+    invalid_type_error: t("locationOnMapRequired") || "يرجى تحديد موقع المتجر على الخريطة",
+  }
+),
 address:StringReq(t),
 UserName:StringReq(t),
 userEmail:EmailReq(t),

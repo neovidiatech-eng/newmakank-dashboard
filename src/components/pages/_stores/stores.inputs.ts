@@ -23,6 +23,7 @@ export const StoresInputs = ({ isEdit, isAdmin }: {
       type: 'map' as const,
       width: 6,
       cardId: 'location',
+      required: true,
     },
     { name: "address", type: "text" as const, cardId: 'location', required: true, width: 6 },
     { name: "UserName", type: "text" as const, cardId: 'user', required: true, width: 6 },

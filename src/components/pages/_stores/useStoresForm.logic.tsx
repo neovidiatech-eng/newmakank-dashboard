@@ -60,7 +60,9 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       deliveryTimeMaxMinutes: (data as any)?.deliveryTimeMaxMinutes ?? 0,
       minOrderAmount: (data as any)?.minOrderAmount ?? 0,
       announcement: (data as any)?.announcement ?? "",
-      map: data?.lat && data?.lng ? { lat: data.lat, lng: data.lng } : undefined
+      map: (data as any)?.lat && (data as any)?.lng
+        ? { lat: Number((data as any).lat), lng: Number((data as any).lng) }
+        : { lat: 30.9706, lng: 31.1669 }
     } as StoresType
   });
   const onSubmit = async (formData: StoresType) => {
@@ -125,8 +127,8 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       ...rest,
       logo: formData.logo,
       cover: formData.cover,
-      lat: map?.lat ?? (isEdit ? (data as any)?.lat : 30.0444),
-      lng: map?.lng ?? (isEdit ? (data as any)?.lng : 31.2357),
+      lat: map?.lat ?? (isEdit ? (data as any)?.lat : 30.9706),
+      lng: map?.lng ?? (isEdit ? (data as any)?.lng : 31.1669),
 
       // Required by the backend on create — default to 0 (first/unsorted) if left blank
       // rather than blocking store creation over a manual sort number nobody filled in.
