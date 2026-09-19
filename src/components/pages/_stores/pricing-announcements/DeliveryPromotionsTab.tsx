@@ -38,6 +38,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useApiQuery } from "@/hooks/useApiQuery";
+import { useTranslations, useLocale } from "@/lib/i18n";
 import {
   BadgePercent,
   Loader2,
@@ -55,10 +56,8 @@ import {
   type DeliveryPromotion,
   resolveBadgeText,
   SCOPE_BADGE_CLASS,
-  SCOPE_LABEL,
+  getScopeLabel,
 } from "./delivery-promotions-utils";
-
-
 
 // ---------------------------------------------------------------------------
 // Default form state
@@ -95,6 +94,9 @@ const DEFAULT_FORM: FormState = {
 // ---------------------------------------------------------------------------
 
 export default function DeliveryPromotionsTab() {
+  const t = useTranslations();
+  const locale = useLocale();
+
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,12 +121,20 @@ export default function DeliveryPromotionsTab() {
   // ── Create ─────────────────────────────────────────────────────────────
   const handleCreate = async () => {
     if (!form.name.trim()) {
-      toast.error("اسم العرض مطلوب");
+      toast.error(
+        t("promoNameRequired") ||
+          (locale === "ar" ? "اسم العرض مطلوب" : "Promotion name is required")
+      );
       return;
     }
     const promoValueNum = parseFloat(form.promoValue);
     if (isNaN(promoValueNum) || promoValueNum < 0) {
-      toast.error("قيمة العرض يجب أن تكون رقمًا صحيحًا ≥ 0");
+      toast.error(
+        t("promoValueRequired") ||
+          (locale === "ar"
+            ? "قيمة العرض يجب أن تكون رقمًا صحيحًا ≥ 0"
+            : "Promotion value must be a valid number ≥ 0")
+      );
       return;
     }
 
@@ -142,7 +152,12 @@ export default function DeliveryPromotionsTab() {
     if (form.scope === "STORE" || form.scope === "STORE_ZONE") {
       const sid = parseInt(form.storeId, 10);
       if (isNaN(sid)) {
-        toast.error("معرّف المتجر مطلوب لهذا النطاق");
+        toast.error(
+          t("promoStoreRequired") ||
+            (locale === "ar"
+              ? "معرّف المتجر مطلوب لهذا النطاق"
+              : "Store ID is required for this scope")
+        );
         return;
       }
       body.storeId = sid;
@@ -150,7 +165,12 @@ export default function DeliveryPromotionsTab() {
     if (form.scope === "ZONE" || form.scope === "STORE_ZONE") {
       const zid = parseInt(form.zoneId, 10);
       if (isNaN(zid)) {
-        toast.error("معرّف المنطقة مطلوب لهذا النطاق");
+        toast.error(
+          t("promoZoneRequired") ||
+            (locale === "ar"
+              ? "معرّف المنطقة مطلوب لهذا النطاق"
+              : "Zone ID is required for this scope")
+        );
         return;
       }
       body.zoneId = zid;
@@ -164,12 +184,17 @@ export default function DeliveryPromotionsTab() {
     });
 
     if (res?.success) {
-      toast.success("تم إنشاء العرض بنجاح");
+      toast.success(
+        t("promoCreatedSuccess") ||
+          (locale === "ar"
+            ? "تم إنشاء العرض بنجاح"
+            : "Promotion created successfully")
+      );
       setCreateOpen(false);
       setForm(DEFAULT_FORM);
       refetch();
     } else {
-      toast.error(res?.result?.message ?? res?.message ?? "حدث خطأ ما");
+      toast.error(res?.result?.message ?? res?.message ?? t("error"));
     }
     setIsSubmitting(false);
   };
@@ -183,10 +208,15 @@ export default function DeliveryPromotionsTab() {
     });
 
     if (res?.success) {
-      toast.success("تم تحديث حالة العرض");
+      toast.success(
+        t("promoStatusUpdated") ||
+          (locale === "ar"
+            ? "تم تحديث حالة العرض"
+            : "Promotion status updated")
+      );
       refetch();
     } else {
-      toast.error(res?.result?.message ?? res?.message ?? "حدث خطأ ما");
+      toast.error(res?.result?.message ?? res?.message ?? t("error"));
     }
     setTogglingId(null);
   };
@@ -200,11 +230,14 @@ export default function DeliveryPromotionsTab() {
     });
 
     if (res?.success) {
-      toast.success("تم حذف العرض");
+      toast.success(
+        t("promoDeleted") ||
+          (locale === "ar" ? "تم حذف العرض" : "Promotion deleted")
+      );
       setDeleteDialogId(null);
       refetch();
     } else {
-      toast.error(res?.result?.message ?? res?.message ?? "حدث خطأ ما");
+      toast.error(res?.result?.message ?? res?.message ?? t("error"));
     }
     setDeletingId(null);
   };
@@ -217,10 +250,16 @@ export default function DeliveryPromotionsTab() {
           <div>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Gift className="h-4 w-4 text-primary" />
-              عروض التوصيل والحملات
+              {t("deliveryPromotionsTitle") ||
+                (locale === "ar"
+                  ? "عروض التوصيل والحملات"
+                  : "Delivery Promotions & Campaigns")}
             </CardTitle>
             <CardDescription className="mt-1">
-              إدارة عروض التوصيل المخفض وتحديد نطاق كل عرض
+              {t("deliveryPromotionsDesc") ||
+                (locale === "ar"
+                  ? "إدارة عروض التوصيل المخفض وتحديد نطاق كل عرض"
+                  : "Manage discounted delivery promotions and define each promotion scope")}
             </CardDescription>
           </div>
 
@@ -229,15 +268,24 @@ export default function DeliveryPromotionsTab() {
             <DialogTrigger asChild>
               <Button className="gap-1.5 shrink-0">
                 <PlusCircle className="h-4 w-4" />
-                إنشاء عرض جديد
+                {t("createNewPromotion") ||
+                  (locale === "ar" ? "إنشاء عرض جديد" : "Create Promotion")}
               </Button>
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>إنشاء عرض توصيل جديد</DialogTitle>
+                <DialogTitle>
+                  {t("createNewDeliveryPromotion") ||
+                    (locale === "ar"
+                      ? "إنشاء عرض توصيل جديد"
+                      : "Create New Delivery Promotion")}
+                </DialogTitle>
                 <DialogDescription>
-                  أدخل تفاصيل العرض — النطاق والقيمة وفترة الصلاحية
+                  {t("createPromotionSubtitle") ||
+                    (locale === "ar"
+                      ? "أدخل تفاصيل العرض — النطاق والقيمة وفترة الصلاحية"
+                      : "Enter promotion details — scope, value, and validity period")}
                 </DialogDescription>
               </DialogHeader>
 
@@ -245,11 +293,18 @@ export default function DeliveryPromotionsTab() {
                 {/* Name */}
                 <div className="space-y-1.5">
                   <Label htmlFor="promo-name">
-                    اسم العرض <span className="text-destructive">*</span>
+                    {t("promoName") ||
+                      (locale === "ar" ? "اسم العرض" : "Promotion Name")}{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="promo-name"
-                    placeholder="مثال: عرض التوصيل المجاني"
+                    placeholder={
+                      t("promoNamePlaceholder") ||
+                      (locale === "ar"
+                        ? "مثال: عرض التوصيل المخفض"
+                        : "e.g., Discounted Delivery Offer")
+                    }
                     value={form.name}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, name: e.target.value }))
@@ -259,10 +314,20 @@ export default function DeliveryPromotionsTab() {
 
                 {/* Badge Text */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="promo-badge">نص الشارة (اختياري)</Label>
+                  <Label htmlFor="promo-badge">
+                    {t("promoBadge") ||
+                      (locale === "ar"
+                        ? "نص الشارة (اختياري)"
+                        : "Badge Text (optional)")}
+                  </Label>
                   <Input
                     id="promo-badge"
-                    placeholder="توصيل مخفض لفترة محدودة"
+                    placeholder={
+                      t("promoBadgePlaceholder") ||
+                      (locale === "ar"
+                        ? "توصيل مخفض لفترة محدودة"
+                        : "Discounted delivery for a limited time")
+                    }
                     value={form.badgeText}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, badgeText: e.target.value }))
@@ -272,7 +337,10 @@ export default function DeliveryPromotionsTab() {
 
                 {/* Scope */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="promo-scope">نطاق العرض</Label>
+                  <Label htmlFor="promo-scope">
+                    {t("promoScope") ||
+                      (locale === "ar" ? "نطاق العرض" : "Promotion Scope")}
+                  </Label>
                   <Select
                     value={form.scope}
                     onValueChange={(v) =>
@@ -283,10 +351,24 @@ export default function DeliveryPromotionsTab() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="GLOBAL">عام (كل المتاجر والمناطق)</SelectItem>
-                      <SelectItem value="STORE">متجر محدد</SelectItem>
-                      <SelectItem value="ZONE">منطقة محددة</SelectItem>
-                      <SelectItem value="STORE_ZONE">متجر + منطقة</SelectItem>
+                      <SelectItem value="GLOBAL">
+                        {t("promoScopeGlobal") ||
+                          (locale === "ar"
+                            ? "عام (كل المتاجر والمناطق)"
+                            : "Global (All Stores & Zones)")}
+                      </SelectItem>
+                      <SelectItem value="STORE">
+                        {t("promoScopeStore") ||
+                          (locale === "ar" ? "متجر محدد" : "Specific Store")}
+                      </SelectItem>
+                      <SelectItem value="ZONE">
+                        {t("promoScopeZone") ||
+                          (locale === "ar" ? "منطقة محددة" : "Specific Zone")}
+                      </SelectItem>
+                      <SelectItem value="STORE_ZONE">
+                        {t("promoScopeStoreZone") ||
+                          (locale === "ar" ? "متجر + منطقة" : "Store + Zone")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -295,13 +377,20 @@ export default function DeliveryPromotionsTab() {
                 {(form.scope === "STORE" || form.scope === "STORE_ZONE") && (
                   <div className="space-y-1.5">
                     <Label htmlFor="promo-store-id">
-                      معرّف المتجر <span className="text-destructive">*</span>
+                      {t("promoStoreId") ||
+                        (locale === "ar" ? "معرّف المتجر" : "Store ID")}{" "}
+                      <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="promo-store-id"
                       type="number"
                       min={1}
-                      placeholder="أدخل ID المتجر"
+                      placeholder={
+                        t("promoStoreIdPlaceholder") ||
+                        (locale === "ar"
+                          ? "أدخل ID المتجر"
+                          : "Enter Store ID")
+                      }
                       value={form.storeId}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, storeId: e.target.value }))
@@ -314,13 +403,20 @@ export default function DeliveryPromotionsTab() {
                 {(form.scope === "ZONE" || form.scope === "STORE_ZONE") && (
                   <div className="space-y-1.5">
                     <Label htmlFor="promo-zone-id">
-                      معرّف المنطقة <span className="text-destructive">*</span>
+                      {t("promoZoneId") ||
+                        (locale === "ar" ? "معرّف المنطقة" : "Zone ID")}{" "}
+                      <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="promo-zone-id"
                       type="number"
                       min={1}
-                      placeholder="أدخل ID المنطقة"
+                      placeholder={
+                        t("promoZoneIdPlaceholder") ||
+                        (locale === "ar"
+                          ? "أدخل ID المنطقة"
+                          : "Enter Zone ID")
+                      }
                       value={form.zoneId}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, zoneId: e.target.value }))
@@ -331,7 +427,10 @@ export default function DeliveryPromotionsTab() {
 
                 {/* Discount Type */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="promo-type">نوع الخصم</Label>
+                  <Label htmlFor="promo-type">
+                    {t("promoDiscountType") ||
+                      (locale === "ar" ? "نوع الخصم" : "Discount Type")}
+                  </Label>
                   <Select
                     value={form.discountType}
                     onValueChange={(v) =>
@@ -342,8 +441,18 @@ export default function DeliveryPromotionsTab() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="FIXED_PRICE">سعر ثابت للتوصيل</SelectItem>
-                      <SelectItem value="DISCOUNT_AMOUNT">خصم بمبلغ محدد</SelectItem>
+                      <SelectItem value="FIXED_PRICE">
+                        {t("promoTypeFixedPrice") ||
+                          (locale === "ar"
+                            ? "سعر ثابت للتوصيل"
+                            : "Fixed Delivery Fee")}
+                      </SelectItem>
+                      <SelectItem value="DISCOUNT_AMOUNT">
+                        {t("promoTypeDiscountAmount") ||
+                          (locale === "ar"
+                            ? "خصم بمبلغ محدد"
+                            : "Discount by Amount")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -351,7 +460,9 @@ export default function DeliveryPromotionsTab() {
                 {/* Promo Value */}
                 <div className="space-y-1.5">
                   <Label htmlFor="promo-value">
-                    قيمة العرض (ج.م){" "}
+                    {t("promoValue") ||
+                      (locale === "ar" ? "قيمة العرض" : "Promo Value")}{" "}
+                    ({t("promoEgp") || (locale === "ar" ? "ج.م" : "EGP")}){" "}
                     <span className="text-destructive">*</span>
                   </Label>
                   <Input
@@ -367,15 +478,26 @@ export default function DeliveryPromotionsTab() {
                   />
                   <p className="text-xs text-muted-foreground">
                     {form.discountType === "FIXED_PRICE"
-                      ? "سيكون هذا هو سعر التوصيل النهائي للعميل"
-                      : "سيتم خصم هذا المبلغ من سعر التوصيل الأساسي"}
+                      ? t("promoFixedPriceDesc") ||
+                        (locale === "ar"
+                          ? "سيكون هذا هو سعر التوصيل النهائي للعميل"
+                          : "This will be the final delivery fee paid by the customer")
+                      : t("promoDiscountAmountDesc") ||
+                        (locale === "ar"
+                          ? "سيتم خصم هذا المبلغ من سعر التوصيل الأساسي"
+                          : "This amount will be deducted from the base delivery fee")}
                   </p>
                 </div>
 
                 {/* Start / End Date */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="promo-start">تاريخ البداية (اختياري)</Label>
+                    <Label htmlFor="promo-start">
+                      {t("promoStartDate") ||
+                        (locale === "ar"
+                          ? "تاريخ البداية (اختياري)"
+                          : "Start Date (optional)")}
+                    </Label>
                     <Input
                       id="promo-start"
                       type="datetime-local"
@@ -386,7 +508,12 @@ export default function DeliveryPromotionsTab() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="promo-end">تاريخ النهاية (اختياري)</Label>
+                    <Label htmlFor="promo-end">
+                      {t("promoEndDate") ||
+                        (locale === "ar"
+                          ? "تاريخ النهاية (اختياري)"
+                          : "End Date (optional)")}
+                    </Label>
                     <Input
                       id="promo-end"
                       type="datetime-local"
@@ -408,7 +535,13 @@ export default function DeliveryPromotionsTab() {
                     }
                   />
                   <Label htmlFor="promo-active" className="cursor-pointer">
-                    {form.isActive ? "العرض نشط" : "العرض معطّل"}
+                    {form.isActive
+                      ? t("promoActive") ||
+                        (locale === "ar" ? "العرض نشط" : "Promotion is Active")
+                      : t("promoInactive") ||
+                        (locale === "ar"
+                          ? "العرض معطّل"
+                          : "Promotion is Disabled")}
                   </Label>
                 </div>
               </div>
@@ -422,13 +555,14 @@ export default function DeliveryPromotionsTab() {
                   }}
                   disabled={isSubmitting}
                 >
-                  إلغاء
+                  {t("Cancel") || (locale === "ar" ? "إلغاء" : "Cancel")}
                 </Button>
                 <Button onClick={handleCreate} disabled={isSubmitting}>
                   {isSubmitting && (
                     <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
                   )}
-                  إنشاء العرض
+                  {t("createPromoButton") ||
+                    (locale === "ar" ? "إنشاء العرض" : "Create Promotion")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -447,7 +581,10 @@ export default function DeliveryPromotionsTab() {
               <Gift className="h-7 w-7" />
             </div>
             <p className="text-sm text-muted-foreground">
-              لا توجد عروض توصيل حتى الآن — أنشئ أول عرض الآن
+              {t("noPromotionsMessage") ||
+                (locale === "ar"
+                  ? "لا توجد عروض توصيل حتى الآن — أنشئ أول عرض الآن"
+                  : "No delivery promotions yet — create your first promotion now")}
             </p>
           </div>
         ) : (
@@ -455,17 +592,39 @@ export default function DeliveryPromotionsTab() {
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableHead>الاسم</TableHead>
-                  <TableHead>الشارة</TableHead>
-                  <TableHead>النطاق</TableHead>
-                  <TableHead>النوع</TableHead>
-                  <TableHead className="text-center">القيمة</TableHead>
-                  <TableHead className="text-center">المتجر</TableHead>
-                  <TableHead className="text-center">المنطقة</TableHead>
-                  <TableHead>البداية</TableHead>
-                  <TableHead>النهاية</TableHead>
-                  <TableHead className="text-center">نشط</TableHead>
-                  <TableHead className="text-center">الإجراءات</TableHead>
+                  <TableHead>
+                    {t("promoTableName") || (locale === "ar" ? "الاسم" : "Name")}
+                  </TableHead>
+                  <TableHead>
+                    {t("promoTableBadge") || (locale === "ar" ? "الشارة" : "Badge")}
+                  </TableHead>
+                  <TableHead>
+                    {t("promoTableScope") || (locale === "ar" ? "النطاق" : "Scope")}
+                  </TableHead>
+                  <TableHead>
+                    {t("promoTableType") || (locale === "ar" ? "النوع" : "Type")}
+                  </TableHead>
+                  <TableHead className="text-center">
+                    {t("promoTableValue") || (locale === "ar" ? "القيمة" : "Value")}
+                  </TableHead>
+                  <TableHead className="text-center">
+                    {t("promoTableStore") || (locale === "ar" ? "المتجر" : "Store")}
+                  </TableHead>
+                  <TableHead className="text-center">
+                    {t("promoTableZone") || (locale === "ar" ? "المنطقة" : "Zone")}
+                  </TableHead>
+                  <TableHead>
+                    {t("promoTableStart") || (locale === "ar" ? "البداية" : "Start")}
+                  </TableHead>
+                  <TableHead>
+                    {t("promoTableEnd") || (locale === "ar" ? "النهاية" : "End")}
+                  </TableHead>
+                  <TableHead className="text-center">
+                    {t("promoTableActive") || (locale === "ar" ? "نشط" : "Active")}
+                  </TableHead>
+                  <TableHead className="text-center">
+                    {t("promoTableActions") || (locale === "ar" ? "الإجراءات" : "Actions")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -487,7 +646,7 @@ export default function DeliveryPromotionsTab() {
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${SCOPE_BADGE_CLASS[promo.scope]}`}
                       >
-                        {SCOPE_LABEL[promo.scope]}
+                        {getScopeLabel(promo.scope, locale, t)}
                       </span>
                     </TableCell>
 
@@ -497,12 +656,18 @@ export default function DeliveryPromotionsTab() {
                         {promo.discountType === "FIXED_PRICE" ? (
                           <>
                             <Tag className="h-3.5 w-3.5 text-blue-500" />
-                            <span>سعر ثابت</span>
+                            <span>
+                              {t("promoTypeFixedPrice") ||
+                                (locale === "ar" ? "سعر ثابت" : "Fixed Fee")}
+                            </span>
                           </>
                         ) : (
                           <>
                             <BadgePercent className="h-3.5 w-3.5 text-emerald-500" />
-                            <span>خصم بمبلغ</span>
+                            <span>
+                              {t("promoTypeDiscountAmount") ||
+                                (locale === "ar" ? "خصم بمبلغ" : "Discount Amount")}
+                            </span>
                           </>
                         )}
                       </span>
@@ -510,7 +675,8 @@ export default function DeliveryPromotionsTab() {
 
                     {/* Value */}
                     <TableCell className="text-center font-semibold text-sm">
-                      {promo.promoValue} ج.م
+                      {promo.promoValue}{" "}
+                      {t("promoEgp") || (locale === "ar" ? "ج.م" : "EGP")}
                     </TableCell>
 
                     {/* Store ID */}
@@ -526,14 +692,18 @@ export default function DeliveryPromotionsTab() {
                     {/* Start */}
                     <TableCell className="text-xs whitespace-nowrap">
                       {promo.startDate
-                        ? new Date(promo.startDate).toLocaleDateString("ar-EG")
+                        ? new Date(promo.startDate).toLocaleDateString(
+                            locale === "ar" ? "ar-EG" : "en-US"
+                          )
                         : "—"}
                     </TableCell>
 
                     {/* End */}
                     <TableCell className="text-xs whitespace-nowrap">
                       {promo.endDate
-                        ? new Date(promo.endDate).toLocaleDateString("ar-EG")
+                        ? new Date(promo.endDate).toLocaleDateString(
+                            locale === "ar" ? "ar-EG" : "en-US"
+                          )
                         : "—"}
                     </TableCell>
 
@@ -560,7 +730,11 @@ export default function DeliveryPromotionsTab() {
                           className="h-8 w-8 text-muted-foreground hover:text-primary"
                           onClick={() => handleToggle(promo.id)}
                           disabled={togglingId === promo.id}
-                          title={promo.isActive ? "إيقاف العرض" : "تفعيل العرض"}
+                          title={
+                            promo.isActive
+                              ? (locale === "ar" ? "إيقاف العرض" : "Disable Promotion")
+                              : (locale === "ar" ? "تفعيل العرض" : "Enable Promotion")
+                          }
                         >
                           <ToggleRight className="h-4 w-4" />
                         </Button>
@@ -577,7 +751,7 @@ export default function DeliveryPromotionsTab() {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-destructive hover:text-destructive"
-                              title="حذف العرض"
+                              title={locale === "ar" ? "حذف العرض" : "Delete Promotion"}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -585,10 +759,15 @@ export default function DeliveryPromotionsTab() {
 
                           <DialogContent className="sm:max-w-sm">
                             <DialogHeader>
-                              <DialogTitle>حذف العرض</DialogTitle>
+                              <DialogTitle>
+                                {t("deletePromoTitle") ||
+                                  (locale === "ar" ? "حذف العرض" : "Delete Promotion")}
+                              </DialogTitle>
                               <DialogDescription>
-                                هل أنت متأكد من حذف العرض «{promo.name}»؟ لا
-                                يمكن التراجع عن هذا الإجراء.
+                                {t("deletePromoConfirm") ||
+                                  (locale === "ar"
+                                    ? `هل أنت متأكد من حذف العرض «${promo.name}»؟ لا يمكن التراجع عن هذا الإجراء.`
+                                    : `Are you sure you want to delete "${promo.name}"? This action cannot be undone.`)}
                               </DialogDescription>
                             </DialogHeader>
                             <DialogFooter className="gap-2">
@@ -597,7 +776,7 @@ export default function DeliveryPromotionsTab() {
                                 onClick={() => setDeleteDialogId(null)}
                                 disabled={deletingId === promo.id}
                               >
-                                إلغاء
+                                {t("Cancel") || (locale === "ar" ? "إلغاء" : "Cancel")}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -607,7 +786,7 @@ export default function DeliveryPromotionsTab() {
                                 {deletingId === promo.id && (
                                   <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
                                 )}
-                                حذف
+                                {t("Delete") || (locale === "ar" ? "حذف" : "Delete")}
                               </Button>
                             </DialogFooter>
                           </DialogContent>

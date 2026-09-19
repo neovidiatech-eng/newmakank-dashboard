@@ -94,10 +94,39 @@ export const SCOPE_BADGE_CLASS: Record<PromoScope, string> = {
   STORE_ZONE: "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200",
 };
 
-/** Human-readable Arabic scope labels. */
+/** Human-readable Arabic scope labels (backward-compat). */
 export const SCOPE_LABEL: Record<PromoScope, string> = {
   GLOBAL: "عام",
   STORE: "متجر",
   ZONE: "منطقة",
   STORE_ZONE: "متجر + منطقة",
 };
+
+/** Get localized scope label depending on language / t function */
+export function getScopeLabel(
+  scope: PromoScope,
+  locale?: string,
+  t?: (key: string) => string
+): string {
+  if (t) {
+    const map: Record<PromoScope, string> = {
+      GLOBAL: t("promoScopeGlobal"),
+      STORE: t("promoScopeStore"),
+      ZONE: t("promoScopeZone"),
+      STORE_ZONE: t("promoScopeStoreZone"),
+    };
+    if (map[scope] && map[scope] !== `promoScope${scope}`) return map[scope];
+  }
+
+  if (locale === "en") {
+    const enMap: Record<PromoScope, string> = {
+      GLOBAL: "Global",
+      STORE: "Store",
+      ZONE: "Zone",
+      STORE_ZONE: "Store + Zone",
+    };
+    return enMap[scope];
+  }
+
+  return SCOPE_LABEL[scope] || scope;
+}

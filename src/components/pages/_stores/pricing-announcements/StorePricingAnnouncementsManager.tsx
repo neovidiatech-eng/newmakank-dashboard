@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { fetchHelper } from "@/api/fetch";
 import SelectPaginated from "@/components/common/Inputs/select/SelectPaginatedInput";
@@ -466,7 +466,7 @@ export default function StorePricingAnnouncementsManager() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Ø£Ø³Ø¹Ø§Ø± Ø§Ù„Ù…Ù†Ø§Ø·Ù‚ Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ©
+              {t("baseZonePricesTab") || (locale === "ar" ? "أسعار المناطق الأساسية" : "Base Zone Prices")}
             </button>
             <button
               type="button"
@@ -477,14 +477,14 @@ export default function StorePricingAnnouncementsManager() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Ø§Ù„Ø¹Ø±ÙˆØ¶ ÙˆØ§Ù„Ø­Ù…Ù„Ø§Øª
+              {t("deliveryPromotionsTab") || (locale === "ar" ? "العروض والحملات" : "Promotions & Campaigns")}
             </button>
           </div>
 
-          {/* â”€â”€ Tab 2: Delivery Promotions â”€â”€ */}
+          {/* ── Tab 2: Delivery Promotions ── */}
           {activeTab === "promotions" && <DeliveryPromotionsTab />}
 
-          {/* â”€â”€ Tab 1: Zone Pricing (existing UI, unchanged) â”€â”€ */}
+          {/* ── Tab 1: Zone Pricing (existing UI, unchanged) ── */}
           {activeTab === "zone-pricing" && (
             <>
           {/* Announcement Card */}
@@ -497,11 +497,11 @@ export default function StorePricingAnnouncementsManager() {
                 </CardTitle>
                 {savedAnnouncement ? (
                   <Badge variant="default" className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
-                    {t("Active") || "Ù†Ø´Ø· Ø­Ø§Ù„ÙŠØ§Ù‹"}
+                    {t("Active") || (locale === "ar" ? "نشط حالياً" : "Active")}
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="text-xs text-muted-foreground">
-                    {t("None") || "Ù„Ø§ ÙŠÙˆØ¬Ø¯ ØªÙ†Ø¨ÙŠÙ‡"}
+                    {t("None") || (locale === "ar" ? "لا يوجد تنبيه" : "None")}
                   </Badge>
                 )}
               </div>
