@@ -33,6 +33,7 @@ import {
   AlertCircle,
   CheckCircle2,
   ExternalLink,
+  Gift,
   Layers,
   Loader2,
   MapPinned,
@@ -354,8 +355,40 @@ export default function StorePricingAnnouncementsManager() {
         </div>
       </div>
 
-      {/* Step 1: Store Selection Card */}
-      <Card className="border-primary/20 shadow-sm">
+      {/* Top-Level Navigation Tabs */}
+      <div className="flex gap-2 p-1.5 rounded-2xl bg-muted/60 border w-fit shadow-xs">
+        <button
+          type="button"
+          onClick={() => setActiveTab("zone-pricing")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+            activeTab === "zone-pricing"
+              ? "bg-background shadow-xs text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Layers className="h-4 w-4 text-primary" />
+          {t("baseZonePricesTab") || (locale === "ar" ? "أسعار المناطق الأساسية" : "Base Zone Prices")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("promotions")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+            activeTab === "promotions"
+              ? "bg-background shadow-xs text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Gift className="h-4 w-4 text-primary" />
+          {t("deliveryPromotionsTab") || (locale === "ar" ? "العروض والحملات" : "Promotions & Campaigns")}
+        </button>
+      </div>
+
+      {activeTab === "promotions" ? (
+        <DeliveryPromotionsTab />
+      ) : (
+        <>
+          {/* Step 1: Store Selection Card */}
+          <Card className="border-primary/20 shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <StoreIcon className="h-4 w-4 text-primary" />
@@ -454,39 +487,6 @@ export default function StorePricingAnnouncementsManager() {
       ) : (
         /* Main Store Controls Grid */
         <div className="space-y-6">
-
-          {/* â”€â”€ Tab Switcher â”€â”€ */}
-          <div className="flex gap-1 p-1 rounded-xl bg-muted/50 border w-fit">
-            <button
-              type="button"
-              onClick={() => setActiveTab("zone-pricing")}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "zone-pricing"
-                  ? "bg-background shadow text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t("baseZonePricesTab") || (locale === "ar" ? "أسعار المناطق الأساسية" : "Base Zone Prices")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("promotions")}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "promotions"
-                  ? "bg-background shadow text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t("deliveryPromotionsTab") || (locale === "ar" ? "العروض والحملات" : "Promotions & Campaigns")}
-            </button>
-          </div>
-
-          {/* ── Tab 2: Delivery Promotions ── */}
-          {activeTab === "promotions" && <DeliveryPromotionsTab />}
-
-          {/* ── Tab 1: Zone Pricing (existing UI, unchanged) ── */}
-          {activeTab === "zone-pricing" && (
-            <>
           {/* Announcement Card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-3">
@@ -938,9 +938,9 @@ export default function StorePricingAnnouncementsManager() {
               )}
             </CardContent>
           </Card>
-            </>
-          )}
         </div>
+      )}
+        </>
       )}
     </div>
   );
