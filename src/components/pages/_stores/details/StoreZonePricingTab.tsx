@@ -96,7 +96,7 @@ export function StoreZonePricingTab({ storeId }: { storeId: number }) {
 
   const handleSavePrices = async () => {
     const zonePrices = Object.entries(editedPrices)
-      .filter(([, val]) => val !== "" && !isNaN(Number(val)))
+      .filter(([, val]) => val.trim() !== "" && !isNaN(Number(val)))
       .map(([zoneId, price]) => ({
         zoneId: Number(zoneId),
         price: Number(price)
