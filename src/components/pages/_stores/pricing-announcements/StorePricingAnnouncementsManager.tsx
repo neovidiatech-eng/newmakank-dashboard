@@ -34,6 +34,7 @@ import {
   CheckCircle2,
   ExternalLink,
   Gift,
+  Globe,
   Layers,
   Loader2,
   MapPinned,
@@ -42,6 +43,7 @@ import {
   Save,
   Search,
   Store as StoreIcon,
+  Tag,
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -53,10 +55,11 @@ interface ZonePrice {
   name: { ar?: string; en?: string } | string;
   cityId?: number;
   price: number | null;
+  priceAfterDiscount?: number | null;
 }
 
 interface StoreZonePricesResponse {
-  storeId: number;
+  storeId: number | string;
   storeName?: { ar?: string; en?: string } | string;
   logo?: string | null;
   announcement?: string | null;
@@ -73,7 +76,17 @@ export default function StorePricingAnnouncementsManager() {
     ? Number(searchParams.get("storeId"))
     : null;
 
-  const [selectedStoreId, setSelectedStoreId] = useState<number | null>(initialStoreId);
+  // Scope: 'all' = All Stores (Global default), 'store' = Specific Store customization
+  const [pricingScope, setPricingScope] = useState<"all" | "store">(
+    initialStoreId ? "store" : "all"
+  );
+  const [selectedSpecificStoreId, setSelectedSpecificStoreId] = useState<number | null>(
+    initialStoreId
+  );
+
+  const selectedStoreId: string | number | null =
+    pricingScope === "all" ? "all" : selectedSpecificStoreId;
+
   const [storeInfo, setStoreInfo] = useState<{
     name?: string;
     logo?: string | null;
@@ -84,14 +97,23 @@ export default function StorePricingAnnouncementsManager() {
   const [isTogglingZonePricing, setIsTogglingZonePricing] = useState(false);
   const [isSavingZonePrices, setIsSavingZonePrices] = useState(false);
   const [editedPrices, setEditedPrices] = useState<Record<number, string>>({});
+  const [editedDiscountPrices, setEditedDiscountPrices] = useState<Record<number, string>>({});
   const [searchZoneQuery, setSearchZoneQuery] = useState("");
-  const [uniformPriceInput, setUniformPriceInput] = useState("");
+
+  // Bulk uniform pricing inputs
+  const [uniformPriceBeforeInput, setUniformPriceBeforeInput] = useState("");
+  const [uniformPriceAfterInput, setUniformPriceAfterInput] = useState("");
+
+  // Quick single zone setter
   const [quickSelectedZoneId, setQuickSelectedZoneId] = useState<string>("");
-  const [quickZonePrice, setQuickZonePrice] = useState("");
+  const [quickZoneBeforePrice, setQuickZoneBeforePrice] = useState("");
+  const [quickZoneAfterPrice, setQuickZoneAfterPrice] = useState("");
+
+  // Delete dialog
   const [deletingZoneId, setDeletingZoneId] = useState<number | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  // Store Announcement State
+  // Store Announcement State (only for specific store)
   const [announcementText, setAnnouncementText] = useState("");
   const [savedAnnouncement, setSavedAnnouncement] = useState("");
   const [isSavingAnnouncement, setIsSavingAnnouncement] = useState(false);
@@ -99,56 +121,75 @@ export default function StorePricingAnnouncementsManager() {
   const [clearAnnouncementDialogOpen, setClearAnnouncementDialogOpen] = useState(false);
 
   // Fetch Zone Pricing & Store Details
+  const isAllStores = pricingScope === "all";
+  const apiEndPoint = isAllStores
+    ? ["stores", "all", "zone-prices"]
+    : ["stores", selectedSpecificStoreId ?? 0, "storeZonePrices"];
+
   const {
     data: response,
     refetch,
     isLoading: isLoadingData,
   } = useApiQuery({
     queryKey: ["store-zone-prices-manager", selectedStoreId],
-    endPoint: ["stores", selectedStoreId ?? 0, "storeZonePrices"],
+    endPoint: apiEndPoint,
     staleTime: 0,
     enabled: !!selectedStoreId,
   });
 
   const zonePricingData = (response?.data as StoreZonePricesResponse) || undefined;
-  const isZonePricingEnabled = zonePricingData?.zonePricingEnabled ?? false;
+  const isZonePricingEnabled = zonePricingData?.zonePricingEnabled ?? true;
   const rawZones = zonePricingData?.zones ?? [];
 
-  // Update local states whenever store data is fetched
+  // Update local states whenever data is fetched
   useEffect(() => {
     if (!zonePricingData) return;
 
     // Prices mapping
     const pricesMap: Record<number, string> = {};
-    zonePricingData.zones.forEach((zone) => {
+    const discountsMap: Record<number, string> = {};
+
+    zonePricingData.zones?.forEach((zone) => {
       if (zone.price !== null && zone.price !== undefined) {
         pricesMap[zone.zoneId] = String(zone.price);
       }
+      if (zone.priceAfterDiscount !== null && zone.priceAfterDiscount !== undefined) {
+        discountsMap[zone.zoneId] = String(zone.priceAfterDiscount);
+      }
     });
-    setEditedPrices(pricesMap);
 
-    // Announcement
+    setEditedPrices(pricesMap);
+    setEditedDiscountPrices(discountsMap);
+
+    // Announcement (for store mode)
     const currentAnnouncement = zonePricingData.announcement ?? "";
     setAnnouncementText(currentAnnouncement);
     setSavedAnnouncement(currentAnnouncement);
 
     // Store details
-    let resolvedName = "";
-    if (typeof zonePricingData.storeName === "string") {
-      resolvedName = zonePricingData.storeName;
-    } else if (zonePricingData.storeName && typeof zonePricingData.storeName === "object") {
-      resolvedName =
-        (zonePricingData.storeName as any)[locale] ||
-        (zonePricingData.storeName as any).ar ||
-        (zonePricingData.storeName as any).en ||
-        "";
-    }
+    if (isAllStores) {
+      setStoreInfo({
+        name: locale === "ar" ? "جميع المتاجر (تطبيق عام)" : "All Stores (Global Application)",
+        logo: null,
+      });
+    } else {
+      let resolvedName = "";
+      if (typeof zonePricingData.storeName === "string") {
+        resolvedName = zonePricingData.storeName;
+      } else if (zonePricingData.storeName && typeof zonePricingData.storeName === "object") {
+        resolvedName =
+          (zonePricingData.storeName as any)[locale] ||
+          (zonePricingData.storeName as any).ar ||
+          (zonePricingData.storeName as any).en ||
+          "";
+      }
 
-    setStoreInfo({
-      name: resolvedName,
-      logo: zonePricingData.logo ?? null,
-    });
-  }, [zonePricingData, locale]);
+      setStoreInfo({
+        name: resolvedName,
+        logo: zonePricingData.logo ?? null,
+      });
+    }
+  }, [zonePricingData, locale, isAllStores]);
 
   // Format localized zone name helper
   const getZoneDisplayName = (zone: ZonePrice) => {
@@ -157,15 +198,15 @@ export default function StorePricingAnnouncementsManager() {
     return (zone.name as any)[locale] || (zone.name as any).ar || (zone.name as any).en || `Zone ${zone.zoneId}`;
   };
 
-  // Toggle Store Zone Pricing
+  // Toggle Store Zone Pricing (specific store only)
   const handleToggleZonePricing = async () => {
-    if (!selectedStoreId) return;
+    if (isAllStores || !selectedSpecificStoreId) return;
 
     setIsTogglingZonePricing(true);
     const newStatus = !isZonePricingEnabled;
 
     const res = await fetchHelper({
-      endPoint: ["stores", selectedStoreId, "storeZonePricingToggle"],
+      endPoint: ["stores", selectedSpecificStoreId, "storeZonePricingToggle"],
       method: "PATCH",
       body: { enabled: newStatus },
     });
@@ -183,12 +224,38 @@ export default function StorePricingAnnouncementsManager() {
   const handleSaveZonePrices = async () => {
     if (!selectedStoreId) return;
 
+    // Validate discount prices
+    for (const [zoneIdStr, beforeVal] of Object.entries(editedPrices)) {
+      const zoneId = Number(zoneIdStr);
+      const before = Number(beforeVal);
+      const afterVal = editedDiscountPrices[zoneId];
+      if (afterVal !== undefined && afterVal !== "" && !isNaN(Number(afterVal))) {
+        const after = Number(afterVal);
+        if (after >= before) {
+          const zone = rawZones.find((z) => z.zoneId === zoneId);
+          const zName = zone ? getZoneDisplayName(zone) : `#${zoneId}`;
+          toast.error(
+            `${t("invalidDiscountPrice") || "يجب أن يكون السعر بعد الخصم أقل من السعر قبل الخصم"} (${zName})`
+          );
+          return;
+        }
+      }
+    }
+
     const zonePrices = Object.entries(editedPrices)
       .filter(([, val]) => val !== "" && !isNaN(Number(val)))
-      .map(([zoneId, price]) => ({
-        zoneId: Number(zoneId),
-        price: Number(price),
-      }));
+      .map(([zoneIdStr, price]) => {
+        const zoneId = Number(zoneIdStr);
+        const afterVal = editedDiscountPrices[zoneId];
+        return {
+          zoneId,
+          price: Number(price),
+          priceAfterDiscount:
+            afterVal !== undefined && afterVal !== "" && !isNaN(Number(afterVal))
+              ? Number(afterVal)
+              : null,
+        };
+      });
 
     if (zonePrices.length === 0) {
       toast.error(t("noZonePricesToSave"));
@@ -196,14 +263,18 @@ export default function StorePricingAnnouncementsManager() {
     }
 
     setIsSavingZonePrices(true);
+    const saveEndPoint = isAllStores
+      ? ["stores", "all", "zone-prices"]
+      : ["stores", selectedSpecificStoreId, "storeZonePrices"];
+
     const res = await fetchHelper({
-      endPoint: ["stores", selectedStoreId, "storeZonePrices"],
+      endPoint: saveEndPoint,
       method: "PATCH",
       body: { zonePrices },
     });
 
     if (res?.success) {
-      toast.success(t("zonePricesSaved"));
+      toast.success(isAllStores ? (t("allStoresSavedSuccess") || "تم تعميم وحفظ أسعار المناطق على جميع المتاجر بنجاح") : t("zonePricesSaved"));
       refetch();
     } else {
       toast.error(res?.result?.message ?? res?.message ?? t("error"));
@@ -215,14 +286,37 @@ export default function StorePricingAnnouncementsManager() {
   const handleDeleteZonePrice = async (zoneId: number) => {
     if (!selectedStoreId) return;
 
+    if (isAllStores) {
+      // In all stores mode, delete clears local entries for that zone
+      setEditedPrices((prev) => {
+        const updated = { ...prev };
+        delete updated[zoneId];
+        return updated;
+      });
+      setEditedDiscountPrices((prev) => {
+        const updated = { ...prev };
+        delete updated[zoneId];
+        return updated;
+      });
+      setDeleteDialogOpen(false);
+      setDeletingZoneId(null);
+      toast.success(locale === "ar" ? "تم مسح سعر المنطقة — انقر حفظ لاعتماد التعديل" : "Cleared price for zone — click save to commit");
+      return;
+    }
+
     const res = await fetchHelper({
-      endPoint: ["stores", selectedStoreId, "storeZonePrices", zoneId],
+      endPoint: ["stores", selectedSpecificStoreId, "storeZonePrices", zoneId],
       method: "DELETE",
     });
 
     if (res?.success) {
       toast.success(t("zonePriceDeleted"));
       setEditedPrices((prev) => {
+        const updated = { ...prev };
+        delete updated[zoneId];
+        return updated;
+      });
+      setEditedDiscountPrices((prev) => {
         const updated = { ...prev };
         delete updated[zoneId];
         return updated;
@@ -237,53 +331,102 @@ export default function StorePricingAnnouncementsManager() {
 
   // Apply Uniform Bulk Price
   const handleApplyUniformPrice = () => {
-    const parsedPrice = parseFloat(uniformPriceInput);
-    if (isNaN(parsedPrice) || parsedPrice < 0) {
-      toast.error(t("Enter price"));
+    const parsedBefore = parseFloat(uniformPriceBeforeInput);
+    if (isNaN(parsedBefore) || parsedBefore < 0) {
+      toast.error(t("Enter price") || "يرجى إدخال السعر قبل الخصم");
       return;
     }
 
-    const updated: Record<number, string> = { ...editedPrices };
+    let parsedAfter: number | null = null;
+    if (uniformPriceAfterInput.trim() !== "") {
+      parsedAfter = parseFloat(uniformPriceAfterInput);
+      if (isNaN(parsedAfter) || parsedAfter < 0) {
+        toast.error(t("Enter price") || "يرجى إدخال سعر صحيح بعد الخصم");
+        return;
+      }
+      if (parsedAfter >= parsedBefore) {
+        toast.error(t("invalidDiscountPrice") || "يجب أن يكون السعر بعد الخصم أقل من السعر قبل الخصم");
+        return;
+      }
+    }
+
+    const updatedPrices: Record<number, string> = { ...editedPrices };
+    const updatedDiscounts: Record<number, string> = { ...editedDiscountPrices };
+
     rawZones.forEach((z) => {
-      updated[z.zoneId] = String(parsedPrice);
+      updatedPrices[z.zoneId] = String(parsedBefore);
+      if (parsedAfter !== null) {
+        updatedDiscounts[z.zoneId] = String(parsedAfter);
+      } else {
+        delete updatedDiscounts[z.zoneId];
+      }
     });
 
-    setEditedPrices(updated);
-    toast.success(t("bulkAppliedMessage"));
+    setEditedPrices(updatedPrices);
+    setEditedDiscountPrices(updatedDiscounts);
+    toast.success(
+      locale === "ar"
+        ? "تم تطبيق السعر الموحد على جميع المناطق — يمكنك الآن تعديل المناطق البعيدة ثم الحفظ"
+        : "Uniform price applied to all zones — you can now customize far zones and save"
+    );
   };
 
-  // Quick Add / Update single zone price from dropdown
+  // Quick Add / Update single zone price
   const handleQuickSetZonePrice = () => {
     if (!quickSelectedZoneId) {
-      toast.error(t("Select a Zone") || "Ø§Ø®ØªØ± Ù…Ù†Ø·Ù‚Ø©");
+      toast.error(t("Select a Zone") || "اختر منطقة");
       return;
     }
-    const parsedPrice = parseFloat(quickZonePrice);
-    if (isNaN(parsedPrice) || parsedPrice < 0) {
-      toast.error(t("Enter price"));
+    const parsedBefore = parseFloat(quickZoneBeforePrice);
+    if (isNaN(parsedBefore) || parsedBefore < 0) {
+      toast.error(t("Enter price") || "أدخل السعر قبل الخصم");
       return;
+    }
+
+    let parsedAfter: number | null = null;
+    if (quickZoneAfterPrice.trim() !== "") {
+      parsedAfter = parseFloat(quickZoneAfterPrice);
+      if (isNaN(parsedAfter) || parsedAfter < 0) {
+        toast.error(t("Enter price") || "أدخل سعر صالح بعد الخصم");
+        return;
+      }
+      if (parsedAfter >= parsedBefore) {
+        toast.error(t("invalidDiscountPrice") || "يجب أن يكون السعر بعد الخصم أقل من السعر قبل الخصم");
+        return;
+      }
     }
 
     const zoneId = Number(quickSelectedZoneId);
     setEditedPrices((prev) => ({
       ...prev,
-      [zoneId]: String(parsedPrice),
+      [zoneId]: String(parsedBefore),
     }));
 
-    toast.success(t("zonePricesSaved") || "ØªÙ… ØªØ¹ÙŠÙŠÙ† Ø³Ø¹Ø± Ø§Ù„Ù…Ù†Ø·Ù‚Ø© Ø¨Ø§Ù„Ø¬Ø¯ÙˆÙ„");
+    setEditedDiscountPrices((prev) => {
+      const updated = { ...prev };
+      if (parsedAfter !== null) {
+        updated[zoneId] = String(parsedAfter);
+      } else {
+        delete updated[zoneId];
+      }
+      return updated;
+    });
+
+    toast.success(locale === "ar" ? "تم تعيين سعر المنطقة بالجدول" : "Zone price updated in table");
     setQuickSelectedZoneId("");
-    setQuickZonePrice("");
+    setQuickZoneBeforePrice("");
+    setQuickZoneAfterPrice("");
   };
 
-  // Save Announcement
+  // Save Announcement (specific store only)
   const handleSaveAnnouncement = async () => {
-    if (!selectedStoreId) return;
+    if (isAllStores || !selectedSpecificStoreId) return;
 
     const trimmed = announcementText.trim();
     setIsSavingAnnouncement(true);
 
     const res = await fetchHelper({
-      endPoint: ["stores", selectedStoreId],
+      endPoint: ["stores", selectedSpecificStoreId],
       method: "PATCH",
       body: { announcement: trimmed || null },
     });
@@ -298,13 +441,13 @@ export default function StorePricingAnnouncementsManager() {
     setIsSavingAnnouncement(false);
   };
 
-  // Clear Announcement
+  // Clear Announcement (specific store only)
   const handleClearAnnouncement = async () => {
-    if (!selectedStoreId) return;
+    if (isAllStores || !selectedSpecificStoreId) return;
 
     setIsClearingAnnouncement(true);
     const res = await fetchHelper({
-      endPoint: ["stores", selectedStoreId],
+      endPoint: ["stores", selectedSpecificStoreId],
       method: "PATCH",
       body: { announcement: null },
     });
@@ -335,6 +478,14 @@ export default function StorePricingAnnouncementsManager() {
   const customPricedCount = useMemo(() => {
     return Object.values(editedPrices).filter((v) => v !== "" && !isNaN(Number(v))).length;
   }, [editedPrices]);
+
+  const promoPricedCount = useMemo(() => {
+    return Object.entries(editedDiscountPrices).filter(([zoneIdStr, afterStr]) => {
+      if (!afterStr || isNaN(Number(afterStr))) return false;
+      const beforeStr = editedPrices[Number(zoneIdStr)];
+      return beforeStr && !isNaN(Number(beforeStr)) && Number(afterStr) < Number(beforeStr);
+    }).length;
+  }, [editedPrices, editedDiscountPrices]);
 
   const defaultPricedCount = Math.max(0, rawZones.length - customPricedCount);
 
@@ -387,562 +538,768 @@ export default function StorePricingAnnouncementsManager() {
         <DeliveryPromotionsTab />
       ) : (
         <>
-          {/* Step 1: Store Selection Card */}
+          {/* Step 1: Pricing Scope Selector (All Stores vs Specific Store) */}
           <Card className="border-primary/20 shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <StoreIcon className="h-4 w-4 text-primary" />
-            {t("selectStoreToManage")}
-          </CardTitle>
-          <CardDescription>
-            {t("selectStorePrompt")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 items-center">
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">
-                {t("Stores")}
-              </Label>
-              <SelectPaginated
-                name="storeId"
-                apiUrl={["stores"]}
-                idKey="id"
-                labelKey="name"
-                value={selectedStoreId ? String(selectedStoreId) : ""}
-                onChange={(val) => {
-                  const id = val ? Number(val) : null;
-                  setSelectedStoreId(id);
-                  setUniformPriceInput("");
-                  setQuickSelectedZoneId("");
-                  setQuickZonePrice("");
-                  setSearchZoneQuery("");
-                }}
-                placeholder={t("selectStorePrompt")}
-              />
-            </div>
-
-            {selectedStoreId && (
-              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50 border">
-                <div className="flex items-center gap-3">
-                  {storeInfo?.logo ? (
-                    <img
-                      src={storeInfo.logo}
-                      alt={storeInfo.name || "Store"}
-                      className="h-12 w-12 rounded-lg object-cover border bg-background"
-                    />
-                  ) : (
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">
-                      <StoreIcon className="h-6 w-6" />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-semibold text-sm">
-                      {storeInfo?.name || `Store #${selectedStoreId}`}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant={isZonePricingEnabled ? "default" : "outline"} className="text-xs">
-                        {isZonePricingEnabled ? t("zonePricingEnabled") : t("zonePricingDisabled")}
-                      </Badge>
-                      {savedAnnouncement && (
-                        <Badge variant="secondary" className="text-xs gap-1">
-                          <Megaphone className="h-3 w-3" />
-                          {t("Active") || "ØªÙ†Ø¨ÙŠÙ‡ Ù†Ø´Ø·"}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <Link href={`/stores/${selectedStoreId}`} target="_blank">
-                  <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    {t("storeDetailsLink")}
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {!selectedStoreId ? (
-        /* Empty State Prompt */
-        <Card className="border-dashed py-12 text-center">
-          <CardContent className="space-y-3">
-            <div className="inline-flex p-4 rounded-full bg-primary/10 text-primary mb-2">
-              <StoreIcon className="h-8 w-8" />
-            </div>
-            <h3 className="text-lg font-medium">{t("noStoreSelected")}</h3>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              {t("selectStorePrompt")}
-            </p>
-          </CardContent>
-        </Card>
-      ) : isLoadingData ? (
-        /* Loading Skeleton */
-        <div className="flex min-h-[300px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : (
-        /* Main Store Controls Grid */
-        <div className="space-y-6">
-          {/* Announcement Card */}
-          <Card className="shadow-sm">
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <Megaphone className="h-4 w-4 text-amber-500" />
-                  {t("storeAnnouncementTitle")}
-                </CardTitle>
-                {savedAnnouncement ? (
-                  <Badge variant="default" className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
-                    {t("Active") || (locale === "ar" ? "نشط حالياً" : "Active")}
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="text-xs text-muted-foreground">
-                    {t("None") || (locale === "ar" ? "لا يوجد تنبيه" : "None")}
-                  </Badge>
-                )}
-              </div>
-              <CardDescription>
-                {t("storeAnnouncementDesc")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Textarea
-                rows={3}
-                value={announcementText}
-                onChange={(e) => setAnnouncementText(e.target.value)}
-                placeholder={t("announcementPlaceholder")}
-                className="resize-y"
-              />
-
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                <span className="text-xs text-muted-foreground">
-                  {announcementText.length} {t("characters") || "Ø­Ø±Ù"}
-                </span>
-
-                <div className="flex items-center gap-2">
-                  {savedAnnouncement && (
-                    <Dialog
-                      open={clearAnnouncementDialogOpen}
-                      onOpenChange={setClearAnnouncementDialogOpen}
-                    >
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive gap-1.5"
-                          disabled={isClearingAnnouncement}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          {t("clearAnnouncement")}
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>{t("clearAnnouncement")}</DialogTitle>
-                          <DialogDescription>
-                            {t("clearAnnouncementConfirm")}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter className="gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => setClearAnnouncementDialogOpen(false)}
-                          >
-                            {t("Cancel")}
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={handleClearAnnouncement}
-                            disabled={isClearingAnnouncement}
-                          >
-                            {isClearingAnnouncement ? (
-                              <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
-                            ) : null}
-                            {t("Delete")}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-
-                  <Button
-                    size="sm"
-                    onClick={handleSaveAnnouncement}
-                    disabled={isSavingAnnouncement || announcementText === savedAnnouncement}
-                    className="gap-1.5"
-                  >
-                    {isSavingAnnouncement ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )}
-                    {t("saveAnnouncement")}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Zone Pricing Configuration Card */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-4 border-b">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <CardTitle className="text-base font-semibold flex items-center gap-2">
-                    <MapPinned className="h-4 w-4 text-primary" />
-                    {t("Zone Pricing")}
+                    <Layers className="h-4 w-4 text-primary" />
+                    {t("pricingScope") || (locale === "ar" ? "نطاق إدارة الأسعار" : "Pricing Scope")}
                   </CardTitle>
-                  <CardDescription className="mt-1">
-                    {t("zonePricingDescription")}
+                  <CardDescription className="mt-0.5">
+                    {pricingScope === "all"
+                      ? (t("allStoresDescription") || (locale === "ar" ? "تسعير موحد لجميع المتاجر، مع إمكانية تعديل المناطق البعيدة بالأسفل." : "Unified pricing for all stores, with ability to customize far zones below."))
+                      : (locale === "ar" ? "تخصيص أسعار مناطق خاصة لمتجر أو مطعم محدد." : "Customize zone prices for a specific store.")}
                   </CardDescription>
                 </div>
 
-                {/* Status Toggle Switch */}
-                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/60 border">
-                  <Switch
-                    checked={isZonePricingEnabled}
-                    onCheckedChange={handleToggleZonePricing}
-                    disabled={isTogglingZonePricing}
-                    id="zone-pricing-toggle"
-                  />
-                  <Label
-                    htmlFor="zone-pricing-toggle"
-                    className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
+                {/* Scope Toggle Buttons */}
+                <div className="flex items-center p-1 rounded-xl bg-muted/80 border gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPricingScope("all");
+                      setSearchZoneQuery("");
+                      setUniformPriceBeforeInput("");
+                      setUniformPriceAfterInput("");
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      pricingScope === "all"
+                        ? "bg-background text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
-                    {isTogglingZonePricing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    {isZonePricingEnabled ? (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        {t("zonePricingEnabled")}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        {t("zonePricingDisabled")}
-                      </span>
-                    )}
-                  </Label>
+                    <Globe className="h-3.5 w-3.5 text-primary" />
+                    {t("allStoresOption") || (locale === "ar" ? "جميع المتاجر (تطبيق عام)" : "All Stores (Global)")}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPricingScope("store");
+                      setSearchZoneQuery("");
+                      setUniformPriceBeforeInput("");
+                      setUniformPriceAfterInput("");
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      pricingScope === "store"
+                        ? "bg-background text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <StoreIcon className="h-3.5 w-3.5 text-primary" />
+                    {t("specificStoreOption") || (locale === "ar" ? "متجر محدد (تخصيص)" : "Specific Store")}
+                  </button>
                 </div>
               </div>
             </CardHeader>
 
-            <CardContent className="pt-6 space-y-6">
-              {!isZonePricingEnabled ? (
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200">
-                  <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-                  <div className="text-sm space-y-1">
-                    <p className="font-semibold">{t("zonePricingDisabled")}</p>
-                    <p className="text-muted-foreground dark:text-amber-300/80">
-                      {t("zonePricingDisabledMessage")}
-                    </p>
+            <CardContent>
+              {pricingScope === "all" ? (
+                /* All Stores Banner */
+                <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 border border-primary/20">
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                      <Globe className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm flex items-center gap-2">
+                        {locale === "ar" ? "جميع المتاجر والمطاعم" : "All Stores & Restaurants"}
+                        <Badge variant="default" className="text-xs bg-primary text-primary-foreground">
+                          {locale === "ar" ? "تطبيق عام" : "Global"}
+                        </Badge>
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {locale === "ar"
+                          ? "الأسعار المدخلة أدناه (قبل وبعد الخصم) يتم حفظها وتعميمها على كل المتاجر بنقرة واحدة."
+                          : "Prices below (before & after discount) are saved and applied to all stores in one click."}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <>
-                  {/* Summary Stats Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="p-3.5 rounded-xl bg-muted/40 border text-center">
-                      <span className="text-xs text-muted-foreground block">{t("allZonesCount")}</span>
-                      <span className="text-lg font-bold">{rawZones.length}</span>
-                    </div>
-                    <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
-                      <span className="text-xs text-emerald-700 dark:text-emerald-300 block">
-                        {t("customPricedCount")}
-                      </span>
-                      <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                        {customPricedCount}
-                      </span>
-                    </div>
-                    <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center">
-                      <span className="text-xs text-blue-700 dark:text-blue-300 block">
-                        {t("defaultPricedCount")}
-                      </span>
-                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                        {defaultPricedCount}
-                      </span>
-                    </div>
+                /* Specific Store Picker */
+                <div className="grid gap-4 md:grid-cols-2 items-center">
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">
+                      {t("Stores")}
+                    </Label>
+                    <SelectPaginated
+                      name="storeId"
+                      apiUrl={["stores"]}
+                      idKey="id"
+                      labelKey="name"
+                      value={selectedSpecificStoreId ? String(selectedSpecificStoreId) : ""}
+                      onChange={(val) => {
+                        const id = val ? Number(val) : null;
+                        setSelectedSpecificStoreId(id);
+                        setUniformPriceBeforeInput("");
+                        setUniformPriceAfterInput("");
+                        setQuickSelectedZoneId("");
+                        setQuickZoneBeforePrice("");
+                        setQuickZoneAfterPrice("");
+                        setSearchZoneQuery("");
+                      }}
+                      placeholder={t("selectStorePrompt")}
+                    />
                   </div>
 
-                  {/* Option 1: Uniform Bulk Pricing Bar */}
-                  <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Layers className="h-4 w-4 text-primary" />
-                      <h4 className="text-sm font-semibold">{t("bulkPricingTitle")}</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {t("bulkPricingDesc")}
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="relative w-full max-w-[200px]">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.5"
-                          placeholder={t("uniformPrice")}
-                          value={uniformPriceInput}
-                          onChange={(e) => setUniformPriceInput(e.target.value)}
-                          className="text-center font-medium pr-10"
-                        />
-                        <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">
-                          {t("EGP") || "Ø¬.Ù…"}
-                        </span>
-                      </div>
-
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleApplyUniformPrice}
-                        disabled={!uniformPriceInput}
-                        className="gap-1.5"
-                      >
-                        <Layers className="h-4 w-4" />
-                        {t("applyToAllZones")}
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Option 2: Quick Zone Picker Dropdown */}
-                  <div className="p-4 rounded-xl bg-muted/40 border space-y-3">
-                    <div className="flex items-center gap-2">
-                      <MapPinned className="h-4 w-4 text-primary" />
-                      <h4 className="text-sm font-semibold">{t("quickZoneSelect")}</h4>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
-                      <div className="sm:col-span-1">
-                        <Label className="text-xs text-muted-foreground mb-1 block">
-                          {t("Zone") || "Ø§Ù„Ù…Ù†Ø·Ù‚Ø©"}
-                        </Label>
-                        <select
-                          className="flex h-9 w-full rounded-xl border border-input/70 bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring/40"
-                          value={quickSelectedZoneId}
-                          onChange={(e) => setQuickSelectedZoneId(e.target.value)}
-                        >
-                          <option value="">{t("Select a Zone") || "-- Ø§Ø®ØªØ± Ù…Ù†Ø·Ù‚Ø© --"}</option>
-                          {rawZones.map((z) => (
-                            <option key={z.zoneId} value={z.zoneId}>
-                              {getZoneDisplayName(z)} ({editedPrices[z.zoneId] ? `${editedPrices[z.zoneId]} Ø¬.Ù…` : t("App Default")})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="sm:col-span-1">
-                        <Label className="text-xs text-muted-foreground mb-1 block">
-                          {t("Custom Price") || "Ø§Ù„Ø³Ø¹Ø± Ø§Ù„Ù…Ø®ØµØµ"}
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.5"
-                            placeholder={t("Enter price")}
-                            value={quickZonePrice}
-                            onChange={(e) => setQuickZonePrice(e.target.value)}
-                            className="pr-10"
+                  {selectedSpecificStoreId && (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50 border">
+                      <div className="flex items-center gap-3">
+                        {storeInfo?.logo ? (
+                          <img
+                            src={storeInfo.logo}
+                            alt={storeInfo.name || "Store"}
+                            className="h-12 w-12 rounded-lg object-cover border bg-background"
                           />
-                          <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">
-                            {t("EGP") || "Ø¬.Ù…"}
+                        ) : (
+                          <div className="h-12 w-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">
+                            <StoreIcon className="h-6 w-6" />
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-semibold text-sm">
+                            {storeInfo?.name || `Store #${selectedSpecificStoreId}`}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant={isZonePricingEnabled ? "default" : "outline"} className="text-xs">
+                              {isZonePricingEnabled ? t("zonePricingEnabled") : t("zonePricingDisabled")}
+                            </Badge>
+                            {savedAnnouncement && (
+                              <Badge variant="secondary" className="text-xs gap-1">
+                                <Megaphone className="h-3 w-3" />
+                                {t("Active") || "نشط"}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <Link href={`/stores/${selectedSpecificStoreId}`} target="_blank">
+                        <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          {t("storeDetailsLink")}
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Prompt when in specific store mode and no store selected yet */}
+          {pricingScope === "store" && !selectedSpecificStoreId ? (
+            <Card className="border-dashed py-12 text-center">
+              <CardContent className="space-y-3">
+                <div className="inline-flex p-4 rounded-full bg-primary/10 text-primary mb-2">
+                  <StoreIcon className="h-8 w-8" />
+                </div>
+                <h3 className="text-lg font-medium">{t("noStoreSelected")}</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  {t("selectStorePrompt")}
+                </p>
+              </CardContent>
+            </Card>
+          ) : isLoadingData ? (
+            /* Loading Spinner */
+            <div className="flex min-h-[300px] items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            /* Main Pricing & Configuration Section */
+            <div className="space-y-6">
+              {/* Specific Store Announcement Card (only shown when a specific store is selected) */}
+              {!isAllStores && selectedSpecificStoreId && (
+                <Card className="shadow-sm">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base font-semibold flex items-center gap-2">
+                        <Megaphone className="h-4 w-4 text-amber-500" />
+                        {t("storeAnnouncementTitle")}
+                      </CardTitle>
+                      {savedAnnouncement ? (
+                        <Badge variant="default" className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
+                          {t("Active") || (locale === "ar" ? "نشط حالياً" : "Active")}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs text-muted-foreground">
+                          {t("None") || (locale === "ar" ? "لا يوجد تنبيه" : "None")}
+                        </Badge>
+                      )}
+                    </div>
+                    <CardDescription>{t("storeAnnouncementDesc")}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Textarea
+                      rows={3}
+                      value={announcementText}
+                      onChange={(e) => setAnnouncementText(e.target.value)}
+                      placeholder={t("announcementPlaceholder")}
+                      className="resize-y"
+                    />
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                      <span className="text-xs text-muted-foreground">
+                        {announcementText.length} {t("characters") || "حرف"}
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        {savedAnnouncement && (
+                          <Dialog
+                            open={clearAnnouncementDialogOpen}
+                            onOpenChange={setClearAnnouncementDialogOpen}
+                          >
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive gap-1.5"
+                                disabled={isClearingAnnouncement}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                {t("clearAnnouncement")}
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>{t("clearAnnouncement")}</DialogTitle>
+                                <DialogDescription>
+                                  {t("clearAnnouncementConfirm")}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter className="gap-2">
+                                <Button
+                                  variant="outline"
+                                  onClick={() => setClearAnnouncementDialogOpen(false)}
+                                >
+                                  {t("Cancel")}
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  onClick={handleClearAnnouncement}
+                                  disabled={isClearingAnnouncement}
+                                >
+                                  {isClearingAnnouncement ? (
+                                    <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                                  ) : null}
+                                  {t("Delete")}
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        )}
+
+                        <Button
+                          size="sm"
+                          onClick={handleSaveAnnouncement}
+                          disabled={isSavingAnnouncement || announcementText === savedAnnouncement}
+                          className="gap-1.5"
+                        >
+                          {isSavingAnnouncement ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="h-4 w-4" />
+                          )}
+                          {t("saveAnnouncement")}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Zone Pricing Card */}
+              <Card className="shadow-sm">
+                <CardHeader className="pb-4 border-b">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <CardTitle className="text-base font-semibold flex items-center gap-2">
+                        <MapPinned className="h-4 w-4 text-primary" />
+                        {t("Zone Pricing")}
+                      </CardTitle>
+                      <CardDescription className="mt-1">
+                        {isAllStores
+                          ? (locale === "ar"
+                              ? "حدد السعر قبل الخصم (الرسمي) والسعر بعد الخصم (المخفض) للمناطق. سيتم تطبيقه على كل المتاجر."
+                              : "Set base and promo prices per zone. These will apply across all stores.")
+                          : t("zonePricingDescription")}
+                      </CardDescription>
+                    </div>
+
+                    {/* Status Toggle Switch (only shown for specific store) */}
+                    {!isAllStores && (
+                      <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/60 border">
+                        <Switch
+                          checked={isZonePricingEnabled}
+                          onCheckedChange={handleToggleZonePricing}
+                          disabled={isTogglingZonePricing}
+                          id="zone-pricing-toggle"
+                        />
+                        <Label
+                          htmlFor="zone-pricing-toggle"
+                          className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
+                        >
+                          {isTogglingZonePricing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                          {isZonePricingEnabled ? (
+                            <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              {t("zonePricingEnabled")}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">
+                              {t("zonePricingDisabled")}
+                            </span>
+                          )}
+                        </Label>
+                      </div>
+                    )}
+                  </div>
+                </CardHeader>
+
+                <CardContent className="pt-6 space-y-6">
+                  {!isZonePricingEnabled && !isAllStores ? (
+                    <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200">
+                      <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                      <div className="text-sm space-y-1">
+                        <p className="font-semibold">{t("zonePricingDisabled")}</p>
+                        <p className="text-muted-foreground dark:text-amber-300/80">
+                          {t("zonePricingDisabledMessage")}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Summary Statistics Row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="p-3.5 rounded-xl bg-muted/40 border text-center">
+                          <span className="text-xs text-muted-foreground block">{t("allZonesCount")}</span>
+                          <span className="text-lg font-bold">{rawZones.length}</span>
+                        </div>
+                        <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+                          <span className="text-xs text-emerald-700 dark:text-emerald-300 block">
+                            {locale === "ar" ? "مناطق مسعرة (أساسي)" : "Priced Zones"}
+                          </span>
+                          <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                            {customPricedCount}
+                          </span>
+                        </div>
+                        <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center">
+                          <span className="text-xs text-blue-700 dark:text-blue-300 block">
+                            {locale === "ar" ? "مناطق عليها خصم/عرض" : "Promo Zones"}
+                          </span>
+                          <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                            {promoPricedCount}
                           </span>
                         </div>
                       </div>
 
-                      <div className="sm:col-span-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleQuickSetZonePrice}
-                          disabled={!quickSelectedZoneId || !quickZonePrice}
-                          className="w-full h-9"
-                        >
-                          {t("Apply") || "ØªØ­Ø¯ÙŠØ¯ Ø§Ù„Ø³Ø¹Ø±"}
-                        </Button>
+                      {/* Option 1: Uniform Bulk Pricing Bar (Before & After Discount) */}
+                      <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Layers className="h-4 w-4 text-primary" />
+                          <h4 className="text-sm font-semibold">
+                            {t("bulkPricingTitle") || (locale === "ar" ? "التسعير الموحد لجميع المناطق" : "Bulk Uniform Pricing")}
+                          </h4>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {locale === "ar"
+                            ? "أدخل السعر الموحد قبل وبعد الخصم لتطبيقه على كل المناطق دفعة واحدة، ثم يمكنك تعديل المناطق البعيدة بشكل منفصل بالجدول قبل الحفظ."
+                            : "Enter uniform price before and after discount to fill all zones at once, then adjust far zones individually before saving."}
+                        </p>
+
+                        <div className="flex flex-wrap items-end gap-3 pt-1">
+                          {/* Price Before Discount */}
+                          <div className="w-full sm:w-48">
+                            <Label className="text-xs font-medium text-foreground mb-1 block">
+                              {t("uniformPriceBeforeDiscount") || (locale === "ar" ? "السعر قبل الخصم (الرسمي)" : "Price Before Discount")}
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                placeholder="35"
+                                value={uniformPriceBeforeInput}
+                                onChange={(e) => setUniformPriceBeforeInput(e.target.value)}
+                                className="text-center font-medium pr-10"
+                              />
+                              <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">
+                                {t("EGP") || "ج.م"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Price After Discount (Optional) */}
+                          <div className="w-full sm:w-48">
+                            <Label className="text-xs font-medium text-foreground mb-1 block">
+                              {t("uniformPriceAfterDiscount") || (locale === "ar" ? "السعر بعد الخصم (اختياري)" : "Price After Discount (Opt)")}
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                placeholder="20"
+                                value={uniformPriceAfterInput}
+                                onChange={(e) => setUniformPriceAfterInput(e.target.value)}
+                                className="text-center font-medium pr-10"
+                              />
+                              <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">
+                                {t("EGP") || "ج.م"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <Button
+                            variant="secondary"
+                            size="default"
+                            onClick={handleApplyUniformPrice}
+                            disabled={!uniformPriceBeforeInput}
+                            className="gap-1.5 h-10 px-4"
+                          >
+                            <Layers className="h-4 w-4 text-primary" />
+                            {t("applyToAllZones") || (locale === "ar" ? "تطبيق على جميع المناطق" : "Apply to All Zones")}
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Zones Table with Filter */}
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      <div className="relative w-full sm:max-w-xs">
-                        <Search className="h-4 w-4 absolute left-3 top-2.5 text-muted-foreground" />
-                        <Input
-                          type="text"
-                          placeholder={t("searchZones")}
-                          value={searchZoneQuery}
-                          onChange={(e) => setSearchZoneQuery(e.target.value)}
-                          className="pl-9"
-                        />
+                      {/* Option 2: Quick Zone Picker Dropdown */}
+                      <div className="p-4 rounded-xl bg-muted/40 border space-y-3">
+                        <div className="flex items-center gap-2">
+                          <MapPinned className="h-4 w-4 text-primary" />
+                          <h4 className="text-sm font-semibold">
+                            {t("quickZoneSelect") || (locale === "ar" ? "تعديل سريع لمنطقة معينة (مثل المناطق البعيدة)" : "Quick Zone Adjust")}
+                          </h4>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                          <div className="sm:col-span-1">
+                            <Label className="text-xs text-muted-foreground mb-1 block">
+                              {t("Zone") || "المنطقة"}
+                            </Label>
+                            <select
+                              className="flex h-9 w-full rounded-xl border border-input/70 bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring/40"
+                              value={quickSelectedZoneId}
+                              onChange={(e) => {
+                                const zid = e.target.value;
+                                setQuickSelectedZoneId(zid);
+                                if (zid) {
+                                  const numId = Number(zid);
+                                  setQuickZoneBeforePrice(editedPrices[numId] ?? "");
+                                  setQuickZoneAfterPrice(editedDiscountPrices[numId] ?? "");
+                                } else {
+                                  setQuickZoneBeforePrice("");
+                                  setQuickZoneAfterPrice("");
+                                }
+                              }}
+                            >
+                              <option value="">{t("Select a Zone") || "-- اختر منطقة --"}</option>
+                              {rawZones.map((z) => (
+                                <option key={z.zoneId} value={z.zoneId}>
+                                  {getZoneDisplayName(z)} ({editedPrices[z.zoneId] ? `${editedPrices[z.zoneId]} ج.م` : t("App Default")})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="sm:col-span-1">
+                            <Label className="text-xs text-muted-foreground mb-1 block">
+                              {t("priceBeforeDiscount") || "قبل الخصم"}
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                placeholder="35"
+                                value={quickZoneBeforePrice}
+                                onChange={(e) => setQuickZoneBeforePrice(e.target.value)}
+                                className="pr-10 h-9"
+                              />
+                              <span className="absolute right-3 top-2 text-xs text-muted-foreground pointer-events-none">
+                                {t("EGP") || "ج.م"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="sm:col-span-1">
+                            <Label className="text-xs text-muted-foreground mb-1 block">
+                              {t("priceAfterDiscount") || "بعد الخصم (اختياري)"}
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                placeholder="20"
+                                value={quickZoneAfterPrice}
+                                onChange={(e) => setQuickZoneAfterPrice(e.target.value)}
+                                className="pr-10 h-9"
+                              />
+                              <span className="absolute right-3 top-2 text-xs text-muted-foreground pointer-events-none">
+                                {t("EGP") || "ج.م"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="sm:col-span-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleQuickSetZonePrice}
+                              disabled={!quickSelectedZoneId || !quickZoneBeforePrice}
+                              className="w-full h-9"
+                            >
+                              {t("Apply") || "تحديث بالجدول"}
+                            </Button>
+                          </div>
+                        </div>
                       </div>
 
-                      <Button
-                        onClick={handleSaveZonePrices}
-                        disabled={isSavingZonePrices}
-                        className="gap-2"
-                      >
-                        {isSavingZonePrices ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Save className="h-4 w-4" />
-                        )}
-                        {t("Save Prices")}
-                      </Button>
-                    </div>
+                      {/* Zones Table with Filter & Dual Pricing Columns */}
+                      <div className="space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <div className="relative w-full sm:max-w-xs">
+                            <Search className="h-4 w-4 absolute left-3 top-2.5 text-muted-foreground" />
+                            <Input
+                              type="text"
+                              placeholder={t("searchZones")}
+                              value={searchZoneQuery}
+                              onChange={(e) => setSearchZoneQuery(e.target.value)}
+                              className="pl-9"
+                            />
+                          </div>
 
-                    <div className="rounded-xl border overflow-hidden">
-                      <Table>
-                        <TableHeader className="bg-muted/50">
-                          <TableRow>
-                            <TableHead>{t("Zone")}</TableHead>
-                            <TableHead className="text-center w-[200px]">
-                              {t("Custom Price")}
-                            </TableHead>
-                            <TableHead className="text-center w-[130px]">
-                              {t("Status")}
-                            </TableHead>
-                            <TableHead className="text-center w-[80px]">
-                              {t("Actions")}
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredZones.length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                                {t("No data found") || "Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ù†Ø§Ø·Ù‚ Ù…Ø·Ø§Ø¨Ù‚Ø© Ù„Ù„Ø¨Ø­Ø«"}
-                              </TableCell>
-                            </TableRow>
-                          ) : (
-                            filteredZones.map((zone) => {
-                              const zoneName = getZoneDisplayName(zone);
-                              const hasPrice =
-                                editedPrices[zone.zoneId] !== undefined &&
-                                editedPrices[zone.zoneId] !== "" &&
-                                !isNaN(Number(editedPrices[zone.zoneId]));
+                          <Button
+                            onClick={handleSaveZonePrices}
+                            disabled={isSavingZonePrices}
+                            className="gap-2"
+                          >
+                            {isSavingZonePrices ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Save className="h-4 w-4" />
+                            )}
+                            {isAllStores
+                              ? (t("saveAllStoresPrices") || "حفظ وتعميم الأسعار لجميع المتاجر")
+                              : (t("saveStorePrices") || "حفظ أسعار المتجر")}
+                          </Button>
+                        </div>
 
-                              return (
-                                <TableRow key={zone.zoneId}>
-                                  <TableCell>
-                                    <div className="font-medium text-sm">{zoneName}</div>
-                                    <span className="text-xs text-muted-foreground">ID: #{zone.zoneId}</span>
-                                  </TableCell>
-
-                                  <TableCell className="text-center">
-                                    <div className="relative w-full max-w-[150px] mx-auto">
-                                      <Input
-                                        type="number"
-                                        min="0"
-                                        step="0.5"
-                                        placeholder={t("Enter price")}
-                                        value={editedPrices[zone.zoneId] ?? ""}
-                                        onChange={(e) =>
-                                          setEditedPrices((prev) => ({
-                                            ...prev,
-                                            [zone.zoneId]: e.target.value,
-                                          }))
-                                        }
-                                        className="text-center pr-8"
-                                      />
-                                      <span className="absolute right-2.5 top-2.5 text-xs text-muted-foreground pointer-events-none">
-                                        {t("EGP") || "Ø¬.Ù…"}
-                                      </span>
-                                    </div>
-                                  </TableCell>
-
-                                  <TableCell className="text-center">
-                                    {hasPrice ? (
-                                      <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                                        {t("Custom")}
-                                      </Badge>
-                                    ) : (
-                                      <Badge variant="outline" className="text-muted-foreground">
-                                        {t("App Default")}
-                                      </Badge>
-                                    )}
-                                  </TableCell>
-
-                                  <TableCell className="text-center">
-                                    {hasPrice && (
-                                      <Dialog
-                                        open={deleteDialogOpen && deletingZoneId === zone.zoneId}
-                                        onOpenChange={(open) => {
-                                          setDeleteDialogOpen(open);
-                                          if (!open) setDeletingZoneId(null);
-                                        }}
-                                      >
-                                        <DialogTrigger asChild>
-                                          <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-destructive hover:text-destructive h-8 w-8"
-                                            onClick={() => setDeletingZoneId(zone.zoneId)}
-                                          >
-                                            <Trash2 className="h-4 w-4" />
-                                          </Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="sm:max-w-sm">
-                                          <DialogHeader>
-                                            <DialogTitle>{t("Delete Zone Price")}</DialogTitle>
-                                            <DialogDescription>
-                                              {t("deleteZonePriceConfirm")}
-                                            </DialogDescription>
-                                          </DialogHeader>
-                                          <DialogFooter className="gap-2">
-                                            <Button
-                                              variant="outline"
-                                              onClick={() => setDeleteDialogOpen(false)}
-                                            >
-                                              {t("Cancel")}
-                                            </Button>
-                                            <Button
-                                              variant="destructive"
-                                              onClick={() => handleDeleteZonePrice(zone.zoneId)}
-                                            >
-                                              {t("Delete")}
-                                            </Button>
-                                          </DialogFooter>
-                                        </DialogContent>
-                                      </Dialog>
-                                    )}
+                        <div className="rounded-xl border overflow-hidden">
+                          <Table>
+                            <TableHeader className="bg-muted/50">
+                              <TableRow>
+                                <TableHead>{t("Zone")}</TableHead>
+                                <TableHead className="text-center w-[160px]">
+                                  {t("priceBeforeDiscount") || (locale === "ar" ? "السعر قبل الخصم" : "Price Before Discount")}
+                                </TableHead>
+                                <TableHead className="text-center w-[160px]">
+                                  {t("priceAfterDiscount") || (locale === "ar" ? "السعر بعد الخصم (عرض)" : "Price After Discount")}
+                                </TableHead>
+                                <TableHead className="text-center w-[140px]">
+                                  {t("Status") || "الحالة / العرض"}
+                                </TableHead>
+                                <TableHead className="text-center w-[80px]">
+                                  {t("Actions")}
+                                </TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {filteredZones.length === 0 ? (
+                                <TableRow>
+                                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                    {t("No data found") || "لا توجد مناطق مطابقة للبحث"}
                                   </TableCell>
                                 </TableRow>
-                              );
-                            })
-                          )}
-                        </TableBody>
-                      </Table>
-                    </div>
+                              ) : (
+                                filteredZones.map((zone) => {
+                                  const zoneName = getZoneDisplayName(zone);
+                                  const beforeStr = editedPrices[zone.zoneId] ?? "";
+                                  const afterStr = editedDiscountPrices[zone.zoneId] ?? "";
 
-                    {/* Bottom Save Bar */}
-                    <div className="flex justify-end pt-3">
-                      <Button
-                        onClick={handleSaveZonePrices}
-                        disabled={isSavingZonePrices}
-                        size="lg"
-                        className="gap-2 px-6"
-                      >
-                        {isSavingZonePrices ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <Save className="h-4 w-4 mr-2" />
-                        )}
-                        {t("Save Prices")}
-                      </Button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                                  const hasBefore = beforeStr !== "" && !isNaN(Number(beforeStr));
+                                  const hasAfter = afterStr !== "" && !isNaN(Number(afterStr));
+
+                                  const beforeNum = hasBefore ? Number(beforeStr) : null;
+                                  const afterNum = hasAfter ? Number(afterStr) : null;
+
+                                  const isPromoValid =
+                                    beforeNum !== null && afterNum !== null && afterNum < beforeNum;
+                                  const isPromoInvalid =
+                                    beforeNum !== null && afterNum !== null && afterNum >= beforeNum;
+
+                                  return (
+                                    <TableRow key={zone.zoneId}>
+                                      <TableCell>
+                                        <div className="font-medium text-sm">{zoneName}</div>
+                                        <span className="text-xs text-muted-foreground">ID: #{zone.zoneId}</span>
+                                      </TableCell>
+
+                                      {/* Column 2: Price Before Discount */}
+                                      <TableCell className="text-center">
+                                        <div className="relative w-full max-w-[130px] mx-auto">
+                                          <Input
+                                            type="number"
+                                            min="0"
+                                            step="0.5"
+                                            placeholder="35"
+                                            value={beforeStr}
+                                            onChange={(e) =>
+                                              setEditedPrices((prev) => ({
+                                                ...prev,
+                                                [zone.zoneId]: e.target.value,
+                                              }))
+                                            }
+                                            className="text-center pr-8"
+                                          />
+                                          <span className="absolute right-2.5 top-2.5 text-xs text-muted-foreground pointer-events-none">
+                                            {t("EGP") || "ج.م"}
+                                          </span>
+                                        </div>
+                                      </TableCell>
+
+                                      {/* Column 3: Price After Discount (Optional Promo) */}
+                                      <TableCell className="text-center">
+                                        <div className="relative w-full max-w-[130px] mx-auto">
+                                          <Input
+                                            type="number"
+                                            min="0"
+                                            step="0.5"
+                                            placeholder={locale === "ar" ? "اختياري" : "Optional"}
+                                            value={afterStr}
+                                            onChange={(e) =>
+                                              setEditedDiscountPrices((prev) => ({
+                                                ...prev,
+                                                [zone.zoneId]: e.target.value,
+                                              }))
+                                            }
+                                            className={`text-center pr-8 ${
+                                              isPromoInvalid
+                                                ? "border-destructive focus-visible:ring-destructive"
+                                                : isPromoValid
+                                                ? "border-emerald-500/50"
+                                                : ""
+                                            }`}
+                                          />
+                                          <span className="absolute right-2.5 top-2.5 text-xs text-muted-foreground pointer-events-none">
+                                            {t("EGP") || "ج.م"}
+                                          </span>
+                                        </div>
+                                      </TableCell>
+
+                                      {/* Column 4: Status / Promo Badge */}
+                                      <TableCell className="text-center">
+                                        {isPromoInvalid ? (
+                                          <Badge variant="destructive" className="text-xs">
+                                            {locale === "ar" ? "غير صالح (>=)" : "Invalid"}
+                                          </Badge>
+                                        ) : isPromoValid ? (
+                                          <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1 text-xs">
+                                            <Tag className="h-3 w-3" />
+                                            {locale === "ar"
+                                              ? `خصم ${Math.round((beforeNum - afterNum) * 10) / 10} ج.م`
+                                              : `${Math.round((beforeNum - afterNum) * 10) / 10} OFF`}
+                                          </Badge>
+                                        ) : hasBefore ? (
+                                          <Badge variant="secondary" className="text-xs">
+                                            {t("regularPriceBadge") || (locale === "ar" ? "سعر عادي" : "Standard")}
+                                          </Badge>
+                                        ) : (
+                                          <Badge variant="outline" className="text-muted-foreground text-xs">
+                                            {t("App Default")}
+                                          </Badge>
+                                        )}
+                                      </TableCell>
+
+                                      {/* Column 5: Action (Clear / Delete) */}
+                                      <TableCell className="text-center">
+                                        {(hasBefore || hasAfter) && (
+                                          <Dialog
+                                            open={deleteDialogOpen && deletingZoneId === zone.zoneId}
+                                            onOpenChange={(open) => {
+                                              setDeleteDialogOpen(open);
+                                              if (!open) setDeletingZoneId(null);
+                                            }}
+                                          >
+                                            <DialogTrigger asChild>
+                                              <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive hover:text-destructive h-8 w-8"
+                                                onClick={() => setDeletingZoneId(zone.zoneId)}
+                                                title={locale === "ar" ? "مسح سعر المنطقة" : "Clear zone price"}
+                                              >
+                                                <Trash2 className="h-4 w-4" />
+                                              </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-sm">
+                                              <DialogHeader>
+                                                <DialogTitle>{t("Delete Zone Price")}</DialogTitle>
+                                                <DialogDescription>
+                                                  {isAllStores
+                                                    ? (locale === "ar"
+                                                        ? "سيتم مسح الأسعار المحددة لهذه المنطقة من الجدول."
+                                                        : "This will clear the prices for this zone from the table.")
+                                                    : t("deleteZonePriceConfirm")}
+                                                </DialogDescription>
+                                              </DialogHeader>
+                                              <DialogFooter className="gap-2">
+                                                <Button
+                                                  variant="outline"
+                                                  onClick={() => setDeleteDialogOpen(false)}
+                                                >
+                                                  {t("Cancel")}
+                                                </Button>
+                                                <Button
+                                                  variant="destructive"
+                                                  onClick={() => handleDeleteZonePrice(zone.zoneId)}
+                                                >
+                                                  {t("Delete")}
+                                                </Button>
+                                              </DialogFooter>
+                                            </DialogContent>
+                                          </Dialog>
+                                        )}
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })
+                              )}
+                            </TableBody>
+                          </Table>
+                        </div>
+
+                        {/* Bottom Save Bar */}
+                        <div className="flex justify-end pt-3">
+                          <Button
+                            onClick={handleSaveZonePrices}
+                            disabled={isSavingZonePrices}
+                            size="lg"
+                            className="gap-2 px-6"
+                          >
+                            {isSavingZonePrices ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <Save className="h-4 w-4 mr-2" />
+                            )}
+                            {isAllStores
+                              ? (t("saveAllStoresPrices") || "حفظ وتعميم الأسعار لجميع المتاجر")
+                              : (t("saveStorePrices") || "حفظ أسعار المتجر")}
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </>
       )}
     </div>
   );
 }
-
