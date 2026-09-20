@@ -50,6 +50,7 @@ export function StoreZonePricingTab({ storeId }: { storeId: number }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [editedPrices, setEditedPrices] = useState<Record<number, string>>({});
+  const [editedDiscountPrices, setEditedDiscountPrices] = useState<Record<number, string>>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingZoneId, setDeletingZoneId] = useState<number | null>(null);
 
@@ -67,13 +68,18 @@ export function StoreZonePricingTab({ storeId }: { storeId: number }) {
 
   useEffect(() => {
     const initial: Record<number, string> = {};
+    const initialDiscounts: Record<number, string> = {};
     zones.forEach(z => {
       if (z.price !== null && z.price !== undefined) {
         initial[z.zoneId] = String(z.price);
       }
+      if (z.priceAfterDiscount !== null && z.priceAfterDiscount !== undefined) {
+        initialDiscounts[z.zoneId] = String(z.priceAfterDiscount);
+      }
     });
     setEditedPrices(initial);
-  }, [zones.length]);
+    setEditedDiscountPrices(initialDiscounts);
+  }, [zones]);
 
   const handleToggle = async () => {
     setIsToggling(true);
@@ -97,10 +103,17 @@ export function StoreZonePricingTab({ storeId }: { storeId: number }) {
   const handleSavePrices = async () => {
     const zonePrices = Object.entries(editedPrices)
       .filter(([, val]) => val.trim() !== "" && !isNaN(Number(val)))
-      .map(([zoneId, price]) => ({
-        zoneId: Number(zoneId),
-        price: Number(price)
-      }));
+      .map(([zoneId, price]) => {
+        const afterVal = editedDiscountPrices[Number(zoneId)];
+        return {
+          zoneId: Number(zoneId),
+          price: Number(price),
+          priceAfterDiscount:
+            afterVal !== undefined && afterVal !== "" && !isNaN(Number(afterVal))
+              ? Number(afterVal)
+              : null
+        };
+      });
 
     if (zonePrices.length === 0) {
       toast.error(t("noZonePricesToSave"));
@@ -200,8 +213,11 @@ export function StoreZonePricingTab({ storeId }: { storeId: number }) {
               <TableHeader className="bg-muted/40">
                 <TableRow>
                   <TableHead>{t("Zone")}</TableHead>
-                  <TableHead className="text-center w-[180px]">
+                  <TableHead className="text-center w-[160px]">
                     {t("Custom Price")}
+                  </TableHead>
+                  <TableHead className="text-center w-[160px]">
+                    {t("priceAfterDiscount") || "السعر بعد الخصم"}
                   </TableHead>
                   <TableHead className="text-center w-[120px]">
                     {t("Status")}
@@ -235,7 +251,23 @@ export function StoreZonePricingTab({ storeId }: { storeId: number }) {
                               [zone.zoneId]: e.target.value
                             }))
                           }
-                          className="w-full max-w-[150px] mx-auto text-center"
+                          className="w-full max-w-[140px] mx-auto text-center"
+                        />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder={t("Discounted price") || "اختياري"}
+                          value={editedDiscountPrices[zone.zoneId] ?? ""}
+                          onChange={e =>
+                            setEditedDiscountPrices(prev => ({
+                              ...prev,
+                              [zone.zoneId]: e.target.value
+                            }))
+                          }
+                          className="w-full max-w-[140px] mx-auto text-center"
                         />
                       </TableCell>
                       <TableCell className="text-center">
