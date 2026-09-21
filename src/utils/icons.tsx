@@ -108,7 +108,9 @@ export const columnsIcons = {
   endDate: Calendar,
   minDiscountValue: Coins,
   maxDiscountValue: Coins,
-  createdAt: Calendar
+  createdAt: Calendar,
+  City: MapPin,
+  city: MapPin
 };
 
 export type MainIconsType = keyof typeof mainIcons;

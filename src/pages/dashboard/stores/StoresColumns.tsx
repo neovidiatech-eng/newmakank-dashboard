@@ -5,14 +5,16 @@ import { ImageCell } from "@/components/common/table/columns/img-cell";
 import BtnAction from "@/components/common/table/tableActions/btn-action";
 import TableStatusBadge from "@/components/common/table/tableHelperComponents/TableStatusBadge";
 import { type ColumnDef } from "@tanstack/react-table";
-import { Ban, CheckCircle } from "lucide-react";
-import { useTranslations } from "@/lib/i18n";
+import { Ban, CheckCircle, MapPin } from "lucide-react";
+import { useLocale, useTranslations } from "@/lib/i18n";
+import { Badge } from "@/components/ui/badge";
 import { StoreStatusSelect } from "@/components/pages/_stores/StoreStatusSelect";
 import { StoreApprovalAction } from "@/components/pages/_stores/StoreApprovalAction";
 import { TogglePartnerStatus } from "@/components/pages/_stores/TogglePartnerStatus";
 
 export default function StoresColumns(): ColumnDef<Record<string, unknown>>[] {
   const t = useTranslations();
+  const locale = useLocale();
   const columns = [
     {
       id: "storeInfo",
@@ -24,6 +26,36 @@ export default function StoresColumns(): ColumnDef<Record<string, unknown>>[] {
           email={row.original.name?.ar as string | null | undefined}
         />
       )
+    },
+    {
+      accessorKey: "city",
+      header: () => <IconHeader columnKey="City" />,
+      cell: ({ row }) => {
+        const city = (row.original as any)?.city;
+        const cityName =
+          (typeof city?.name === "object"
+            ? (locale === "ar" ? city.name.ar || city.name.en : city.name.en || city.name.ar)
+            : city?.name) ||
+          (row.original as any)?.cityName;
+
+        if (!cityName) {
+          return (
+            <Badge variant="outline" className="text-muted-foreground font-normal border-dashed text-xs">
+              -
+            </Badge>
+          );
+        }
+
+        return (
+          <Badge
+            variant="secondary"
+            className="font-medium bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800 gap-1 text-xs whitespace-nowrap"
+          >
+            <MapPin className="h-3 w-3 inline text-sky-500 shrink-0" />
+            {cityName}
+          </Badge>
+        );
+      }
     },
     {
       accessorKey: "isPartner",
