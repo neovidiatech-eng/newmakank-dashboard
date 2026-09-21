@@ -22,8 +22,6 @@ export const CouponsSchema = (t: TFunction) => {
     userIds: noSchema(),
     storeIds: noSchema(),
     zoneIds: noSchema(),
-    customerCategoryIds: noSchema(),
-    specialDelivery: noSchema()
   });
 };
 

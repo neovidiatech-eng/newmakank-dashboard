@@ -24,8 +24,6 @@ export default function useCouponsLogic({ data }: { data?: CouponsType }) {
 		resolver: zodResolver(CouponsSchema(t)),
 		defaultValues: extractFormDefaultInputs(defaultInputs, {
 			...data,
-			specialDelivery: data?.type === "SPECIAL_DRIVER" ? ["true"] : undefined,
-			type: data?.type === "SPECIAL_DRIVER" ? "ALL_USERS" : data?.type // fallback type for the UI
 		}) as CouponsType,
 	});
 
@@ -33,10 +31,6 @@ export default function useCouponsLogic({ data }: { data?: CouponsType }) {
 	const inputs = CouponsInputs(couponType as any);
 
 	const onSubmit = async (formData: CouponsType) => {
-		const isSpecialDelivery = Array.isArray(formData.specialDelivery)
-			? formData.specialDelivery.includes("true")
-			: Boolean(formData.specialDelivery);
-
 		const parseToIso = (val: any) => {
 			if (!val) return undefined;
 			const d = new Date(val);
@@ -48,13 +42,11 @@ export default function useCouponsLogic({ data }: { data?: CouponsType }) {
 			...formData,
 			startDate: parseToIso(formData.startDate),
 			endDate: parseToIso(formData.endDate),
-			type: isSpecialDelivery ? "SPECIAL_DRIVER" : formData.type,
-			specialDelivery: undefined,
+			type: formData.type,
 			userIds: formData.type === "USER_WISE" ? formData.userIds : undefined,
 			storeIds: formData.type === "STORE_WISE" ? formData.storeIds : undefined,
-			zoneIds: formData.type === "ZONE_WISE" ? formData.zoneIds : undefined,
-			customerCategoryIds: formData.type === "CUSTOMER_CATEGORY_WISE" ? formData.customerCategoryIds : undefined,
-		}
+			zoneIds: formData.zoneIds,
+		};
 
 		Object.keys(normalizedData).forEach(key => {
 			const value = normalizedData[key as keyof typeof normalizedData];
