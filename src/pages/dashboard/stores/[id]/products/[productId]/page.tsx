@@ -19,12 +19,26 @@ async function Page({ params }: { params: Promise<{ id: string, productId: strin
     }
 
     const currentLocale = locale || "en";
-    const title = data?.name?.[currentLocale] ?? data?.name?.en ?? "Service";
-    const description = data?.description?.[currentLocale] ?? data?.description?.en ?? "";
+    const getLocalizedValue = (val: any, loc: string = currentLocale): string => {
+        if (!val) return "";
+        if (typeof val === "string") return val;
+        if (typeof val === "object") {
+            return val[loc] || val.ar || val.en || "";
+        }
+        return String(val);
+    };
 
-    const storeName = typeof data?.Store?.name === 'object'
-        ? (data?.Store?.name?.[currentLocale as keyof ApiResponseName] || data?.Store?.name?.en)
-        : data?.Store?.name;
+    const title = getLocalizedValue(data?.name, currentLocale) || "Service";
+    const description = getLocalizedValue(data?.description, currentLocale);
+    const storeName = getLocalizedValue(data?.Store?.name, currentLocale);
+    const categoryName = getLocalizedValue(data?.Category?.name, currentLocale);
+    const moduleName = getLocalizedValue(data?.Module?.name, currentLocale);
+    const imgUrl = getEnv("VITE_API_IMG_URL");
+    const resolveImageUrl = (path?: string | null) => {
+        if (!path) return "";
+        if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) return path;
+        return imgUrl ? `${imgUrl}${path}` : path;
+    };
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8 animate-in fade-in duration-500">
@@ -33,7 +47,7 @@ async function Page({ params }: { params: Promise<{ id: string, productId: strin
                     <Card className="overflow-hidden border-none shadow-md">
                         <div className="relative h-80 w-full group">
                             {data?.image ? (
-                                <Image src={getEnv("VITE_API_IMG_URL") + data?.image} alt={title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                                <Image src={resolveImageUrl(data?.image)} alt={title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                             ) : (
                                 <div className="h-full w-full bg-muted flex items-center justify-center text-muted-foreground">
                                     {t("No image")}
@@ -58,11 +72,13 @@ async function Page({ params }: { params: Promise<{ id: string, productId: strin
                                 <div>
                                     <CardTitle className="text-3xl font-bold mb-2">{title}</CardTitle>
                                     <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Badge variant="outline" className="rounded-full">
-                                            {data?.Category?.name}
-                                        </Badge>
-                                        <span>•</span>
-                                        <span className="text-sm">{data?.Module?.name}</span>
+                                        {categoryName && (
+                                            <Badge variant="outline" className="rounded-full">
+                                                {categoryName}
+                                            </Badge>
+                                        )}
+                                        {categoryName && moduleName && <span>•</span>}
+                                        {moduleName && <span className="text-sm">{moduleName}</span>}
                                     </div>
                                 </div>
                                 <div className="text-right">
@@ -117,10 +133,10 @@ async function Page({ params }: { params: Promise<{ id: string, productId: strin
                                     {data?.Sizes && data.Sizes.length > 0 ? (
                                         <div className="space-y-2">
                                             {data.Sizes.map((size: any) => (
-                                                <div key={size.id} className={`flex justify-between items-center p-3 rounded-lg border \${size.isDefault ? 'bg-primary/5 border-primary/20' : 'border-muted/30'}`}>
+                                                <div key={size.id} className={`flex justify-between items-center p-3 rounded-lg border ${size.isDefault ? 'bg-primary/5 border-primary/20' : 'border-muted/30'}`}>
                                                     <div className="flex flex-col">
                                                         <span className="font-medium text-sm">
-                                                            {size.name?.[currentLocale] || size.name?.en}
+                                                            {getLocalizedValue(size.name, currentLocale)}
                                                         </span>
                                                         {size.isDefault && (
                                                             <span className="text-[10px] text-primary font-bold uppercase tracking-wider">
@@ -150,7 +166,7 @@ async function Page({ params }: { params: Promise<{ id: string, productId: strin
                                             {data.Addons.map((addon: any) => (
                                                 <div key={addon.id} className="flex justify-between items-center p-3 rounded-lg border border-muted/30 hover:border-muted-foreground/20 transition-colors">
                                                     <span className="font-medium text-sm">
-                                                        {addon.name?.[currentLocale] || addon.name?.en}
+                                                        {getLocalizedValue(addon.name, currentLocale)}
                                                     </span>
                                                     <span className="font-bold text-primary">+{addon.price} EGP</span>
                                                 </div>
@@ -182,7 +198,7 @@ async function Page({ params }: { params: Promise<{ id: string, productId: strin
                     <Card className="overflow-hidden border-none shadow-md">
                         <div className="relative h-32 w-full">
                             {data?.Store?.cover ? (
-                                <Image src={data?.Store.cover} alt={String(storeName || "")} fill className="object-cover" />
+                                <Image src={resolveImageUrl(data?.Store.cover)} alt={String(storeName || "")} fill className="object-cover" />
                             ) : (
                                 <div className="h-full w-full bg-primary/10" />
                             )}
@@ -193,7 +209,7 @@ async function Page({ params }: { params: Promise<{ id: string, productId: strin
                                     {data?.Store?.logo ? (
                                         <div className="relative h-full w-full rounded-lg overflow-hidden">
                                             <Image
-                                                src={data?.Store.logo}
+                                                src={resolveImageUrl(data?.Store.logo)}
                                                 alt={String(storeName || "")}
                                                 fill
                                                 className="object-cover"

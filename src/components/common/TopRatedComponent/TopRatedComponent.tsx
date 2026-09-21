@@ -46,8 +46,16 @@ function TopRatedComponent({
                 <ImageCell cell={item.image || ""} />
               </div>
               <div>
-                <h4 className="text-sm font-medium">{item.name}</h4>
-                <p className="text-xs text-muted-foreground">{item.subName}</p>
+                <h4 className="text-sm font-medium">
+                  {typeof item.name === "object" && item.name !== null
+                    ? (item.name as any).ar || (item.name as any).en || ""
+                    : String(item.name || "")}
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {typeof item.subName === "object" && item.subName !== null
+                    ? (item.subName as any).ar || (item.subName as any).en || ""
+                    : String(item.subName || "")}
+                </p>
               </div>
             </div>
             <div className="bg-primary/10 text-primary px-2.5 py-1 rounded-full text-sm font-medium">
