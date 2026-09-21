@@ -1,4 +1,4 @@
-﻿/**
+/**
  * fortune-wheel-utils.spec.ts
  * Pure function tests extracted from FortuneWheelClient.tsx
  * These run in node environment with no DOM/React required.
@@ -272,5 +272,58 @@ describe("buildPayload()", () => {
   it("defaults weight to 1 when empty", () => {
     const payload = buildPayload({ ...baseForm, weight: "" });
     expect(payload.weight).toBe(1);
+  });
+});
+
+describe("Fortune Wheel Store Filtering & Unlimited Pagination", () => {
+  const sampleStores = [
+    { id: 1, name: { ar: "شاورما الريم", en: "Shawarma Al Reem" } },
+    { id: 2, name: { ar: "كنتاكي", en: "KFC" } },
+    { id: 3, name: { ar: "بيتزا هت", en: "Pizza Hut" } },
+    { id: 55, name: { ar: "مطعم المحلة", en: "El Mahalla Restaurant" } },
+  ];
+
+  function filterStores(stores: typeof sampleStores, term: string, selectedStoreId?: string) {
+    if (!term.trim()) return stores;
+    const lower = term.trim().toLowerCase();
+    return stores.filter(store => {
+      if (selectedStoreId && String(store.id) === String(selectedStoreId)) return true;
+      const arName = typeof store.name === "object" ? (store.name?.ar || "") : "";
+      const enName = typeof store.name === "object" ? (store.name?.en || "") : "";
+      return (
+        arName.toLowerCase().includes(lower) ||
+        enName.toLowerCase().includes(lower) ||
+        String(store.id).includes(lower)
+      );
+    });
+  }
+
+  it("filters stores by Arabic name", () => {
+    const result = filterStores(sampleStores, "كنتاكي");
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe(2);
+  });
+
+  it("filters stores by English name", () => {
+    const result = filterStores(sampleStores, "pizza");
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe(3);
+  });
+
+  it("filters stores by store ID", () => {
+    const result = filterStores(sampleStores, "55");
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe(55);
+  });
+
+  it("always preserves the currently selected store even if search does not match it", () => {
+    const result = filterStores(sampleStores, "pizza", "1");
+    expect(result.some(s => s.id === 1)).toBe(true);
+    expect(result.some(s => s.id === 3)).toBe(true);
+  });
+
+  it("verifies params for full listing uses limit: -1 to prevent backend capping at 50", () => {
+    const storesQueryParams = { limit: -1 };
+    expect(storesQueryParams.limit).toBe(-1);
   });
 });

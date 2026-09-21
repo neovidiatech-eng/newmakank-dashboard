@@ -123,26 +123,53 @@ export default function FortuneWheelClient() {
   });
   const { data: itemsRes, refetch: refetchItems } = useApiQuery({
     queryKey: ["fortuneWheelItems"],
-    endPoint: ["fortuneWheel"]
+    endPoint: ["fortuneWheel"],
+    params: { limit: -1 }
   });
   const { data: storesRes } = useApiQuery({
     queryKey: ["fortuneWheelStores"],
     endPoint: ["stores"],
-    params: { limit: 200 }
+    params: { limit: -1 }
   });
 
   const settings: FortuneWheelSettings | null = settingsRes?.data ?? null;
-  const items: FortuneWheelItem[] = Array.isArray(itemsRes?.data) ? itemsRes.data : [];
-  const stores: Array<{ id: number; name: any; logo?: string }> = Array.isArray(storesRes?.data) ? storesRes.data : [];
+  const items: FortuneWheelItem[] = Array.isArray(itemsRes?.data)
+    ? itemsRes.data
+    : Array.isArray(itemsRes?.data?.data)
+    ? itemsRes.data.data
+    : [];
+  const stores: Array<{ id: number; name: any; logo?: string }> = Array.isArray(storesRes?.data)
+    ? storesRes.data
+    : Array.isArray(storesRes?.data?.data)
+    ? storesRes.data.data
+    : [];
 
   const refetchAll = () => { refetchSettings(); refetchItems(); };
 
   const [form, setForm] = useState<FortuneWheelForm>(emptyForm);
+  const [storeSearch, setStoreSearch] = useState("");
   const [displayIntervalHours, setDisplayIntervalHours] = useState("24");
   const [isEnabled, setIsEnabled] = useState(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
+
+  const filteredStores = useMemo(() => {
+    if (!storeSearch.trim()) return stores;
+    const term = storeSearch.trim().toLowerCase();
+    return stores.filter(store => {
+      if (form.storeId && String(store.id) === String(form.storeId)) return true;
+      const arName = typeof store.name === "object" ? (store.name?.ar || "") : "";
+      const enName = typeof store.name === "object" ? (store.name?.en || "") : "";
+      const rawName = typeof store.name === "string" ? store.name : "";
+      return (
+        arName.toLowerCase().includes(term) ||
+        enName.toLowerCase().includes(term) ||
+        rawName.toLowerCase().includes(term) ||
+        String(store.id).includes(term)
+      );
+    });
+  }, [stores, storeSearch, form.storeId]);
 
   useEffect(() => {
     if (settings) {
@@ -400,20 +427,47 @@ export default function FortuneWheelClient() {
               <div className="lg:col-span-3">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">
                   {locale === "ar" ? "المتجر المخصص (اختياري)" : "Target Store (Optional)"}
+                  {stores.length > 0 ? ` (${stores.length})` : ""}
                 </label>
                 <Select value={form.storeId} onValueChange={value => updateForm("storeId", value)}>
                   <SelectTrigger className="h-10 rounded-xl">
                     <SelectValue placeholder={locale === "ar" ? "عام لجميع المتاجر" : "All Stores"} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-72">
+                    <div
+                      className="p-2 border-b sticky top-0 bg-popover z-10"
+                      onClick={e => e.stopPropagation()}
+                      onKeyDown={e => e.stopPropagation()}
+                    >
+                      <Input
+                        placeholder={locale === "ar" ? "بحث باسم المتجر أو الكود..." : "Search by name or ID..."}
+                        value={storeSearch}
+                        onChange={e => setStoreSearch(e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                    </div>
                     <SelectItem value="all">
                       {locale === "ar" ? "🌐 عام لجميع المتاجر" : "🌐 All Stores"}
                     </SelectItem>
-                    {stores.map(store => (
+                    {filteredStores.map(store => (
                       <SelectItem key={store.id} value={String(store.id)}>
-                        {getLocalizedText(store.name, locale)}
+                        <div className="flex items-center gap-2">
+                          {store.logo ? (
+                            <img
+                              src={store.logo.startsWith("http") ? store.logo : `/${store.logo}`}
+                              alt=""
+                              className="h-4 w-4 rounded-full object-cover shrink-0"
+                            />
+                          ) : null}
+                          <span>{getLocalizedText(store.name, locale)}</span>
+                        </div>
                       </SelectItem>
                     ))}
+                    {filteredStores.length === 0 && (
+                      <div className="py-2 text-center text-xs text-muted-foreground">
+                        {locale === "ar" ? "لا توجد نتائج مطابقة" : "No matching stores"}
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
