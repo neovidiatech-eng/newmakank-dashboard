@@ -47,10 +47,16 @@ type FortuneWheelItem = {
   maxOrderAmount?: number | string | null;
   rewardExpiryHours?: number | string | null;
   storeId?: number | null;
+  cityId?: number | null;
+  City?: {
+    id: number;
+    name: LocalizedText;
+  } | null;
   Store?: {
     id: number;
     name: LocalizedText;
     logo?: string;
+    cityId?: number | null;
   } | null;
   active?: boolean;
   isActive?: boolean;
@@ -66,6 +72,7 @@ type FortuneWheelForm = {
   minOrderAmount: string;
   maxOrderAmount: string;
   rewardExpiryHours: string;
+  cityId: string;
   storeId: string;
 };
 
@@ -82,6 +89,7 @@ const emptyForm: FortuneWheelForm = {
   minOrderAmount: "",
   maxOrderAmount: "",
   rewardExpiryHours: "24",
+  cityId: "all",
   storeId: "all"
 };
 
@@ -131,6 +139,11 @@ export default function FortuneWheelClient() {
     endPoint: ["stores"],
     params: { limit: -1 }
   });
+  const { data: citiesRes } = useApiQuery({
+    queryKey: ["cities", "selector"],
+    endPoint: ["cities"],
+    params: { limit: 1000 }
+  });
 
   const settings: FortuneWheelSettings | null = settingsRes?.data ?? null;
   const items: FortuneWheelItem[] = Array.isArray(itemsRes?.data)
@@ -138,16 +151,22 @@ export default function FortuneWheelClient() {
     : Array.isArray(itemsRes?.data?.data)
     ? itemsRes.data.data
     : [];
-  const stores: Array<{ id: number; name: any; logo?: string }> = Array.isArray(storesRes?.data)
+  const stores: Array<{ id: number; name: any; logo?: string; cityId?: number | null }> = Array.isArray(storesRes?.data)
     ? storesRes.data
     : Array.isArray(storesRes?.data?.data)
     ? storesRes.data.data
+    : [];
+  const cities: Array<{ id: number; name: any }> = Array.isArray(citiesRes?.data)
+    ? citiesRes.data
+    : Array.isArray(citiesRes?.data?.data)
+    ? citiesRes.data.data
     : [];
 
   const refetchAll = () => { refetchSettings(); refetchItems(); };
 
   const [form, setForm] = useState<FortuneWheelForm>(emptyForm);
   const [storeSearch, setStoreSearch] = useState("");
+  const [selectedCityFilter, setSelectedCityFilter] = useState<string>("all");
   const [displayIntervalHours, setDisplayIntervalHours] = useState("24");
   const [isEnabled, setIsEnabled] = useState(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
@@ -155,9 +174,14 @@ export default function FortuneWheelClient() {
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
 
   const filteredStores = useMemo(() => {
-    if (!storeSearch.trim()) return stores;
+    let list = stores;
+    if (form.cityId !== "all") {
+      const selectedCityNum = Number(form.cityId);
+      list = list.filter(store => !store.cityId || store.cityId === selectedCityNum);
+    }
+    if (!storeSearch.trim()) return list;
     const term = storeSearch.trim().toLowerCase();
-    return stores.filter(store => {
+    return list.filter(store => {
       if (form.storeId && String(store.id) === String(form.storeId)) return true;
       const arName = typeof store.name === "object" ? (store.name?.ar || "") : "";
       const enName = typeof store.name === "object" ? (store.name?.en || "") : "";
@@ -169,7 +193,33 @@ export default function FortuneWheelClient() {
         String(store.id).includes(term)
       );
     });
-  }, [stores, storeSearch, form.storeId]);
+  }, [stores, storeSearch, form.storeId, form.cityId]);
+
+  const handleCityChange = (value: string) => {
+    setForm(prev => {
+      let nextStoreId = prev.storeId;
+      if (value !== "all" && prev.storeId !== "all") {
+        const currentStore = stores.find(s => String(s.id) === prev.storeId);
+        if (currentStore?.cityId && String(currentStore.cityId) !== value) {
+          nextStoreId = "all";
+        }
+      }
+      return { ...prev, cityId: value, storeId: nextStoreId };
+    });
+  };
+
+  const handleStoreChange = (value: string) => {
+    setForm(prev => {
+      let nextCityId = prev.cityId;
+      if (value !== "all") {
+        const selectedStore = stores.find(s => String(s.id) === value);
+        if (selectedStore?.cityId) {
+          nextCityId = String(selectedStore.cityId);
+        }
+      }
+      return { ...prev, storeId: value, cityId: nextCityId };
+    });
+  };
 
   useEffect(() => {
     if (settings) {
@@ -186,6 +236,17 @@ export default function FortuneWheelClient() {
   const currentRewardValue = isFixedRewardValue ? fixedRewardValues[form.rewardType] || "" : form.rewardValue;
 
   const sortedItems = useMemo(() => [...items].sort((a, b) => Number(a.id) - Number(b.id)), [items]);
+
+  const filteredItems = useMemo(() => {
+    if (selectedCityFilter === "all") return sortedItems;
+    if (selectedCityFilter === "general") {
+      return sortedItems.filter(item => !item.cityId && !item.Store?.cityId);
+    }
+    return sortedItems.filter(item => {
+      const itemCity = item.cityId ?? item.Store?.cityId;
+      return String(itemCity) === selectedCityFilter;
+    });
+  }, [sortedItems, selectedCityFilter]);
 
   const updateForm = <K extends keyof FortuneWheelForm>(field: K, value: FortuneWheelForm[K]) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -250,6 +311,7 @@ export default function FortuneWheelClient() {
     minOrderAmount: getNumberOrNull(form.minOrderAmount),
     maxOrderAmount: getNumberOrNull(form.maxOrderAmount),
     rewardExpiryHours: getNumberOrNull(form.rewardExpiryHours) ?? 24,
+    cityId: form.cityId === "all" ? null : Number(form.cityId) || null,
     storeId: form.storeId === "all" ? null : Number(form.storeId) || null,
     isActive: true,
     sortOrder: 0
@@ -327,6 +389,11 @@ export default function FortuneWheelClient() {
         item.rewardExpiryHours === null || item.rewardExpiryHours === undefined
           ? "24"
           : String(item.rewardExpiryHours),
+      cityId: item.cityId
+        ? String(item.cityId)
+        : item.Store?.cityId
+        ? String(item.Store.cityId)
+        : "all",
       storeId: item.storeId ? String(item.storeId) : "all",
     });
   };
@@ -426,10 +493,30 @@ export default function FortuneWheelClient() {
               </div>
               <div className="lg:col-span-3">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">
-                  {locale === "ar" ? "المتجر المخصص (اختياري)" : "Target Store (Optional)"}
-                  {stores.length > 0 ? ` (${stores.length})` : ""}
+                  {locale === "ar" ? "المدينة المستهدفة" : "Target City"}
                 </label>
-                <Select value={form.storeId} onValueChange={value => updateForm("storeId", value)}>
+                <Select value={form.cityId} onValueChange={handleCityChange}>
+                  <SelectTrigger className="h-10 rounded-xl">
+                    <SelectValue placeholder={locale === "ar" ? "🌐 عام لجميع المدن" : "🌐 All Cities"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      {locale === "ar" ? "🌐 عام لجميع المدن" : "🌐 All Cities"}
+                    </SelectItem>
+                    {cities.map(city => (
+                      <SelectItem key={city.id} value={String(city.id)}>
+                        {getLocalizedText(city.name, locale)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="lg:col-span-3">
+                <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">
+                  {locale === "ar" ? "المتجر المخصص (اختياري)" : "Target Store (Optional)"}
+                  {filteredStores.length > 0 ? ` (${filteredStores.length})` : ""}
+                </label>
+                <Select value={form.storeId} onValueChange={handleStoreChange}>
                   <SelectTrigger className="h-10 rounded-xl">
                     <SelectValue placeholder={locale === "ar" ? "عام لجميع المتاجر" : "All Stores"} />
                   </SelectTrigger>
@@ -471,7 +558,9 @@ export default function FortuneWheelClient() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="lg:col-span-2">
+
+              {/* Row 2 */}
+              <div className="lg:col-span-3">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("rewardType")}</label>
                 <Select
                   value={form.rewardType}
@@ -490,30 +579,37 @@ export default function FortuneWheelClient() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-end lg:col-span-1">
-                <Button type="button" className="h-10 w-full rounded-xl" onClick={handleAddItem} disabled={isSubmitting || !form.displayNameAr.trim() || !form.displayNameEn.trim()}>
-                  {editingItemId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                </Button>
-              </div>
               <div className="lg:col-span-3">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("rewardValue")}</label>
                 <Input value={currentRewardValue} onChange={event => updateForm("rewardValue", event.target.value)} placeholder={t("rewardValuePlaceholder")} disabled={isFixedRewardValue} />
               </div>
               <div className="lg:col-span-2">
+                <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("weight")}</label>
+                <Input type="number" min="1" value={form.weight} onChange={event => updateForm("weight", event.target.value)} placeholder="1" />
+              </div>
+              <div className="lg:col-span-2">
+                <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("rewardExpiryHours")}</label>
+                <Input type="number" min="1" value={form.rewardExpiryHours} onChange={event => updateForm("rewardExpiryHours", event.target.value)} />
+              </div>
+              <div className="flex items-end lg:col-span-2">
+                <Button type="button" className="h-10 w-full rounded-xl gap-2" onClick={handleAddItem} disabled={isSubmitting || !form.displayNameAr.trim() || !form.displayNameEn.trim()}>
+                  {editingItemId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  <span>{editingItemId ? (locale === "ar" ? "تعديل" : "Update") : (locale === "ar" ? "إضافة" : "Add")}</span>
+                </Button>
+              </div>
+
+              {/* Row 3 */}
+              <div className="lg:col-span-4">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("maxDiscount")} ({t("optional")})</label>
                 <Input type="number" value={form.maxDiscount} onChange={event => updateForm("maxDiscount", event.target.value)} />
               </div>
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-4">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("minOrderAmount")} ({t("optional")})</label>
                 <Input type="number" value={form.minOrderAmount} onChange={event => updateForm("minOrderAmount", event.target.value)} />
               </div>
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-4">
                 <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("maxOrderAmount")} ({t("optional")})</label>
                 <Input type="number" value={form.maxOrderAmount} onChange={event => updateForm("maxOrderAmount", event.target.value)} />
-              </div>
-              <div className="lg:col-span-3">
-                <label className="mb-2 block text-sm text-gray-600 dark:text-gray-300">{t("rewardExpiryHours")}</label>
-                <Input type="number" min="1" value={form.rewardExpiryHours} onChange={event => updateForm("rewardExpiryHours", event.target.value)} />
               </div>
             </div>
             {editingItemId ? (
@@ -527,11 +623,43 @@ export default function FortuneWheelClient() {
             ) : null}
           </div>
 
+          <div className="flex flex-wrap items-center justify-between gap-4 py-1">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                {locale === "ar" ? "تصفية حسب المدينة:" : "Filter by City:"}
+              </span>
+              <Select value={selectedCityFilter} onValueChange={setSelectedCityFilter}>
+                <SelectTrigger className="h-9 w-52 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    {locale === "ar" ? "🌐 جميع المدن" : "🌐 All Cities"}
+                  </SelectItem>
+                  <SelectItem value="general">
+                    {locale === "ar" ? "🌐 عام (بدون تحديد مدينة)" : "🌐 General (No city)"}
+                  </SelectItem>
+                  {cities.map(city => (
+                    <SelectItem key={city.id} value={String(city.id)}>
+                      📍 {getLocalizedText(city.name, locale)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="text-sm font-medium text-muted-foreground">
+              {locale === "ar"
+                ? `المعروض: ${filteredItems.length} من أصل ${items.length}`
+                : `Showing: ${filteredItems.length} of ${items.length}`}
+            </div>
+          </div>
+
           <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
             <Table>
               <TableHeader className="bg-gray-50 dark:bg-slate-900">
                 <TableRow>
                   <TableHead className="text-center">{t("fortuneWheelItemName")}</TableHead>
+                  <TableHead className="text-center">{locale === "ar" ? "المدينة" : "City"}</TableHead>
                   <TableHead className="text-center">{locale === "ar" ? "المتجر" : "Store"}</TableHead>
                   <TableHead className="text-center">{t("rewardType")}</TableHead>
                   <TableHead className="text-center">{t("rewardValue")}</TableHead>
@@ -542,15 +670,34 @@ export default function FortuneWheelClient() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedItems.length === 0 ? (
+                {filteredItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">{t("No Data")}</TableCell>
+                    <TableCell colSpan={9} className="py-10 text-center text-muted-foreground">{t("No Data")}</TableCell>
                   </TableRow>
-                ) : sortedItems.map(item => {
+                ) : filteredItems.map(item => {
                   const active = item.active ?? item.isActive ?? true;
                   return (
                     <TableRow key={item.id} className="hover:bg-gray-50 dark:hover:bg-slate-900/50">
                       <TableCell className="text-center font-medium">{getLocalizedText(item.displayName || item.name, locale)}</TableCell>
+                      <TableCell className="text-center">
+                        {item.City ? (
+                          <Badge variant="outline" className="font-semibold text-sky-700 bg-sky-50 border-sky-200 dark:bg-sky-950 dark:text-sky-300">
+                            📍 {getLocalizedText(item.City.name, locale)}
+                          </Badge>
+                        ) : item.cityId ? (
+                          <Badge variant="outline" className="font-semibold text-sky-700 bg-sky-50 border-sky-200 dark:bg-sky-950 dark:text-sky-300">
+                            📍 {getLocalizedText(cities.find(c => c.id === item.cityId)?.name, locale)}
+                          </Badge>
+                        ) : item.Store?.cityId ? (
+                          <Badge variant="outline" className="font-semibold text-sky-700 bg-sky-50 border-sky-200 dark:bg-sky-950 dark:text-sky-300">
+                            📍 {getLocalizedText(cities.find(c => c.id === item.Store?.cityId)?.name, locale)}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">
+                            {locale === "ar" ? "🌐 عام لجميع المدن" : "🌐 All Cities"}
+                          </Badge>
+                        )}
+                      </TableCell>
                       <TableCell className="text-center">
                         {item.Store ? (
                           <div className="flex items-center justify-center gap-2">
