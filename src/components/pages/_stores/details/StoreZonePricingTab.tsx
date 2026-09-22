@@ -36,6 +36,7 @@ interface ZonePrice {
   name: { ar?: string; en?: string };
   cityId: number;
   price: number | null;
+  priceAfterDiscount?: number | null;
 }
 
 interface ZonePricingResponse {

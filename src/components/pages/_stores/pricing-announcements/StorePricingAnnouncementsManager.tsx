@@ -280,7 +280,7 @@ export default function StorePricingAnnouncementsManager() {
       : ["stores", selectedSpecificStoreId, "storeZonePrices"];
 
     const res = await fetchHelper({
-      endPoint: saveEndPoint,
+      endPoint: saveEndPoint as any,
       method: "PATCH",
       body: { zonePrices },
     });
