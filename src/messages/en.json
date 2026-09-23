@@ -2987,5 +2987,10 @@
   "promoDeleted": "Promotion deleted",
   "deletePromoTitle": "Delete Promotion",
   "deletePromoConfirm": "Are you sure you want to delete this promotion? This action cannot be undone.",
-  "promoEgp": "EGP"
+  "promoEgp": "EGP",
+  "customDeliveryZonePricingTab": "Custom Delivery Pricing",
+  "customDeliveryDefaultPrice": "Default Price for Remaining Zones",
+  "saveCustomDeliveryPricesSuccess": "Custom delivery zone prices saved successfully",
+  "customDeliveryTitle": "Custom Delivery Zone Pricing",
+  "customDeliverySubtitle": "Set a default price for remaining zones and customize specific zones for private couriers"
 }

@@ -2990,5 +2990,10 @@
   "promoDeleted": "تم حذف العرض",
   "deletePromoTitle": "حذف العرض",
   "deletePromoConfirm": "هل أنت متأكد من حذف العرض؟ لا يمكن التراجع عن هذا الإجراء.",
-  "promoEgp": "ج.م"
+  "promoEgp": "ج.م",
+  "customDeliveryZonePricingTab": "تسعير المندوب الخاص",
+  "customDeliveryDefaultPrice": "سعر باقي المناطق الافتراضي",
+  "saveCustomDeliveryPricesSuccess": "تم حفظ تسعيرات المندوب الخاص بنجاح",
+  "customDeliveryTitle": "تسعير المندوب الخاص بالمناطق",
+  "customDeliverySubtitle": "حدد سعراً افتراضياً لباقي المناطق، وخصص أسعاراً لمناطق معينة للمندوب الخاص"
 }

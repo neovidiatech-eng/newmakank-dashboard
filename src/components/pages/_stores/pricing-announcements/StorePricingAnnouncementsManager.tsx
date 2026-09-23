@@ -32,6 +32,7 @@ import { useLocale, useTranslations } from "@/lib/i18n";
 import { Link, useSearchParams } from "@/lib/navigation";
 import {
   AlertCircle,
+  Bike,
   CheckCircle2,
   ExternalLink,
   Gift,
@@ -50,6 +51,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import DeliveryPromotionsTab from "./DeliveryPromotionsTab";
+import CustomDeliveryZonePricingTab from "./CustomDeliveryZonePricingTab";
 
 interface ZonePrice {
   zoneId: number;
@@ -102,7 +104,14 @@ export default function StorePricingAnnouncementsManager() {
     logo?: string | null;
   } | null>(null);
   const [logoError, setLogoError] = useState(false);
-  const [activeTab, setActiveTab] = useState<"zone-pricing" | "promotions">("zone-pricing");
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<"zone-pricing" | "promotions" | "custom-delivery">(
+    tabParam === "custom-delivery"
+      ? "custom-delivery"
+      : tabParam === "promotions"
+      ? "promotions"
+      : "zone-pricing"
+  );
 
   // Zone Pricing State
   const [isTogglingZonePricing, setIsTogglingZonePricing] = useState(false);
@@ -519,7 +528,7 @@ export default function StorePricingAnnouncementsManager() {
       </div>
 
       {/* Top-Level Navigation Tabs */}
-      <div className="flex gap-2 p-1.5 rounded-2xl bg-muted/60 border w-fit shadow-xs">
+      <div className="flex flex-wrap gap-2 p-1.5 rounded-2xl bg-muted/60 border w-fit shadow-xs">
         <button
           type="button"
           onClick={() => setActiveTab("zone-pricing")}
@@ -531,6 +540,18 @@ export default function StorePricingAnnouncementsManager() {
         >
           <Layers className="h-4 w-4 text-primary" />
           {t("baseZonePricesTab") || (locale === "ar" ? "أسعار المناطق الأساسية" : "Base Zone Prices")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("custom-delivery")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+            activeTab === "custom-delivery"
+              ? "bg-background shadow-xs text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Bike className="h-4 w-4 text-primary" />
+          {t("customDeliveryZonePricingTab") || (locale === "ar" ? "تسعير المندوب الخاص" : "Custom Delivery Pricing")}
         </button>
         <button
           type="button"
@@ -548,6 +569,8 @@ export default function StorePricingAnnouncementsManager() {
 
       {activeTab === "promotions" ? (
         <DeliveryPromotionsTab />
+      ) : activeTab === "custom-delivery" ? (
+        <CustomDeliveryZonePricingTab />
       ) : (
         <>
           {/* Step 1: Pricing Scope Selector (All Stores vs Specific Store) */}
