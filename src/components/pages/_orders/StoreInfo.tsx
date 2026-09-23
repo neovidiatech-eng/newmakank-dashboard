@@ -16,28 +16,37 @@ export default function StoreInfo({
     const locale = useLocale();
     const [imgError, setImgError] = useState(false);
 
+    const store = invoice?.store || (branch as any)?.Store || (branch as any)?.store;
+    const storeName = store
+        ? typeof store.name === "string"
+            ? store.name
+            : store.name?.[locale as "en" | "ar"] || store.name?.ar || store.name?.en || ""
+        : "";
+    const storeLogo = store?.logo;
+    const storeAddress = store?.address || branch?.address;
+
     return (
         <>
-            {invoice?.store && (
+            {store && (
                 <div className="flex items-center gap-4 mb-4">
                     <div className="relative h-12 w-12 rounded-lg overflow-hidden bg-gray-100 border flex items-center justify-center text-xs text-muted-foreground">
-                        {invoice.store.logo && invoice.store.logo !== "null" && !imgError ? (
+                        {storeLogo && storeLogo !== "null" && !imgError ? (
                             <Image
-                                src={invoice.store.logo.startsWith("http") ? invoice.store.logo : imgUrl + invoice.store.logo}
+                                src={storeLogo.startsWith("http") ? storeLogo : imgUrl + storeLogo}
                                 alt="Store Logo"
                                 fill
                                 className="object-cover"
                                 onError={() => setImgError(true)}
                             />
                         ) : (
-                            <span>{invoice.store.name[locale as "en" | "ar"]?.[0] || invoice.store.name.en?.[0] || "?"}</span>
+                            <span>{storeName[0] || "?"}</span>
                         )}
                     </div>
                     <div>
                         <div className="font-medium">
-                            {invoice.store.name[locale as "en" | "ar"] || invoice.store.name.en}
+                            {storeName}
                         </div>
-                        <div className="text-sm text-muted-foreground">{invoice.store.address}</div>
+                        {storeAddress && <div className="text-sm text-muted-foreground">{storeAddress}</div>}
                     </div>
                 </div>
             )}

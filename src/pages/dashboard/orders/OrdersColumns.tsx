@@ -134,15 +134,38 @@ export default function OrdersColumns(): any {
       accessorKey: "invoice.store.name",
       header: () => <IconHeader columnKey="Store Name" />,
       cell: ({ row }) => {
-        const store = row?.original?.invoice?.store;
         const branch =
           row?.original?.Branch ||
           row?.original?.branch ||
           row?.original?.invoice?.branch ||
           row?.original?.invoice?.Branch;
-        const storeName = getLocalizedName(store?.name || row?.original?.storeName);
-        const branchName = getLocalizedName(branch?.name || row?.original?.branchName);
-        const value = branchName && storeName ? `${storeName} (${branchName})` : storeName || branchName || "-";
+        const store =
+          row?.original?.invoice?.store ||
+          branch?.Store ||
+          branch?.store ||
+          row?.original?.Store ||
+          row?.original?.store;
+        const storeName = getLocalizedName(
+          store?.name ||
+          branch?.Store?.name ||
+          branch?.store?.name ||
+          row?.original?.storeName
+        );
+        const rawBranchName =
+          branch?.name && typeof branch.name === "object"
+            ? getLocalizedName(branch.name)
+            : typeof branch?.name === "string"
+            ? branch.name
+            : "";
+        const branchName =
+          rawBranchName ||
+          getLocalizedName(
+            row?.original?.branchName || row?.original?.invoice?.branch?.name
+          );
+        const value =
+          branchName && storeName && branchName !== storeName
+            ? `${storeName} (${branchName})`
+            : storeName || branchName || "-";
 
         return <span>{value}</span>;
       }

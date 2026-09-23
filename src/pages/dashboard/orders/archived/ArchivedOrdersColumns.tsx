@@ -26,8 +26,20 @@ export default function ArchivedOrdersColumns(): any {
       accessorKey: "invoice.store.name",
       header: () => <IconHeader columnKey="Store Name" />,
       cell: ({ row }) => {
-        const store = row?.original?.invoice?.store;
-        return <span>{store?.name?.en || store?.name?.ar || "-"}</span>;
+        const branch = row?.original?.Branch || row?.original?.branch;
+        const store =
+          row?.original?.invoice?.store ||
+          branch?.Store ||
+          branch?.store ||
+          row?.original?.Store ||
+          row?.original?.store;
+        const storeName = getLocalizedName(
+          store?.name ||
+          branch?.Store?.name ||
+          branch?.store?.name ||
+          row?.original?.storeName
+        );
+        return <span>{storeName || "-"}</span>;
       }
     },
     {

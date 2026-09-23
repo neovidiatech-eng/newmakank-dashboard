@@ -547,10 +547,10 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
         <div className="space-y-1.5 mb-4 pb-4 border-b border-dashed border-black text-xs">
           <p className="flex justify-between">
             <span className="font-bold">المتجر:</span>
-            <span>{getLocalizedName(data?.invoice?.store?.name) || "—"}</span>
+            <span>{getLocalizedName(data?.invoice?.store?.name || (data?.Branch as any)?.Store?.name || (data as any)?.storeName) || "—"}</span>
           </p>
-          {data?.invoice?.store?.address && (
-            <p className="text-[10px] text-gray-600 text-left">{data.invoice.store.address}</p>
+          {(data?.invoice?.store?.address || (data?.Branch as any)?.address) && (
+            <p className="text-[10px] text-gray-600 text-left">{data?.invoice?.store?.address || (data?.Branch as any)?.address}</p>
           )}
           <div className="h-[1px] bg-gray-200 my-1"></div>
           <p><strong>العميل:</strong> {data?.Customer?.name || "—"}</p>
