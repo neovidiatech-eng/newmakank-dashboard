@@ -384,7 +384,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                 triggerLabel={t("Assign")}
                 triggerVariant="outline"
                 triggerSize="sm"
-                disabled={!!data?.Delivery?.User?.id}
+                disabled={['DELIVERED', 'CANCELLED', 'REJECTED'].includes(data?.status as string)}
               />
             </div>
             <DeliveryInfo delivery={data?.Delivery} deliveryKind={(data as any)?.customDeliveryKind} />

@@ -313,7 +313,7 @@ export default function OrdersColumns(): any {
             triggerLabel={t("Assign")}
             triggerVariant="outline"
             triggerSize="sm"
-            disabled={!!deliveryId}
+            disabled={['DELIVERED', 'CANCELLED', 'REJECTED'].includes(row.original.status)}
           />
         );
       }

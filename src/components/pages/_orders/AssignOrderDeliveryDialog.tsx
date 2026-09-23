@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useTranslations } from "@/lib/i18n";
 import { usePathname, useRouter } from "@/lib/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -39,6 +40,7 @@ export default function AssignOrderDeliveryDialog({
   const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
 
   const defaultLabel = useMemo(() => t("Assign delivery"), [t]);
   const [open, setOpen] = useState(false);
@@ -82,6 +84,8 @@ export default function AssignOrderDeliveryDialog({
 
       toast.success(response?.message || t("delivery assigned"));
       setOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ["orders"] });
+      await queryClient.invalidateQueries({ queryKey: ["order", orderId] });
       await revalidatePathAction(pathname);
       router.refresh();
     } catch (error: any) {
