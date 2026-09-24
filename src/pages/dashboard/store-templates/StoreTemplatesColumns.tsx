@@ -6,7 +6,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 
 import { ImageCell } from "@/components/common/table/columns/img-cell";
 import { Link } from "@/lib/navigation";
-import { Store } from "lucide-react";
+import { Layers, Store } from "lucide-react";
 
 export default function Columns(): ColumnDef<Record<string, unknown>>[] {
   const columns = [
@@ -47,6 +47,22 @@ export default function Columns(): ColumnDef<Record<string, unknown>>[] {
           endpoint={["storeTemplates"]} 
           body={{ active: !active }} 
         />;
+      }
+    },
+    {
+      id: "categories",
+      header: () => <IconHeader columnKey="Categories" />,
+      cell: ({ row }) => {
+        const id = row.original.id;
+        return (
+          <Link
+            href={`/store-templates/${id}/categories`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 transition-colors"
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>فئات القسم</span>
+          </Link>
+        );
       }
     },
     {

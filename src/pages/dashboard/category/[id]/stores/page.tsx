@@ -94,13 +94,16 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
   const [orderMap, setOrderMap] = useState<Record<number, number>>({});
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Add Stores Dialog States
+  // Add Stores Dialog States with Pagination
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [allStoresLoading, setAllStoresLoading] = useState(false);
   const [availableStores, setAvailableStores] = useState<AvailableStore[]>([]);
   const [addSearchQuery, setAddSearchQuery] = useState("");
   const [selectedToAdd, setSelectedToAdd] = useState<number[]>([]);
   const [adding, setAdding] = useState(false);
+  const [addPage, setAddPage] = useState(1);
+  const [addTotal, setAddTotal] = useState(0);
+  const addLimit = 10;
 
   const resolveText = (val?: { ar?: string; en?: string } | string | null): string => {
     if (!val) return "";
@@ -151,20 +154,25 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
     }
   }, [categoryId]);
 
-  const loadAvailableStores = async (query = "") => {
+  const loadAvailableStores = async (query = addSearchQuery, pageToFetch = 1) => {
     setAllStoresLoading(true);
     try {
       const res = await fetchHelper<any>({
         endPoint: ["stores"],
         params: {
-          limit: 50,
+          page: pageToFetch,
+          limit: addLimit,
           ...(query.trim() ? { name: query.trim() } : {})
         },
         redirectOnUnauthorized: false
       });
       if (res?.data && Array.isArray(res.data)) {
         setAvailableStores(res.data);
+      } else {
+        setAvailableStores([]);
       }
+      setAddTotal(res?.total ?? (Array.isArray(res?.data) ? res.data.length : 0));
+      setAddPage(pageToFetch);
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -176,7 +184,8 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
     setIsAddOpen(true);
     setSelectedToAdd([]);
     setAddSearchQuery("");
-    loadAvailableStores("");
+    setAddPage(1);
+    loadAvailableStores("", 1);
   };
 
   const handleOrderChange = (storeId: number, value: string) => {
@@ -593,8 +602,9 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
                 placeholder={isRtl ? "ابحث باسم المتجر..." : "Search store name..."}
                 value={addSearchQuery}
                 onChange={(e) => {
-                  setAddSearchQuery(e.target.value);
-                  loadAvailableStores(e.target.value);
+                  const val = e.target.value;
+                  setAddSearchQuery(val);
+                  loadAvailableStores(val, 1);
                 }}
                 className="pr-9"
               />
@@ -676,6 +686,40 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
                   );
                 })
               )}
+            </div>
+
+            {/* Server-side Pagination Bar */}
+            <div className="flex items-center justify-between px-3 py-2 border rounded-md bg-muted/20 text-xs">
+              <span className="text-muted-foreground font-medium">
+                {isRtl
+                  ? `صفحة ${addPage} من ${Math.ceil(addTotal / addLimit) || 1} (إجمالي ${addTotal} متجر)`
+                  : `Page ${addPage} of ${Math.ceil(addTotal / addLimit) || 1} (Total ${addTotal} stores)`}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={addPage <= 1 || allStoresLoading}
+                  onClick={() => loadAvailableStores(addSearchQuery, addPage - 1)}
+                  className="h-7 px-2.5 text-xs gap-1"
+                >
+                  {isRtl ? <ArrowRight className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
+                  <span>{isRtl ? "السابق" : "Prev"}</span>
+                </Button>
+                <span className="px-2 font-semibold">{addPage}</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={addPage >= Math.ceil(addTotal / addLimit) || allStoresLoading}
+                  onClick={() => loadAvailableStores(addSearchQuery, addPage + 1)}
+                  className="h-7 px-2.5 text-xs gap-1"
+                >
+                  <span>{isRtl ? "التالي" : "Next"}</span>
+                  {isRtl ? <ArrowLeft className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
+                </Button>
+              </div>
             </div>
           </div>
 
