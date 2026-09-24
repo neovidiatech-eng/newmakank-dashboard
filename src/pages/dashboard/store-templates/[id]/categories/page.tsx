@@ -114,7 +114,7 @@ export default function TemplateCategoriesPage({ params }: { params: { id: strin
         }),
         fetchHelper<TemplateCategoryItem[]>({
           endPoint: ["storeTemplatesCategories"],
-          params: { templateId, limit: 100 },
+          params: { templateId, page: 1, limit: 100 },
           redirectOnUnauthorized: false
         })
       ]);
