@@ -72,6 +72,7 @@ interface CategoryDetails {
   name: { ar?: string; en?: string } | string;
   image?: string | null;
   order?: number;
+  templateId?: number;
 }
 
 interface AvailableStore {
@@ -157,22 +158,58 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
   const loadAvailableStores = async (query = addSearchQuery, pageToFetch = 1) => {
     setAllStoresLoading(true);
     try {
-      const res = await fetchHelper<any>({
-        endPoint: ["stores"],
-        params: {
-          page: pageToFetch,
-          limit: addLimit,
-          ...(query.trim() ? { name: query.trim() } : {})
-        },
-        redirectOnUnauthorized: false
-      });
-      if (res?.data && Array.isArray(res.data)) {
-        setAvailableStores(res.data);
+      const targetTemplateId = category?.templateId;
+      if (targetTemplateId) {
+        // Fetch only stores belonging to this section (template)
+        const res = await fetchHelper<any>({
+          endPoint: ["storeTemplates", targetTemplateId, "templateStores"],
+          redirectOnUnauthorized: false
+        });
+
+        let list: AvailableStore[] = [];
+        if (res?.data && Array.isArray(res.data)) {
+          list = res.data.map((item: any) => ({
+            id: item.store?.id ?? item.storeId,
+            name: item.store?.name ?? item.name,
+            logo: item.store?.logo ?? item.logo,
+            city: item.store?.city ?? item.city
+          }));
+        }
+
+        if (query.trim()) {
+          const q = query.trim().toLowerCase();
+          list = list.filter((s) => {
+            const nameStr = resolveText(s.name).toLowerCase();
+            return nameStr.includes(q) || String(s.id).includes(q);
+          });
+        }
+
+        const total = list.length;
+        const startIndex = (pageToFetch - 1) * addLimit;
+        const paginated = list.slice(startIndex, startIndex + addLimit);
+
+        setAvailableStores(paginated);
+        setAddTotal(total);
+        setAddPage(pageToFetch);
       } else {
-        setAvailableStores([]);
+        // Fallback to /stores with templateId if available
+        const res = await fetchHelper<any>({
+          endPoint: ["stores"],
+          params: {
+            page: pageToFetch,
+            limit: addLimit,
+            ...(query.trim() ? { name: query.trim() } : {})
+          },
+          redirectOnUnauthorized: false
+        });
+        if (res?.data && Array.isArray(res.data)) {
+          setAvailableStores(res.data);
+        } else {
+          setAvailableStores([]);
+        }
+        setAddTotal(res?.total ?? (Array.isArray(res?.data) ? res.data.length : 0));
+        setAddPage(pageToFetch);
       }
-      setAddTotal(res?.total ?? (Array.isArray(res?.data) ? res.data.length : 0));
-      setAddPage(pageToFetch);
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -593,13 +630,18 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
               <Plus className="h-5 w-5 text-primary" />
               <span>{isRtl ? "إضافة متاجر إلى التصنيف" : "Add Stores to Category"}</span>
             </DialogTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              {isRtl
+                ? "يتم عرض المتاجر المضافة في هذا القسم فقط لضمان عدم ربط متجر من خارج القسم"
+                : "Showing only stores assigned to this section"}
+            </p>
           </DialogHeader>
 
           <div className="space-y-4 my-2 flex-1 overflow-hidden flex flex-col">
             <div className="relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
-                placeholder={isRtl ? "ابحث باسم المتجر..." : "Search store name..."}
+                placeholder={isRtl ? "ابحث باسم أو رقم المتجر داخل هذا القسم..." : "Search store name or ID in this section..."}
                 value={addSearchQuery}
                 onChange={(e) => {
                   const val = e.target.value;
@@ -616,8 +658,10 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : availableStores.length === 0 ? (
-                <div className="py-12 text-center text-sm text-muted-foreground">
-                  {isRtl ? "لا توجد متاجر مطابقة" : "No stores found"}
+                <div className="py-12 text-center text-sm text-muted-foreground px-4">
+                  {isRtl
+                    ? "لا توجد متاجر مطابقة في هذا القسم. تأكد من إضافة المتاجر للقسم أولاً عبر صفحة قوالب المتاجر."
+                    : "No matching stores found in this section. Make sure stores are added to the section first."}
                 </div>
               ) : (
                 availableStores.map((store) => {
