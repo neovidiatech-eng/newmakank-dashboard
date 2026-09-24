@@ -2,9 +2,10 @@ import ServicesColumns from "@/pages/dashboard/services/ServicesColumns";
 import StoresColumns from "@/pages/dashboard/stores/StoresColumns";
 import CustomTabs, { TabItem } from "@/components/common/CustomTabs/custom-tab";
 import TableBasic from "@/components/common/table/TableBasic";
-import { Package, Store } from "lucide-react";
+import { Package, Store, Settings } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
-import { useParams } from "@/lib/navigation";
+import { useParams, Link } from "@/lib/navigation";
+import { Button } from "@/components/ui/button";
 
 interface CategoryDetailsPageProps {
   category: any;
@@ -84,11 +85,21 @@ export default function CategoryDetailsPage({
 
   return (
     <div className="flex flex-col gap-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">{categoryName}</h1>
-        <p className="text-muted-foreground">
-          {t("View products and stores associated with this category")}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight">{categoryName}</h1>
+          <p className="text-muted-foreground">
+            {t("View products and stores associated with this category")}
+          </p>
+        </div>
+        {category?.id && (
+          <Link href={`/category/${category.id}/stores`}>
+            <Button className="gap-2">
+              <Store className="w-4 h-4" />
+              <span>{locale === "ar" ? "إدارة وترتيب متاجر التصنيف" : "Manage Category Stores"}</span>
+            </Button>
+          </Link>
+        )}
       </div>
 
       <CustomTabs tabs={tabs} defaultValue="services" clearSearchParams className="mt-2" />

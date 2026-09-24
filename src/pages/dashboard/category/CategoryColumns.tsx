@@ -3,6 +3,8 @@ import { ImageCell } from "@/components/common/table/columns/img-cell";
 import LocaleViewColumn from "@/components/common/table/columns/locale-view.column";
 import ToggleStatus from "@/components/common/table/tableActions/ToggleStatus";
 import { type ColumnDef } from "@tanstack/react-table";
+import { Link } from "@/lib/navigation";
+import { Store } from "lucide-react";
 
 import { useApiQuery } from "@/hooks/useApiQuery";
 
@@ -138,6 +140,24 @@ export default function Columns(): ColumnDef<Record<string, unknown>>[] {
           endpoint={["categories"]}
         />
       )
+    },
+    {
+      id: "stores",
+      header: () => <IconHeader columnKey="Stores" />,
+      cell: ({ row }) => {
+        const id = row.original.id;
+        const isCustom = row.original.isCustomStoreCategory as boolean;
+        if (isCustom) return <span className="text-muted-foreground text-xs">—</span>;
+        return (
+          <Link
+            href={`/category/${id}/stores`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+          >
+            <Store className="w-3.5 h-3.5" />
+            <span>متاجر التصنيف</span>
+          </Link>
+        );
+      }
     },
   ];
   return columns;
