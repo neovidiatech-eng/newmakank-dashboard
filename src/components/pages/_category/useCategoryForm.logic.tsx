@@ -57,11 +57,17 @@ export default function useCategoryLogic({
     const isCustom = (data as any)?.isCustomStoreCategory === true || hasStoreId;
     const isTemplateFlow = !endpoint;
 
+    const rawTemplateId =
+      typeof (formData as any)?.templateId === "object" && (formData as any)?.templateId !== null
+        ? (formData as any)?.templateId.value
+        : (formData as any)?.templateId;
+    const templateIdNum = rawTemplateId ? Number(rawTemplateId) : undefined;
+
     let finalEndpoint = endpoint;
     if (!finalEndpoint) {
-      if (!isEdit && formData.templateId) {
+      if (!isEdit && templateIdNum && !isNaN(templateIdNum)) {
         // Create: POST /api/store-templates/:templateId/categories
-        finalEndpoint = ["storeTemplates", Number(formData.templateId), "/categories" as any];
+        finalEndpoint = ["storeTemplates", templateIdNum, "templateCategories"];
       } else if (isEdit && isCustom) {
         // Edit custom store category (Category table): PATCH /api/store-categories/:id
         finalEndpoint = ["storeCategories"];

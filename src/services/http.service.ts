@@ -9,9 +9,12 @@ type DashboardAxiosRequestConfig = AxiosRequestConfig & {
 
 export function buildEndpointUrl(endPoint: endpointType, params?: unknown) {
   const path = endPoint
-    .map((item: endpointName | number | string) => {
-      if (typeof item === "number" || Boolean(Number(item))) return `/${item}`;
-      const val = String(endpoints[item as endpointName] ?? item);
+    .map((item: endpointName | number | string, index: number) => {
+      if (typeof item === "number" || (!isNaN(Number(item)) && item !== "")) return `/${item}`;
+      let val = String(endpoints[item as endpointName] ?? item);
+      if (index > 0 && val.startsWith("/api/")) {
+        val = val.replace(/^\/api/, "");
+      }
       return val.startsWith("/") ? val : `/${val}`;
     })
     .join("");

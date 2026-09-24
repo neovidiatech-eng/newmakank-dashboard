@@ -199,7 +199,7 @@ export default function TemplateCategoriesPage({ params }: { params: { id: strin
       }
 
       const res = await fetchHelper({
-        endPoint: ["storeTemplates", templateId, "/categories" as any],
+        endPoint: ["storeTemplates", templateId, "templateCategories"],
         method: "POST",
         body: fd,
         redirectOnUnauthorized: false

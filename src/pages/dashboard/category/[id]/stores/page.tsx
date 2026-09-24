@@ -121,7 +121,7 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
           redirectOnUnauthorized: false
         }),
         fetchHelper<StoreItem[]>({
-          endPoint: ["storeTemplatesCategories", categoryId, "stores" as any],
+          endPoint: ["storeTemplatesCategories", categoryId, "templateCategoryStores"],
           redirectOnUnauthorized: false
         })
       ]);
@@ -242,7 +242,7 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
       }));
 
       const res = await fetchHelper({
-        endPoint: ["storeTemplatesCategories", categoryId, "stores" as any, "order" as any],
+        endPoint: ["storeTemplatesCategories", categoryId, "templateCategoryStores", "templateCategoryStoresOrder"],
         method: "PATCH",
         body: { orders },
         redirectOnUnauthorized: false
@@ -266,7 +266,7 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
     setAdding(true);
     try {
       const res = await fetchHelper({
-        endPoint: ["storeTemplatesCategories", categoryId, "stores" as any],
+        endPoint: ["storeTemplatesCategories", categoryId, "templateCategoryStores"],
         method: "POST",
         body: { storeIds: selectedToAdd },
         redirectOnUnauthorized: false
@@ -294,7 +294,7 @@ export default function CategoryStoresPage({ params }: { params: { id: string } 
 
     try {
       const res = await fetchHelper({
-        endPoint: ["storeTemplatesCategories", categoryId, "stores" as any, storeId as any],
+        endPoint: ["storeTemplatesCategories", categoryId, "templateCategoryStores", storeId],
         method: "DELETE",
         redirectOnUnauthorized: false
       });
