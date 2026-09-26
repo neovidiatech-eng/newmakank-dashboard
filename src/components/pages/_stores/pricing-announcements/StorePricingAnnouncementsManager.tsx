@@ -66,6 +66,8 @@ interface StoreZonePricesResponse {
   storeName?: { ar?: string; en?: string } | string;
   logo?: string | null;
   announcement?: string | null;
+  globalAnnouncement?: string | null;
+  effectiveAnnouncement?: string | null;
   zonePricingEnabled: boolean;
   zones: ZonePrice[];
 }
@@ -133,12 +135,15 @@ export default function StorePricingAnnouncementsManager() {
   const [deletingZoneId, setDeletingZoneId] = useState<number | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  // Store Announcement State (only for specific store)
+  // Announcement State (Global & Store Specific)
   const [announcementText, setAnnouncementText] = useState("");
   const [savedAnnouncement, setSavedAnnouncement] = useState("");
+  const [globalAnnouncement, setGlobalAnnouncement] = useState("");
   const [isSavingAnnouncement, setIsSavingAnnouncement] = useState(false);
   const [isClearingAnnouncement, setIsClearingAnnouncement] = useState(false);
   const [clearAnnouncementDialogOpen, setClearAnnouncementDialogOpen] = useState(false);
+  const [revertDialogOpen, setRevertDialogOpen] = useState(false);
+  const [isRevertingAnnouncement, setIsRevertingAnnouncement] = useState(false);
 
   // Fetch Zone Pricing & Store Details
   const isAllStores = pricingScope === "all";
@@ -181,10 +186,19 @@ export default function StorePricingAnnouncementsManager() {
     setEditedPrices(pricesMap);
     setEditedDiscountPrices(discountsMap);
 
-    // Announcement (for store mode)
-    const currentAnnouncement = zonePricingData.announcement ?? "";
-    setAnnouncementText(currentAnnouncement);
-    setSavedAnnouncement(currentAnnouncement);
+    // Announcement (Global broadcast or Store-specific)
+    if (isAllStores) {
+      const currentGlobal = zonePricingData.announcement ?? zonePricingData.globalAnnouncement ?? "";
+      setAnnouncementText(currentGlobal);
+      setSavedAnnouncement(currentGlobal);
+      setGlobalAnnouncement(currentGlobal);
+    } else {
+      const currentCustom = zonePricingData.announcement ?? "";
+      const currentGlobal = zonePricingData.globalAnnouncement ?? "";
+      setAnnouncementText(currentCustom);
+      setSavedAnnouncement(currentCustom);
+      setGlobalAnnouncement(currentGlobal);
+    }
 
     // Store details
     if (isAllStores) {
@@ -439,34 +453,104 @@ export default function StorePricingAnnouncementsManager() {
     setQuickZoneAfterPrice("");
   };
 
-  // Save Announcement (specific store only)
+  // Save Announcement (Global broadcast or Specific Store)
   const handleSaveAnnouncement = async () => {
-    if (isAllStores || !selectedSpecificStoreId) return;
+    if (!selectedStoreId) return;
 
     const trimmed = announcementText.trim();
     setIsSavingAnnouncement(true);
 
-    const res = await fetchHelper({
-      endPoint: ["stores", selectedSpecificStoreId],
-      method: "PATCH",
-      body: { announcement: trimmed || null },
-    });
+    if (isAllStores) {
+      const res = await fetchHelper({
+        endPoint: ["stores", "all", "announcement"],
+        method: "PATCH",
+        body: { announcement: trimmed || null },
+      });
 
-    if (res?.success) {
-      setSavedAnnouncement(trimmed);
-      toast.success(t("announcementSaved"));
-      refetch();
+      if (res?.success) {
+        setSavedAnnouncement(trimmed);
+        setGlobalAnnouncement(trimmed);
+        toast.success(t("globalAnnouncementSaved"));
+        refetch();
+      } else {
+        toast.error(res?.result?.message ?? res?.message ?? t("error"));
+      }
     } else {
-      toast.error(res?.result?.message ?? res?.message ?? t("error"));
+      if (!selectedSpecificStoreId) {
+        setIsSavingAnnouncement(false);
+        return;
+      }
+
+      const res = await fetchHelper({
+        endPoint: ["stores", selectedSpecificStoreId],
+        method: "PATCH",
+        body: { announcement: trimmed || null },
+      });
+
+      if (res?.success) {
+        setSavedAnnouncement(trimmed);
+        toast.success(t("announcementSaved"));
+        refetch();
+      } else {
+        toast.error(res?.result?.message ?? res?.message ?? t("error"));
+      }
     }
     setIsSavingAnnouncement(false);
   };
 
-  // Clear Announcement (specific store only)
+  // Clear Announcement (Global broadcast or Specific Store)
   const handleClearAnnouncement = async () => {
-    if (isAllStores || !selectedSpecificStoreId) return;
+    if (!selectedStoreId) return;
 
     setIsClearingAnnouncement(true);
+
+    if (isAllStores) {
+      const res = await fetchHelper({
+        endPoint: ["stores", "all", "announcement"],
+        method: "PATCH",
+        body: { announcement: null },
+      });
+
+      if (res?.success) {
+        setAnnouncementText("");
+        setSavedAnnouncement("");
+        setGlobalAnnouncement("");
+        toast.success(t("globalAnnouncementCleared"));
+        setClearAnnouncementDialogOpen(false);
+        refetch();
+      } else {
+        toast.error(res?.result?.message ?? res?.message ?? t("error"));
+      }
+    } else {
+      if (!selectedSpecificStoreId) {
+        setIsClearingAnnouncement(false);
+        return;
+      }
+
+      const res = await fetchHelper({
+        endPoint: ["stores", selectedSpecificStoreId],
+        method: "PATCH",
+        body: { announcement: null },
+      });
+
+      if (res?.success) {
+        setAnnouncementText("");
+        setSavedAnnouncement("");
+        toast.success(t("announcementCleared"));
+        setClearAnnouncementDialogOpen(false);
+        refetch();
+      } else {
+        toast.error(res?.result?.message ?? res?.message ?? t("error"));
+      }
+    }
+    setIsClearingAnnouncement(false);
+  };
+
+  // Revert Store Announcement to Global
+  const handleRevertToGlobal = async () => {
+    if (isAllStores || !selectedSpecificStoreId) return;
+
+    setIsRevertingAnnouncement(true);
     const res = await fetchHelper({
       endPoint: ["stores", selectedSpecificStoreId],
       method: "PATCH",
@@ -476,13 +560,13 @@ export default function StorePricingAnnouncementsManager() {
     if (res?.success) {
       setAnnouncementText("");
       setSavedAnnouncement("");
-      toast.success(t("announcementCleared"));
-      setClearAnnouncementDialogOpen(false);
+      toast.success(locale === "ar" ? "تمت استعادة الرسالة الموحدة للمتجر" : "Reverted to platform global announcement");
+      setRevertDialogOpen(false);
       refetch();
     } else {
       toast.error(res?.result?.message ?? res?.message ?? t("error"));
     }
-    setIsClearingAnnouncement(false);
+    setIsRevertingAnnouncement(false);
   };
 
   // Filtered zones list for search inside table
@@ -747,6 +831,110 @@ export default function StorePricingAnnouncementsManager() {
           ) : (
             /* Main Pricing & Configuration Section */
             <div className="space-y-6">
+              {/* Global Announcement Card (When in 'all' stores mode) */}
+              {isAllStores && (
+                <Card className="shadow-sm border-primary/20 bg-primary/[0.02]">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base font-semibold flex items-center gap-2">
+                        <Megaphone className="h-4 w-4 text-primary" />
+                        {t("globalAnnouncementTitle")}
+                      </CardTitle>
+                      {savedAnnouncement ? (
+                        <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
+                          {t("activeGlobalBadge") || (locale === "ar" ? "تنبيه عام نشط" : "Active Global Notice")}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs text-muted-foreground">
+                          {t("noActiveGlobalBadge") || (locale === "ar" ? "لا يوجد تنبيه عام" : "No Global Notice")}
+                        </Badge>
+                      )}
+                    </div>
+                    <CardDescription>{t("globalAnnouncementDesc")}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Textarea
+                      rows={3}
+                      value={announcementText}
+                      onChange={(e) => setAnnouncementText(e.target.value)}
+                      placeholder={
+                        locale === "ar"
+                          ? "اكتب هنا التنبيه الموحد لجميع المتاجر (مثال: نعتذر عن التأخير لسوء الأحوال الجوية)..."
+                          : "Write global announcement broadcast for all stores here..."
+                      }
+                      className="resize-y"
+                    />
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                      <span className="text-xs text-muted-foreground">
+                        {announcementText.length} {t("characters") || "حرف"}
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        {savedAnnouncement && (
+                          <Dialog
+                            open={clearAnnouncementDialogOpen}
+                            onOpenChange={setClearAnnouncementDialogOpen}
+                          >
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive gap-1.5"
+                                disabled={isClearingAnnouncement}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                {t("clearGlobalAnnouncement")}
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>{t("clearGlobalAnnouncement")}</DialogTitle>
+                                <DialogDescription>
+                                  {t("clearGlobalAnnouncementConfirm")}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter className="gap-2">
+                                <Button
+                                  variant="outline"
+                                  onClick={() => setClearAnnouncementDialogOpen(false)}
+                                >
+                                  {t("Cancel")}
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  onClick={handleClearAnnouncement}
+                                  disabled={isClearingAnnouncement}
+                                >
+                                  {isClearingAnnouncement ? (
+                                    <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                                  ) : null}
+                                  {t("Delete")}
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        )}
+
+                        <Button
+                          size="sm"
+                          onClick={handleSaveAnnouncement}
+                          disabled={isSavingAnnouncement || announcementText === savedAnnouncement}
+                          className="gap-1.5"
+                        >
+                          {isSavingAnnouncement ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="h-4 w-4" />
+                          )}
+                          {t("saveGlobalAnnouncement")}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Specific Store Announcement Card (only shown when a specific store is selected) */}
               {!isAllStores && selectedSpecificStoreId && (
                 <Card className="shadow-sm">
@@ -758,7 +946,11 @@ export default function StorePricingAnnouncementsManager() {
                       </CardTitle>
                       {savedAnnouncement ? (
                         <Badge variant="default" className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
-                          {t("Active") || (locale === "ar" ? "نشط حالياً" : "Active")}
+                          {t("customStoreAnnouncement") || (locale === "ar" ? "تنبيه مخصص لهذا المتجر" : "Custom Store Notice")}
+                        </Badge>
+                      ) : globalAnnouncement ? (
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 text-xs">
+                          {t("inheritedFromGlobal") || (locale === "ar" ? "موروث من الرسالة الموحدة" : "Inherited from Global")}
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="text-xs text-muted-foreground">
@@ -769,11 +961,37 @@ export default function StorePricingAnnouncementsManager() {
                     <CardDescription>{t("storeAnnouncementDesc")}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
+                    {/* If no custom announcement, show info alert about inherited global announcement */}
+                    {!savedAnnouncement && globalAnnouncement && (
+                      <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-sm dark:border-blue-900/50 dark:bg-blue-950/30">
+                        <div className="flex items-start gap-2">
+                          <Megaphone className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                          <div className="space-y-1">
+                            <p className="font-medium text-blue-900 dark:text-blue-200">
+                              {t("inheritedAnnouncementInfo") || "هذا المتجر يعرض حالياً رسالة المنصة الموحدة:"}
+                            </p>
+                            <p className="text-xs text-blue-800 dark:text-blue-300 italic bg-white/70 dark:bg-slate-900/70 p-2 rounded border border-blue-100 dark:border-blue-900">
+                              &ldquo;{globalAnnouncement}&rdquo;
+                            </p>
+                            <p className="text-xs text-muted-foreground pt-1">
+                              {t("canOverridePrompt") || "يمكنك كتابة رسالة هنا لتخصيص هذا المتجر بتنبيه مستقل."}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <Textarea
                       rows={3}
                       value={announcementText}
                       onChange={(e) => setAnnouncementText(e.target.value)}
-                      placeholder={t("announcementPlaceholder")}
+                      placeholder={
+                        savedAnnouncement
+                          ? t("announcementPlaceholder")
+                          : globalAnnouncement
+                          ? (locale === "ar" ? "أدخل نصاً لتجاوز الرسالة الموحدة وتخصيص هذا المتجر..." : "Enter text to override global announcement for this store...")
+                          : t("announcementPlaceholder")
+                      }
                       className="resize-y"
                     />
 
@@ -783,6 +1001,42 @@ export default function StorePricingAnnouncementsManager() {
                       </span>
 
                       <div className="flex items-center gap-2">
+                        {/* Revert to Global Announcement Button (when custom exists and global exists) */}
+                        {savedAnnouncement && globalAnnouncement && (
+                          <Dialog open={revertDialogOpen} onOpenChange={setRevertDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950 gap-1.5"
+                                disabled={isRevertingAnnouncement}
+                              >
+                                <RotateCcw className="h-4 w-4" />
+                                {t("revertToGlobalAnnouncement")}
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>{t("revertToGlobalAnnouncement")}</DialogTitle>
+                                <DialogDescription>{t("revertToGlobalConfirm")}</DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter className="gap-2">
+                                <Button variant="outline" onClick={() => setRevertDialogOpen(false)}>
+                                  {t("Cancel")}
+                                </Button>
+                                <Button
+                                  variant="default"
+                                  onClick={handleRevertToGlobal}
+                                  disabled={isRevertingAnnouncement}
+                                >
+                                  {isRevertingAnnouncement && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
+                                  {t("revertToGlobalAnnouncement")}
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        )}
+
                         {savedAnnouncement && (
                           <Dialog
                             open={clearAnnouncementDialogOpen}
