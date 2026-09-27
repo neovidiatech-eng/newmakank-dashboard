@@ -273,6 +273,21 @@ export default function OrdersColumns(): any {
       cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
     },
     {
+      accessorKey: "tip",
+      header: () => <IconHeader columnKey="Tip" />,
+      cell: ({ row, getValue }) => {
+        const tip = Number(getValue() ?? row.original?.invoice?.tip ?? 0);
+        return tip > 0 ? (
+          <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold">
+            <span>+</span>
+            <PriceAmount value={tip} />
+          </div>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      }
+    },
+    {
       accessorKey: "tax",
       header: () => <IconHeader columnKey="Tax" />,
       cell: ({ getValue }) => <PriceAmount value={getValue() as number} />

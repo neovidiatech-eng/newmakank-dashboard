@@ -9,6 +9,12 @@ import { OrderServicesCell } from "@/components/pages/_orders/OrderServicesCell"
 import RealizeOrderButton from "@/components/pages/_orders/RealizeOrderButton";
 import { useTranslations } from "@/lib/i18n";
 
+const getLocalizedName = (value: any) => {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return value.ar || value.en || "";
+};
+
 export default function ArchivedOrdersColumns(): any {
   const t = useTranslations();
   const columns = [
@@ -108,6 +114,21 @@ export default function ArchivedOrdersColumns(): any {
       accessorKey: "shipping",
       header: () => <IconHeader columnKey="Shipping" />,
       cell: ({ getValue }) => <span>{getValue() as string}</span>
+    },
+    {
+      accessorKey: "tip",
+      header: () => <IconHeader columnKey="Tip" />,
+      cell: ({ row, getValue }) => {
+        const tip = Number(getValue() ?? row.original?.invoice?.tip ?? 0);
+        return tip > 0 ? (
+          <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold">
+            <span>+</span>
+            <PriceAmount value={tip} />
+          </div>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      }
     },
     {
       accessorKey: "tax",

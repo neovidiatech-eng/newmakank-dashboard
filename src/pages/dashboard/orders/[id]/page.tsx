@@ -192,6 +192,16 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   </span>
                 </div>
               )}
+              {Number(data?.tip || (data as any)?.invoice?.tip || 0) > 0 && (
+                <div className="flex justify-between text-amber-600 dark:text-amber-500 font-medium">
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    - {t("Tip") || "إكرامية (تبس)"}
+                  </span>
+                  <span className="font-semibold text-amber-600 dark:text-amber-500">
+                    + <PriceAmount value={Number(data?.tip || (data as any)?.invoice?.tip)} />
+                  </span>
+                </div>
+              )}
               {combinedDiscount > 0 && (
                 <div className="flex justify-between text-green-600 dark:text-green-500 font-medium">
                   <div>
@@ -388,6 +398,15 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
               />
             </div>
             <DeliveryInfo delivery={data?.Delivery} deliveryKind={(data as any)?.customDeliveryKind} />
+
+            {Number(data?.tip || (data as any)?.invoice?.tip || 0) > 0 && (
+              <div className="flex items-center justify-between text-xs p-2.5 rounded-md bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200">
+                <span className="font-medium">{t("Delivery Tip") || "إكرامية المندوب (تبس)"}:</span>
+                <span className="font-bold text-amber-700 dark:text-amber-400">
+                  + <PriceAmount value={Number(data?.tip || (data as any)?.invoice?.tip)} />
+                </span>
+              </div>
+            )}
 
             <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
               <div className="flex items-center justify-between">
@@ -639,6 +658,12 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
             <div className="flex justify-between">
               <span>رسوم الخدمة:</span>
               <span className="font-sans">{formatMoneyVal(serviceFee)} ج.م</span>
+            </div>
+          )}
+          {Number(data?.tip || (data as any)?.invoice?.tip || 0) > 0 && (
+            <div className="flex justify-between text-black">
+              <span>إكرامية (تبس):</span>
+              <span className="font-sans">+ {formatMoneyVal(Number(data?.tip || (data as any)?.invoice?.tip))} ج.م</span>
             </div>
           )}
           <div className="flex justify-between border-t border-double border-black pt-2 font-black text-sm">

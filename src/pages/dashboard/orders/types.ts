@@ -3,6 +3,9 @@
 export interface ApiResponseBranch {
   lat: number;
   lng: number;
+  name?: any;
+  address?: string | null;
+  Store?: any;
 }
 
 export interface ApiResponseCustomer {
@@ -23,6 +26,7 @@ export interface ApiResponseInvoiceSummary {
   estimatedItemsCost?: number;
   tax: number;
   shipping: number;
+  tip?: number;
   discount?: number;
   commission?: number;
   total: number;
@@ -61,6 +65,7 @@ export interface ApiResponseInvoice {
   paymentMethod: string;
   orderType: string;
   customDelivery?: ApiResponseInvoiceCustomDelivery;
+  tip?: number;
   date: string;
 }
 
@@ -218,6 +223,7 @@ export interface ApiResponseAddress {
 export interface ApiResponse {
   id: number;
   price: number;
+  tip?: number | null;
   note?: string | null;
   adminNote?: string | null;
   noteForDelivery?: string | null;

@@ -14,6 +14,8 @@
   "Total Spent": "Total Spent",
   "Total Revenue": "Total Revenue",
   "OrderId": "Order ID",
+  "Tip": "Tip",
+  "Delivery Tip": "Delivery Driver Tip",
   "Id": "Id",
   "templateDownloaded": "Template downloaded successfully.",
   "uploadCompleted": "Upload completed successfully.",
