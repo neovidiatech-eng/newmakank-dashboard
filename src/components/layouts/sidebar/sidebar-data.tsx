@@ -26,10 +26,6 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
         title: "storePricingAndAnnouncements",
         url: "/stores/pricing-announcements"
       },
-      (permissions?.["categories"]?.get || permissions?.categories?.get) && {
-        title: "categories",
-        url: "/category"
-      },
       (permissions?.["store-templates"]?.get || permissions?.storeTemplates?.get) && {
         title: "storeTemplates",
         url: "/store-templates"
