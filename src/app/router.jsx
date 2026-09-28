@@ -295,6 +295,12 @@ const dashboardRoutes = createRoutesFromGlob(
   "dashboard/",
 );
 
+function CatchAllLocaleRedirect() {
+  const { locale = "ar" } = useParams();
+  const safeLocale = supportedLocales.has(locale) ? locale : "ar";
+  return <Navigate to={`/${safeLocale}/dashboard`} replace />;
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -329,7 +335,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "*",
-        element: <Navigate to="dashboard" replace />,
+        element: <CatchAllLocaleRedirect />,
       },
     ],
   },
