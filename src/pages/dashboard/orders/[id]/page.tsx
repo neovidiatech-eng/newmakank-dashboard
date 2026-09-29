@@ -95,8 +95,13 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
 
   // Original menu price of items = (Products price with commission - store commission + item discount)
   const originalProductsPrice = Math.max(0, productsPriceWithCommission - storeCommission + totalItemDiscounts);
-  // Net earnings of the store for items = (Products price with commission - store commission)
-  const storeNetEarnings = Math.max(0, productsPriceWithCommission - storeCommission);
+  // Net earnings of the store (Option 1: discount absorbs platform store commission, restaurant receives full menu payout)
+  const excessStoreCommission = Math.max(0, storeCommission - (totalItemDiscounts + combinedDiscount));
+  const storeNetEarnings = Number(
+    (data as any)?.financialBreakdown?.storeNetEarnings ??
+    (data as any)?.financialBreakdown?.payToStoreAmount ??
+    Math.max(0, productsPriceWithCommission - excessStoreCommission)
+  );
   return (
     <>
       <div className="container mx-auto py-8 max-w-6xl px-4 lg:px-6 print:hidden">
