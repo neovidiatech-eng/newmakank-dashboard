@@ -26,11 +26,15 @@ import { toast } from "sonner";
 import {
   ArrowLeft,
   ArrowRight,
+  ChevronDown,
+  ChevronUp,
   Edit,
   Layers,
   Loader2,
   Plus,
+  Save,
   Search,
+  Sparkles,
   Store,
   Trash2,
   Upload
@@ -65,6 +69,8 @@ export default function TemplateCategoriesPage({ params }: { params: { id: strin
   const [loading, setLoading] = useState(true);
   const [template, setTemplate] = useState<TemplateDetails | null>(null);
   const [categories, setCategories] = useState<TemplateCategoryItem[]>([]);
+  const [orderMap, setOrderMap] = useState<Record<number, number>>({});
+  const [savingOrders, setSavingOrders] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Create Category Modal States
@@ -125,11 +131,80 @@ export default function TemplateCategoriesPage({ params }: { params: { id: strin
 
       if (categoriesRes?.data && Array.isArray(categoriesRes.data)) {
         setCategories(categoriesRes.data);
+        const map: Record<number, number> = {};
+        for (const item of categoriesRes.data) {
+          map[item.id] = item.order ?? 0;
+        }
+        setOrderMap(map);
       }
     } catch (err: any) {
       toast.error(err?.message || (isRtl ? "فشل في تحميل البيانات" : "Failed to load data"));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOrderChange = (catId: number, value: string) => {
+    const num = parseInt(value, 10);
+    setOrderMap((prev) => ({
+      ...prev,
+      [catId]: isNaN(num) ? 0 : Math.max(0, num)
+    }));
+  };
+
+  const moveOrder = (catId: number, delta: number) => {
+    setOrderMap((prev) => {
+      const current = prev[catId] ?? 0;
+      return {
+        ...prev,
+        [catId]: Math.max(0, current + delta)
+      };
+    });
+  };
+
+  const autoNumberFiltered = () => {
+    const updated = { ...orderMap };
+    filteredCategories.forEach((item, index) => {
+      updated[item.id] = index + 1;
+    });
+    setOrderMap(updated);
+    toast.info(isRtl ? "تم الترقيم التلقائي للفئات (1, 2, 3...)" : "Auto-numbered sequentially");
+  };
+
+  const hasOrderChanges = useMemo(() => {
+    for (const item of categories) {
+      if ((orderMap[item.id] ?? 0) !== (item.order ?? 0)) {
+        return true;
+      }
+    }
+    return false;
+  }, [categories, orderMap]);
+
+  const saveOrders = async () => {
+    setSavingOrders(true);
+    try {
+      const orders = Object.entries(orderMap).map(([categoryId, order]) => ({
+        categoryId: Number(categoryId),
+        order: Number(order)
+      }));
+
+      const res = await fetchHelper({
+        endPoint: ["storeTemplates", templateId, "templateCategories", "templateCategoryStoresOrder"],
+        method: "PATCH",
+        body: { orders },
+        redirectOnUnauthorized: false
+      });
+
+      if (res?.success) {
+        toast.success(isRtl ? "تم حفظ ترتيب الفئات بنجاح" : "Category orders saved successfully");
+        await loadData();
+      } else {
+        toast.error(res?.message || (isRtl ? "فشل حفظ ترتيب الفئات" : "Failed to save orders"));
+      }
+    } catch (err: any) {
+      toast.error(err?.message || (isRtl ? "حدث خطأ غير متوقع" : "Unexpected error occurred"));
+    } finally {
+      setSavingOrders(false);
     }
   };
 
@@ -333,6 +408,25 @@ export default function TemplateCategoriesPage({ params }: { params: { id: strin
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-auto">
+            {hasOrderChanges && (
+              <Button
+                onClick={saveOrders}
+                disabled={savingOrders}
+                className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+              >
+                {savingOrders ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                <span>{isRtl ? "حفظ ترتيب الفئات" : "Save Category Order"}</span>
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={autoNumberFiltered}
+              className="gap-1.5 text-xs"
+              title={isRtl ? "ترقيم الفئات بالترتيب 1، 2، 3..." : "Auto Number"}
+            >
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              <span>{isRtl ? "ترقيم تلقائي (1, 2, 3...)" : "Auto Number"}</span>
+            </Button>
             <Button onClick={openCreateDialog} className="gap-2">
               <Plus className="h-4 w-4" />
               <span>{isRtl ? "إضافة فئة جديدة للقسم" : "Add Category"}</span>
@@ -402,7 +496,7 @@ export default function TemplateCategoriesPage({ params }: { params: { id: strin
                       <TableHead>
                         {isRtl ? "اسم الفئة (إنجليزي)" : "Name (EN)"}
                       </TableHead>
-                      <TableHead className="w-20 text-center font-bold">
+                      <TableHead className="w-36 text-center font-bold">
                         {isRtl ? "الترتيب" : "Order"}
                       </TableHead>
                       <TableHead className="text-center font-bold">
@@ -449,8 +543,38 @@ export default function TemplateCategoriesPage({ params }: { params: { id: strin
                             </span>
                           </TableCell>
 
-                          <TableCell className="text-center font-mono font-bold">
-                            {cat.order ?? 0}
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1 mx-auto max-w-[130px]">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0"
+                                onClick={() => moveOrder(cat.id, 1)}
+                                title={isRtl ? "زيادة الترتيب" : "Increase order"}
+                              >
+                                <ChevronUp className="h-3.5 w-3.5" />
+                              </Button>
+                              <Input
+                                type="number"
+                                min={0}
+                                value={orderMap[cat.id] ?? 0}
+                                onChange={(e) => handleOrderChange(cat.id, e.target.value)}
+                                className={`h-8 w-14 text-center font-mono font-bold text-xs p-1 ${
+                                  (orderMap[cat.id] ?? 0) !== (cat.order ?? 0)
+                                    ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 text-amber-600 ring-1 ring-amber-500"
+                                    : ""
+                                }`}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0"
+                                onClick={() => moveOrder(cat.id, -1)}
+                                title={isRtl ? "إنقاص الترتيب" : "Decrease order"}
+                              >
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
                           </TableCell>
 
                           <TableCell className="text-center">
