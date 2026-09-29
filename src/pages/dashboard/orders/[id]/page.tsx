@@ -71,6 +71,35 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
     (data as any)?.isFreeDeliveryReward ||
     (data as any)?.rewardType === "FREE_DELIVERY"
   );
+
+  // Detailed pricing breakdown
+  let originalProductsPrice = 0;
+  let totalItemDiscounts = 0;
+  if (Array.isArray(data?.OrderItems)) {
+    for (const item of data.OrderItems) {
+      const quantity = Number(item.quantity ?? 1);
+      const originalBase = Number((item.Size as any)?.price ?? (item.Service as any)?.price ?? item.price ?? 0);
+      const discountedBase = Number((item.Size as any)?.priceAfterDiscount ?? (item.Service as any)?.priceAfterDiscount ?? originalBase);
+      const addonsPrice = Array.isArray(item.OrderItemAddons)
+        ? item.OrderItemAddons.reduce((sum: number, a: any) => sum + Number(a.Addon?.price ?? 0), 0)
+        : 0;
+
+      originalProductsPrice += (originalBase + addonsPrice) * quantity;
+      if (originalBase > discountedBase) {
+        totalItemDiscounts += (originalBase - discountedBase) * quantity;
+      }
+    }
+  }
+
+  const storeCommission = Number(data?.storeCommission ?? (data as any)?.financialBreakdown?.storeCommission ?? 0);
+  const productsPriceWithCommission = Number(data?.price ?? 0);
+  if (originalProductsPrice === 0) {
+    originalProductsPrice = Math.max(0, productsPriceWithCommission - storeCommission + totalItemDiscounts);
+  }
+  const storeNetEarnings = Number(
+    (data as any)?.financialBreakdown?.storeNetEarnings ??
+    Math.max(0, productsPriceWithCommission - storeCommission)
+  );
   return (
     <>
       <div className="container mx-auto py-8 max-w-6xl px-4 lg:px-6 print:hidden">
@@ -138,16 +167,49 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
               {t("Payment Details")}
             </h2>
             <div className="bg-muted/30 dark:bg-muted/10 border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-3.5 text-sm print:hidden">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">- {t("productsPriceWithCommission") || "سعر المنتجات بالعمولة"}</span>
+              {/* 1. Original Menu Price (if discount or store commission exists) */}
+              {(totalItemDiscounts > 0 || storeCommission > 0) && originalProductsPrice > 0 && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>- {t("originalProductsPrice") || "سعر المنتجات الأصلي (المنيو)"}</span>
+                  <span className="font-medium">
+                    <PriceAmount value={originalProductsPrice} />
+                  </span>
+                </div>
+              )}
+
+              {/* 2. Store / Items Discount */}
+              {totalItemDiscounts > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-500 font-medium">
+                  <span>- {t("storeProductsDiscount") || "خصم المتجر على المنتجات"}</span>
+                  <span>
+                    - <PriceAmount value={totalItemDiscounts} />
+                  </span>
+                </div>
+              )}
+
+              {/* 3. Store Commission Added */}
+              {storeCommission > 0 && (
+                <div className="flex justify-between text-slate-700 dark:text-slate-300">
+                  <span>- {t("storeCommissionAdded") || "عمولة المتجر المضافة"}</span>
+                  <span className="font-medium">
+                    + <PriceAmount value={storeCommission} />
+                  </span>
+                </div>
+              )}
+
+              {/* 4. Products Price with Commission (Collected from Customer for items) */}
+              <div className="flex justify-between font-semibold text-slate-900 dark:text-slate-100">
+                <span className="text-muted-foreground">- {t("productsPriceWithCommission") || "سعر المنتجات بالعمولة (المحصل للمنتجات)"}</span>
                 <span className="font-medium">
-                  <PriceAmount value={data?.price || 0} />
+                  <PriceAmount value={productsPriceWithCommission} />
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">- {t("productsPriceWithoutCommission") || "سعر المنتجات من غير العمولة"}</span>
-                <span className="font-medium">
-                  <PriceAmount value={Math.max(0, (data?.price || 0) - (data?.storeCommission || 0))} />
+
+              {/* 5. Net Store Earnings (Without Commission) */}
+              <div className="flex justify-between text-sky-700 dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/20 px-3 py-2 rounded-md border border-sky-100 dark:border-sky-900/30">
+                <span className="font-medium">- {t("storeNetEarnings") || "صافي مستحق المطعم (بدون عمولة)"}</span>
+                <span className="font-bold">
+                  <PriceAmount value={storeNetEarnings} />
                 </span>
               </div>
               {priceAfterDiscount !== undefined && (
