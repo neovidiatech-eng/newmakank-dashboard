@@ -130,21 +130,20 @@ export default function TableBasic({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
         >
-          <Table className="w-full min-w-max">
+          <Table className="w-full min-w-max border-separate border-spacing-0">
             <TableHeader
-              className={cn(
-                "sticky top-0 z-20 shadow-sm",
+              className={
                 isInnerTable ? "bg-gray-100 dark:bg-slate-900" : "bg-gray-50 dark:bg-slate-900"
-              )}
+              }
             >
               {getHeaderGroups().map(headerGroup => (
                 <TableRow
                   key={headerGroup.id}
-                  className="border-b border-gray-200 dark:border-gray-800 hover:bg-transparent"
+                  className="hover:bg-transparent"
                 >
                   {expandable && !isInnerTable && (
                     <TableHead className={cn(
-                      "w-12 text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0 z-20",
+                      "w-12 text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800",
                       isInnerTable ? "bg-gray-100 dark:bg-slate-900" : "bg-gray-50 dark:bg-slate-900"
                     )}>
                       {/* Expand column header */}
@@ -152,7 +151,7 @@ export default function TableBasic({
                   )}
                   {rowSelection && (
                     <TableHead className={cn(
-                      "w-12 text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0 z-20",
+                      "w-12 text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800",
                       isInnerTable ? "bg-gray-100 dark:bg-slate-900" : "bg-gray-50 dark:bg-slate-900"
                     )}>
                       <Checkbox
@@ -170,7 +169,7 @@ export default function TableBasic({
                     <TableHead
                       key={header?.id}
                       className={cn(
-                        "capitalize text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0 z-20",
+                        "capitalize text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800",
                         isInnerTable ? "bg-gray-100 dark:bg-slate-900" : "bg-gray-50 dark:bg-slate-900"
                       )}
                     >
@@ -188,7 +187,7 @@ export default function TableBasic({
                   ))}
                   {tableActions && Object.values(tableActions).filter(Boolean)?.length > 0 && (
                     <TableHead className={cn(
-                      "capitalize text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0",
+                      "capitalize text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0 border-b border-gray-200 dark:border-gray-800",
                       isInnerTable ? "bg-gray-100 dark:bg-slate-900" : "bg-gray-50 dark:bg-slate-900",
                       tableActions?.fixedActions && "sticky end-0 bg-gray-50 dark:bg-[#020817] z-30 shadow-[-4px_0_4px_-2px_rgba(0,0,0,0.05)] rtl:shadow-[4px_0_4px_-2px_rgba(0,0,0,0.05)]",
                       tableActions?.fixedActions && isInnerTable && "bg-gray-100 dark:bg-slate-900"
