@@ -255,7 +255,18 @@ export default function OrdersColumns(): any {
     {
       accessorKey: "adminCommission",
       header: () => <IconHeader columnKey="AdminCommission" />,
-      cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
+      cell: ({ row, getValue }) => {
+        const rawAdminCommission = Number(getValue() ?? 0);
+        const storeCommission = Number(row?.original?.storeCommission ?? 0);
+        const globalCommission = Number(row?.original?.globalCommission ?? 0);
+        const discount = Number(row?.original?.discountAmount ?? row?.original?.discountValue ?? 0);
+        const excessStoreCommission = Math.max(0, storeCommission - discount);
+        const effectiveAdminCommission = globalCommission + excessStoreCommission;
+        const val = rawAdminCommission > 0 && storeCommission > 0 && discount >= storeCommission
+          ? effectiveAdminCommission
+          : rawAdminCommission;
+        return <PriceAmount value={val} />;
+      }
     },
     {
       accessorKey: "globalCommission",
@@ -265,7 +276,12 @@ export default function OrdersColumns(): any {
     {
       accessorKey: "storeCommission",
       header: () => <IconHeader columnKey="Store Commission" />,
-      cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
+      cell: ({ row, getValue }) => {
+        const rawStoreCommission = Number(getValue() ?? 0);
+        const discount = Number(row?.original?.discountAmount ?? row?.original?.discountValue ?? 0);
+        const effectiveStoreCommission = Math.max(0, rawStoreCommission - discount);
+        return <PriceAmount value={effectiveStoreCommission} />;
+      }
     },
     {
       accessorKey: "shipping",

@@ -133,9 +133,10 @@ export default function TableBasic({
         >
           <Table className="w-full min-w-max">
             <TableHeader
-              className={
-                isInnerTable ? "bg-gray-100 dark:bg-slate-900/50" : "bg-gray-50 dark:bg-slate-900"
-              }
+              className={cn(
+                "sticky top-0 z-20 shadow-sm",
+                isInnerTable ? "bg-gray-100 dark:bg-slate-900" : "bg-gray-50 dark:bg-slate-900"
+              )}
             >
               {getHeaderGroups().map(headerGroup => (
                 <TableRow
@@ -143,12 +144,18 @@ export default function TableBasic({
                   className="border-b border-gray-200 dark:border-gray-800 hover:bg-transparent"
                 >
                   {expandable && !isInnerTable && (
-                    <TableHead className="w-12 text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6">
+                    <TableHead className={cn(
+                      "w-12 text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0 z-20",
+                      isInnerTable ? "bg-gray-100 dark:bg-slate-900" : "bg-gray-50 dark:bg-slate-900"
+                    )}>
                       {/* Expand column header */}
                     </TableHead>
                   )}
                   {rowSelection && (
-                    <TableHead className="w-12 text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6">
+                    <TableHead className={cn(
+                      "w-12 text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0 z-20",
+                      isInnerTable ? "bg-gray-100 dark:bg-slate-900" : "bg-gray-50 dark:bg-slate-900"
+                    )}>
                       <Checkbox
                         aria-label={t("Select all orders")}
                         checked={
@@ -163,7 +170,10 @@ export default function TableBasic({
                   {headerGroup.headers.map(header => (
                     <TableHead
                       key={header?.id}
-                      className="capitalize text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6"
+                      className={cn(
+                        "capitalize text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0 z-20",
+                        isInnerTable ? "bg-gray-100 dark:bg-slate-900" : "bg-gray-50 dark:bg-slate-900"
+                      )}
                     >
                       <div className="whitespace-normal break-words flex items-center justify-center">
                         {header?.isPlaceholder
@@ -179,9 +189,10 @@ export default function TableBasic({
                   ))}
                   {tableActions && Object.values(tableActions).filter(Boolean)?.length > 0 && (
                     <TableHead className={cn(
-                      "capitalize text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6",
-                      tableActions?.fixedActions && "sticky end-0 bg-gray-50 dark:bg-[#020817] z-1 shadow-[-4px_0_4px_-2px_rgba(0,0,0,0.05)] rtl:shadow-[4px_0_4px_-2px_rgba(0,0,0,0.05)]",
-                      tableActions?.fixedActions && isInnerTable && "bg-gray-100 dark:bg-slate-900/50"
+                      "capitalize text-center font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 py-3 sm:py-4 px-3 sm:px-6 sticky top-0",
+                      isInnerTable ? "bg-gray-100 dark:bg-slate-900" : "bg-gray-50 dark:bg-slate-900",
+                      tableActions?.fixedActions && "sticky end-0 bg-gray-50 dark:bg-[#020817] z-30 shadow-[-4px_0_4px_-2px_rgba(0,0,0,0.05)] rtl:shadow-[4px_0_4px_-2px_rgba(0,0,0,0.05)]",
+                      tableActions?.fixedActions && isInnerTable && "bg-gray-100 dark:bg-slate-900"
                     )}>
                       {t("Actions")}
                     </TableHead>
@@ -309,7 +320,7 @@ export default function TableBasic({
   }
 
   return (
-    <Card className="p-0 overflow-hidden bg-white dark:bg-slate-950 border-gray-200/80 dark:border-gray-800 shadow-sm">
+    <Card className="p-0 overflow-clip bg-white dark:bg-slate-950 border-gray-200/80 dark:border-gray-800 shadow-sm">
       {tableContent}
     </Card>
   );
