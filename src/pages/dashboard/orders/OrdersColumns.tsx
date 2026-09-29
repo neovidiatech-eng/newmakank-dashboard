@@ -117,6 +117,43 @@ const getLocalizedName = (value: any) => {
   return value.ar || value.en || "";
 };
 
+const getOrderTotalDiscount = (order: Record<string, any>): number => {
+  if (!order) return 0;
+  
+  const summary = order?.invoice?.summary;
+  if (summary?.totalDiscount != null && Number(summary.totalDiscount) > 0) {
+    return Number(summary.totalDiscount);
+  }
+
+  const explicitCoupon = Number(
+    order?.discountAmount ?? 
+    order?.discountValue ?? 
+    summary?.couponDiscount ?? 
+    summary?.discountValue ?? 
+    0
+  );
+  const fortuneDiscount = Number(summary?.fortuneDiscount ?? 0);
+
+  let itemDiscounts = Number(summary?.itemDiscount ?? 0);
+  if (itemDiscounts === 0 && Array.isArray(order?.OrderItems)) {
+    itemDiscounts = order.OrderItems.reduce((acc: number, item: any) => {
+      const originalPrice = Number(item?.Service?.price ?? item?.service?.price ?? 0);
+      const itemPrice = Number(
+        item?.priceAfterDiscount ??
+        item?.price ??
+        item?.Service?.priceAfterDiscount ??
+        item?.service?.priceAfterDiscount ??
+        originalPrice
+      );
+      const diff = originalPrice > itemPrice ? originalPrice - itemPrice : 0;
+      const count = Number(item?.count ?? item?.quantity ?? 1);
+      return acc + diff * count;
+    }, 0);
+  }
+
+  return explicitCoupon + fortuneDiscount + itemDiscounts;
+};
+
 export default function OrdersColumns(): any {
   const t = useTranslations();
   const columns = [
@@ -243,9 +280,10 @@ export default function OrdersColumns(): any {
     {
       id: "combinedDiscount",
       header: () => <IconHeader columnKey="Combined Discount" />,
-      cell: ({ row }) => (
-        <PriceAmount value={(row.original.discountValue ?? row.original.discountAmount) as number} />
-      )
+      cell: ({ row }) => {
+        const totalDiscount = getOrderTotalDiscount(row?.original);
+        return <PriceAmount value={totalDiscount} />;
+      }
     },
     {
       accessorKey: "paidWithWallet",
@@ -256,13 +294,15 @@ export default function OrdersColumns(): any {
       accessorKey: "adminCommission",
       header: () => <IconHeader columnKey="AdminCommission" />,
       cell: ({ row, getValue }) => {
-        const rawAdminCommission = Number(getValue() ?? 0);
-        const storeCommission = Number(row?.original?.storeCommission ?? 0);
-        const globalCommission = Number(row?.original?.globalCommission ?? 0);
-        const discount = Number(row?.original?.discountAmount ?? row?.original?.discountValue ?? 0);
-        const excessStoreCommission = Math.max(0, storeCommission - discount);
+        const order = row?.original;
+        const rawAdminCommission = Number(getValue() ?? order?.adminCommission ?? order?.invoice?.summary?.adminCommission ?? 0);
+        const storeCommission = Number(order?.storeCommission ?? order?.invoice?.summary?.storeCommission ?? 0);
+        const globalCommission = Number(order?.globalCommission ?? order?.invoice?.summary?.globalCommission ?? 0);
+        const totalDiscount = getOrderTotalDiscount(order);
+        const excessStoreCommission = Math.max(0, storeCommission - totalDiscount);
         const effectiveAdminCommission = globalCommission + excessStoreCommission;
-        const val = rawAdminCommission > 0 && storeCommission > 0 && discount >= storeCommission
+        
+        const val = (storeCommission > 0 && totalDiscount >= storeCommission)
           ? effectiveAdminCommission
           : rawAdminCommission;
         return <PriceAmount value={val} />;
@@ -277,9 +317,15 @@ export default function OrdersColumns(): any {
       accessorKey: "storeCommission",
       header: () => <IconHeader columnKey="Store Commission" />,
       cell: ({ row, getValue }) => {
-        const rawStoreCommission = Number(getValue() ?? 0);
-        const discount = Number(row?.original?.discountAmount ?? row?.original?.discountValue ?? 0);
-        const effectiveStoreCommission = Math.max(0, rawStoreCommission - discount);
+        const order = row?.original;
+        const rawStoreCommission = Number(getValue() ?? order?.storeCommission ?? order?.invoice?.summary?.storeCommission ?? 0);
+        
+        if (order?.invoice?.summary?.excessStoreCommission !== undefined) {
+          return <PriceAmount value={Number(order.invoice.summary.excessStoreCommission)} />;
+        }
+        
+        const totalDiscount = getOrderTotalDiscount(order);
+        const effectiveStoreCommission = Math.max(0, rawStoreCommission - totalDiscount);
         return <PriceAmount value={effectiveStoreCommission} />;
       }
     },
