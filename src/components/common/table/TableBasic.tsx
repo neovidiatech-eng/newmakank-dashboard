@@ -126,12 +126,14 @@ export default function TableBasic({
         <TableNoData />
       ) : (
         <motion.div
-          className="overflow-x-auto"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
         >
-          <Table className="w-full min-w-max">
+          <Table
+            containerClassName="max-h-[calc(100vh-220px)] min-h-[300px] overflow-auto"
+            className="w-full min-w-max"
+          >
             <TableHeader
               className={cn(
                 "sticky top-0 z-20 shadow-sm",
