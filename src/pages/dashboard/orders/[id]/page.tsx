@@ -73,18 +73,13 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
   );
 
   // Detailed pricing breakdown
-  let originalProductsPrice = 0;
   let totalItemDiscounts = 0;
   if (Array.isArray(data?.OrderItems)) {
     for (const item of data.OrderItems) {
       const quantity = Number(item.quantity ?? 1);
       const originalBase = Number((item.Size as any)?.price ?? (item.Service as any)?.price ?? item.price ?? 0);
       const discountedBase = Number((item.Size as any)?.priceAfterDiscount ?? (item.Service as any)?.priceAfterDiscount ?? originalBase);
-      const addonsPrice = Array.isArray(item.OrderItemAddons)
-        ? item.OrderItemAddons.reduce((sum: number, a: any) => sum + Number(a.Addon?.price ?? 0), 0)
-        : 0;
 
-      originalProductsPrice += (originalBase + addonsPrice) * quantity;
       if (originalBase > discountedBase) {
         totalItemDiscounts += (originalBase - discountedBase) * quantity;
       }
@@ -93,13 +88,15 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
 
   const storeCommission = Number(data?.storeCommission ?? (data as any)?.financialBreakdown?.storeCommission ?? 0);
   const productsPriceWithCommission = Number(data?.price ?? 0);
-  if (originalProductsPrice === 0) {
-    originalProductsPrice = Math.max(0, productsPriceWithCommission - storeCommission + totalItemDiscounts);
+  
+  if (totalItemDiscounts === 0 && (data as any)?.financialBreakdown?.discountAmount) {
+    totalItemDiscounts = Number((data as any)?.financialBreakdown?.discountAmount ?? 0);
   }
-  const storeNetEarnings = Number(
-    (data as any)?.financialBreakdown?.storeNetEarnings ??
-    Math.max(0, productsPriceWithCommission - storeCommission)
-  );
+
+  // Original menu price of items = (Products price with commission - store commission + item discount)
+  const originalProductsPrice = Math.max(0, productsPriceWithCommission - storeCommission + totalItemDiscounts);
+  // Net earnings of the store for items = (Products price with commission - store commission)
+  const storeNetEarnings = Math.max(0, productsPriceWithCommission - storeCommission);
   return (
     <>
       <div className="container mx-auto py-8 max-w-6xl px-4 lg:px-6 print:hidden">
@@ -282,14 +279,6 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   <span className="text-muted-foreground">- {t("Platform Fee")}</span>
                   <span className="font-medium">
                     <PriceAmount value={rawGlobalCommission} />
-                  </span>
-                </div>
-              )}
-              {(data as any)?.storeCommission > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">- {t("Store Commission")}</span>
-                  <span className="font-medium">
-                    <PriceAmount value={(data as any)?.storeCommission} />
                   </span>
                 </div>
               )}
