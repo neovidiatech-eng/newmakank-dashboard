@@ -94,18 +94,18 @@ export function ZonePricingToggle() {
       toast.success(
         nextValue
           ? locale === "ar"
-            ? "🟢 تم تفعيل تسعير المناطق لجميع المتاجر"
-            : "🟢 Zone pricing enabled for all stores"
+            ? "🟢 تم تفعيل وضع التسعير المخصص لكل متجر ومنطقة"
+            : "🟢 Custom Store & Zone pricing mode activated"
           : locale === "ar"
-          ? "🟡 تم إيقاف تسعير المناطق (الاعتماد على الكيلومتر فقط)"
-          : "🟡 Zone pricing disabled (KM formula active)"
+          ? "🌐 تم تفعيل وضع التسعيرة الموحدة العامة لجميع المتاجر"
+          : "🌐 Unified General pricing mode activated"
       );
     } catch (err: any) {
       toast.error(
         err?.response?.data?.message ||
           (locale === "ar"
-            ? "فشل تحديث حالة تسعير المناطق"
-            : "Failed to update zone pricing status")
+            ? "فشل تحديث وضع تسعير التوصيل"
+            : "Failed to update delivery pricing mode")
       );
     } finally {
       setIsPending(false);
@@ -114,30 +114,30 @@ export function ZonePricingToggle() {
 
   const statusLabel = isEnabled
     ? locale === "ar"
-      ? "المناطق: مفعّل"
-      : "Zones: On"
+      ? "تسعير مخصص للمتاجر"
+      : "Custom Store Pricing"
     : locale === "ar"
-    ? "المناطق: موقّف"
-    : "Zones: Off";
+    ? "تسعيرة موحدة عامة"
+    : "Unified General Pricing";
 
   const tooltipLabel = isLoading
     ? locale === "ar"
-      ? "جاري التحقق..."
-      : "Checking status..."
+      ? "جاري التحقق من وضع التسعير..."
+      : "Checking pricing mode..."
     : isEnabled
     ? locale === "ar"
-      ? "تسعير المناطق للمتاجر: مفعّل — اضغط للإيقاف واعتماد الكيلومتر"
-      : "Zone Pricing: Enabled — click to disable and use km formula"
+      ? "الوضع الحالي: تسعير مخصص لكل متجر ومنطقة — اضغط للتبديل للتسعيرة الموحدة"
+      : "Current mode: Custom Store & Zone Pricing — click to switch to Unified"
     : locale === "ar"
-    ? "تسعير المناطق: موقّف (الحساب بالكيلومتر) — اضغط للتفعيل"
-    : "Zone Pricing: Disabled (KM only) — click to enable";
+    ? "الوضع الحالي: تسعيرة موحدة عامة لجميع المطاعم — اضغط للتبديل للتسعير المخصص"
+    : "Current mode: Unified General Pricing — click to switch to Custom";
 
   return (
     <>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex items-center gap-1.5 select-none px-2.5 py-1 rounded-md bg-accent/40 border border-border/50 hover:bg-accent/70 transition-colors">
+            <div className="flex items-center gap-2 select-none px-3 py-1 rounded-md bg-accent/40 border border-border/60 hover:bg-accent/70 transition-colors cursor-pointer">
               {isLoading || isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               ) : isEnabled ? (
@@ -147,7 +147,7 @@ export function ZonePricingToggle() {
               )}
 
               <span
-                className={`hidden md:inline text-[11px] font-bold leading-none ${
+                className={`hidden md:inline text-xs font-bold leading-none ${
                   isEnabled
                     ? "text-emerald-600 dark:text-emerald-400"
                     : "text-amber-600 dark:text-amber-400"
@@ -160,11 +160,11 @@ export function ZonePricingToggle() {
                 checked={isEnabled}
                 onCheckedChange={handleToggleRequest}
                 disabled={isLoading || isPending}
-                aria-label="Toggle Global Zone Pricing"
+                aria-label="Toggle Delivery Pricing Mode"
               />
             </div>
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="text-xs max-w-56 text-center">
+          <TooltipContent side="bottom" className="text-xs max-w-64 text-center">
             {tooltipLabel}
           </TooltipContent>
         </Tooltip>
@@ -179,26 +179,26 @@ export function ZonePricingToggle() {
                 <>
                   <MapPin className="h-5 w-5 text-emerald-500" />
                   {locale === "ar"
-                    ? "تأكيد تفعيل تسعير المناطق"
-                    : "Enable Zone Pricing"}
+                    ? "تفعيل وضع التسعير المخصص للمتاجر والمناطق"
+                    : "Activate Custom Store & Zone Pricing Mode"}
                 </>
               ) : (
                 <>
                   <MapPinOff className="h-5 w-5 text-amber-500" />
                   {locale === "ar"
-                    ? "تأكيد إيقاف تسعير المناطق"
-                    : "Disable Zone Pricing"}
+                    ? "تفعيل وضع التسعيرة الموحدة العامة"
+                    : "Activate Unified General Pricing Mode"}
                 </>
               )}
             </DialogTitle>
-            <DialogDescription className="text-sm leading-relaxed pt-1">
+            <DialogDescription className="text-sm leading-relaxed pt-2">
               {nextValue
                 ? locale === "ar"
-                  ? "هل تريد تفعيل تسعير المناطق لجميع المتاجر؟ سيتم استخدام سعر المنطقة المحدد لكل طلب (سواء الخاص بالمتجر أو العام)."
-                  : "Enable zone pricing for all stores? Orders will use zone prices (per-store or global) when available."
+                  ? "سيتم تفعيل تسعيرة التوصيل المخصصة؛ حيث سيأخذ كل متجر/مطعم سعره المحدد لكل منطقة. وفي حال عدم إدخال تسعيرة مخصصة لمطعم أو منطقة معينة، سيأخذ تلقائياً من التسعيرة الثابتة/الكيلومتر كاحتياطي (Fallback)."
+                  : "Orders will use custom prices per store/zone. If a store or zone has no custom price, it will seamlessly fall back to the base fee / km calculation."
                 : locale === "ar"
-                ? "هل تريد إيقاف تسعير المناطق لجميع المتاجر؟ سيتم تجاهل أسعار المناطق تماماً والاعتماد على الكيلومتر فقط. (ملاحظة: الخدمات الخاصة لن تتأثر بهذا الإجراء وتظل مستقلة)."
-                : "Disable zone pricing for all stores? Zone prices will be ignored and the per-km formula will be applied. (Note: Custom Delivery is not affected)."}
+                ? "سيتم تطبيق التسعيرة الموحدة العامة (السعر الثابت / حساب الكيلومتر) على جميع المطاعم والمتاجر بالتساوي، وتجاهل أي أسعار مخصصة داخل المتاجر."
+                : "All stores will strictly use the unified fixed fee / km formula, ignoring any individual store-specific zone prices."}
             </DialogDescription>
           </DialogHeader>
 
@@ -219,11 +219,11 @@ export function ZonePricingToggle() {
             >
               {nextValue
                 ? locale === "ar"
-                  ? "نعم، تفعيل"
-                  : "Yes, Enable"
+                  ? "تأكيد وضع التسعير المخصص"
+                  : "Confirm Custom Mode"
                 : locale === "ar"
-                ? "نعم، إيقاف التسعير"
-                : "Yes, Disable"}
+                ? "تأكيد وضع التسعيرة الموحدة"
+                : "Confirm Unified Mode"}
             </Button>
           </div>
         </DialogContent>
