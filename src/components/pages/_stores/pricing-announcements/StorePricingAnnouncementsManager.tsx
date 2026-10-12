@@ -48,8 +48,9 @@ import {
   Tag,
   Trash2,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { toast } from "sonner";
+import { apiClient } from "@/lib/axios";
 import DeliveryPromotionsTab from "./DeliveryPromotionsTab";
 import CustomDeliveryZonePricingTab from "./CustomDeliveryZonePricingTab";
 
@@ -121,6 +122,68 @@ export default function StorePricingAnnouncementsManager() {
   const [editedPrices, setEditedPrices] = useState<Record<number, string>>({});
   const [editedDiscountPrices, setEditedDiscountPrices] = useState<Record<number, string>>({});
   const [searchZoneQuery, setSearchZoneQuery] = useState("");
+
+  // Delivery Pricing Global Mode
+  const [globalPricingMode, setGlobalPricingMode] = useState<"custom" | "bulk_zones" | "unified">("custom");
+  const [isTogglingBulkMode, setIsTogglingBulkMode] = useState(false);
+
+  const fetchGlobalPricingMode = useCallback(async () => {
+    try {
+      const res = await apiClient.get("/api/settings/zone-pricing-status");
+      const data = res?.data?.data ?? res?.data ?? {};
+      if (data.mode === "bulk_zones" || data.mode === "custom" || data.mode === "unified") {
+        setGlobalPricingMode(data.mode);
+      } else {
+        setGlobalPricingMode(data.enabled !== false ? "custom" : "unified");
+      }
+    } catch {
+      // fallback
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchGlobalPricingMode();
+    const handleRefresh = (e: any) => {
+      if (e?.detail?.mode) {
+        setGlobalPricingMode(e.detail.mode);
+      } else {
+        fetchGlobalPricingMode();
+      }
+    };
+    window.addEventListener("zone-pricing-mode-updated", handleRefresh);
+    return () => window.removeEventListener("zone-pricing-mode-updated", handleRefresh);
+  }, [fetchGlobalPricingMode]);
+
+  const handleToggleBulkPricingMode = async (enable: boolean) => {
+    setIsTogglingBulkMode(true);
+    const targetMode = enable ? "bulk_zones" : "custom";
+    try {
+      await apiClient.patch("/api/settings/zone-pricing-status", {
+        mode: targetMode,
+        enabled: true,
+      });
+      setGlobalPricingMode(targetMode);
+      window.dispatchEvent(
+        new CustomEvent("zone-pricing-mode-updated", { detail: { mode: targetMode } })
+      );
+      toast.success(
+        enable
+          ? (locale === "ar"
+              ? "🟢 تم تفعيل وضع التسعير الموحد لجميع المناطق"
+              : "🟢 Uniform zone pricing mode activated")
+          : (locale === "ar"
+              ? "📍 تم إيقاف التسعير الموحد والتحويل للتسعير المخصص للمتاجر"
+              : "📍 Uniform pricing turned off — switched to custom store pricing")
+      );
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message ||
+          (locale === "ar" ? "فشل تحديث وضع التسعير" : "Failed to update pricing mode")
+      );
+    } finally {
+      setIsTogglingBulkMode(false);
+    }
+  };
 
   // Bulk uniform pricing inputs
   const [uniformPriceBeforeInput, setUniformPriceBeforeInput] = useState("");
@@ -1187,20 +1250,66 @@ export default function StorePricingAnnouncementsManager() {
                       </div>
 
                       {/* Option 1: Uniform Bulk Pricing Bar (Before & After Discount) */}
-                      <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Layers className="h-4 w-4 text-primary" />
-                          <h4 className="text-sm font-semibold">
-                            {t("bulkPricingTitle") || (locale === "ar" ? "التسعير الموحد لجميع المناطق" : "Bulk Uniform Pricing")}
-                          </h4>
+                      <div className={`p-4 rounded-xl border space-y-3 transition-all ${
+                        globalPricingMode === "bulk_zones"
+                          ? "bg-blue-50/60 dark:bg-blue-950/20 border-blue-300 dark:border-blue-700/50"
+                          : "bg-muted/30 border-border/60"
+                      }`}>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <Layers className={`h-4 w-4 ${globalPricingMode === "bulk_zones" ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`} />
+                            <h4 className="text-sm font-semibold">
+                              {t("bulkPricingTitle") || (locale === "ar" ? "التسعير الموحد لجميع المناطق" : "Bulk Uniform Pricing")}
+                            </h4>
+                            <Badge
+                              variant={globalPricingMode === "bulk_zones" ? "default" : "outline"}
+                              className={`text-[10px] px-1.5 py-0 ${
+                                globalPricingMode === "bulk_zones"
+                                  ? "bg-blue-600 hover:bg-blue-600 text-white"
+                                  : "text-muted-foreground"
+                              }`}
+                            >
+                              {globalPricingMode === "bulk_zones"
+                                ? (locale === "ar" ? "مفعّل" : "Active")
+                                : (locale === "ar" ? "معطّل" : "Disabled")}
+                            </Badge>
+                          </div>
+
+                          {/* Switch to enable / disable bulk pricing */}
+                          <div className="flex items-center gap-2">
+                            <Label
+                              htmlFor="bulk-pricing-switch"
+                              className="text-xs text-muted-foreground cursor-pointer font-medium"
+                            >
+                              {locale === "ar" ? "تشغيل التسعير الموحد" : "Enable Uniform Pricing"}
+                            </Label>
+                            <Switch
+                              id="bulk-pricing-switch"
+                              checked={globalPricingMode === "bulk_zones"}
+                              onCheckedChange={handleToggleBulkPricingMode}
+                              disabled={isTogglingBulkMode}
+                            />
+                          </div>
                         </div>
+
                         <p className="text-xs text-muted-foreground">
                           {locale === "ar"
                             ? "أدخل السعر الموحد قبل وبعد الخصم لتطبيقه على كل المناطق دفعة واحدة، ثم يمكنك تعديل المناطق البعيدة بشكل منفصل بالجدول قبل الحفظ."
                             : "Enter uniform price before and after discount to fill all zones at once, then adjust far zones individually before saving."}
                         </p>
 
-                        <div className="flex flex-wrap items-end gap-3 pt-1">
+                        {globalPricingMode !== "bulk_zones" && (
+                          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300">
+                            <AlertCircle className="h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+                            <span>
+                              {locale === "ar"
+                                ? "التسعير الموحد معطل حالياً (وضع النظام الحالي لا يعتمده). قم بتشغيل المفتاح أعلاه أو اختره من قائمة 'مود التسعير' بالهيدر لتفعيله."
+                                : "Uniform pricing is currently disabled. Toggle the switch above or select it in the header pricing mode to activate."}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className={`flex flex-wrap items-end gap-3 pt-1 ${globalPricingMode !== "bulk_zones" ? "opacity-50 pointer-events-none" : ""}`}>
                           {/* Price Before Discount */}
                           <div className="w-full sm:w-48">
                             <Label className="text-xs font-medium text-foreground mb-1 block">
@@ -1214,6 +1323,7 @@ export default function StorePricingAnnouncementsManager() {
                                 placeholder="35"
                                 value={uniformPriceBeforeInput}
                                 onChange={(e) => setUniformPriceBeforeInput(e.target.value)}
+                                disabled={globalPricingMode !== "bulk_zones"}
                                 className="text-center font-medium pr-10"
                               />
                               <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">
@@ -1235,6 +1345,7 @@ export default function StorePricingAnnouncementsManager() {
                                 placeholder="20"
                                 value={uniformPriceAfterInput}
                                 onChange={(e) => setUniformPriceAfterInput(e.target.value)}
+                                disabled={globalPricingMode !== "bulk_zones"}
                                 className="text-center font-medium pr-10"
                               />
                               <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">
@@ -1247,7 +1358,7 @@ export default function StorePricingAnnouncementsManager() {
                             variant="secondary"
                             size="default"
                             onClick={handleApplyUniformPrice}
-                            disabled={!uniformPriceBeforeInput}
+                            disabled={!uniformPriceBeforeInput || globalPricingMode !== "bulk_zones"}
                             className="gap-1.5 h-10 px-4"
                           >
                             <Layers className="h-4 w-4 text-primary" />
