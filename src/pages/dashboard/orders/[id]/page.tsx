@@ -45,10 +45,19 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
   };
   const id = (await params).id;
 
-  const response = await fetchData(["orders", Number(id)]);
+  const [response, profileResponse] = await Promise.all([
+    fetchData(["orders", Number(id)]),
+    fetchData(["profile"]).catch(() => null),
+  ]);
   const data = response?.data as ApiResponse;
   if (!data)
     return <div className="p-8 text-center text-muted-foreground">{t("No Data Available")}</div>;
+
+  const userProfile = (profileResponse?.data as any)?.user ?? (profileResponse as any)?.user;
+  const isSuperAdmin = Boolean(
+    (userProfile?.roleKey === "Admin" || userProfile?.Role?.roleKey === "Admin" || userProfile?.Role?.key === "Admin") &&
+    (userProfile?.Role?.default === true || userProfile?.default === true)
+  );
   const customDeliveryStations = (data as any)?.Stations ?? (data as any)?.stations ?? [];
   const hasCustomDeliveryInfo =
     data?.invoice?.customDelivery ||
@@ -207,13 +216,15 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                 </span>
               </div>
 
-              {/* 5. Net Store Earnings (Without Commission) */}
-              <div className="flex justify-between text-sky-700 dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/20 px-3 py-2 rounded-md border border-sky-100 dark:border-sky-900/30">
-                <span className="font-medium">- {t("storeNetEarnings") || "صافي مستحق المطعم (بدون عمولة)"}</span>
-                <span className="font-bold">
-                  <PriceAmount value={storeNetEarnings} />
-                </span>
-              </div>
+              {/* 5. Net Store Earnings (Without Commission) - Only visible to Full Admin (Super Admin) */}
+              {isSuperAdmin && (
+                <div className="flex justify-between text-sky-700 dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/20 px-3 py-2 rounded-md border border-sky-100 dark:border-sky-900/30">
+                  <span className="font-medium">- {t("storeNetEarnings") || "صافي مستحق المطعم (بدون عمولة)"}</span>
+                  <span className="font-bold">
+                    <PriceAmount value={storeNetEarnings} />
+                  </span>
+                </div>
+              )}
               {priceAfterDiscount !== undefined && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">- {t("Price After Discount")}</span>
