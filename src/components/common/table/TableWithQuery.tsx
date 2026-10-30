@@ -56,7 +56,7 @@ export default function TableWithQuery({
   // Always include page & limit so the API applies server-side pagination
   const params: Record<string, unknown> = {
     page: 1,
-    limit: 10,
+    limit: 15,
     ...extraParams
   };
 

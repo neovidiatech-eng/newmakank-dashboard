@@ -11,8 +11,16 @@ export default function ArchivedOrdersView({ tableTitle }: ArchivedOrdersViewPro
   const searchParams = useSearchParams();
   const columns = ArchivedOrdersColumns();
 
-  const params: Record<string, unknown> = {};
+  const params: Record<string, unknown> = {
+    page: 1,
+    limit: 15
+  };
   searchParams.forEach((value, key) => { params[key] = value; });
+
+  // Guard against heavy limits (> 20) to ensure high performance and prevent server timeouts
+  if (params.limit && Number(params.limit) > 20) {
+    params.limit = 20;
+  }
 
   const { data: response } = useApiQuery({
     queryKey: ["ordersArchived", JSON.stringify(params)],

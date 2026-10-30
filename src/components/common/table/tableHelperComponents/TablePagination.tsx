@@ -31,7 +31,7 @@ export function TablePagination({ pagination }: PaginationProps) {
 
   // Get current page and limit from URL, fallback to defaults
   const currentPage = Number(searchParams.get("page")) || 1;
-  const currentLimit = Number(searchParams.get("limit")) || 10;
+  const currentLimit = Number(searchParams.get("limit")) || 15;
   const totalPages = Math.max(1, Math.ceil(pagination.total / currentLimit));
 
 
@@ -76,7 +76,7 @@ export function TablePagination({ pagination }: PaginationProps) {
               <SelectValue placeholder={currentLimit.toString()} />
             </SelectTrigger>
             <SelectContent>
-              {[10, 20, 40].map(val => (
+              {[10, 15, 20].map(val => (
                 <SelectItem key={val} value={val.toString()}>
                   {val}
                 </SelectItem>
