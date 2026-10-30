@@ -8,6 +8,7 @@ import { OrderCustomerCell } from "@/components/pages/_orders/OrderCustomerCell"
 import { OrderServicesCell } from "@/components/pages/_orders/OrderServicesCell";
 import RealizeOrderButton from "@/components/pages/_orders/RealizeOrderButton";
 import { useTranslations } from "@/lib/i18n";
+import Link from "@/lib/Link";
 
 const getLocalizedName = (value: any) => {
   if (!value) return "";
@@ -21,7 +22,14 @@ export default function ArchivedOrdersColumns(): any {
     {
       accessorKey: "id",
       header: () => <IconHeader columnKey="ID" />,
-      cell: ({ getValue }) => <span className="font-mono text-sm">{getValue() as string}</span>
+      cell: ({ getValue, row }: any) => (
+        <Link
+          href={`/orders/archived/${row?.original?.id ?? getValue()}`}
+          className="font-mono text-sm font-semibold text-primary hover:underline hover:text-primary/80 transition-colors"
+        >
+          {getValue() as string}
+        </Link>
+      )
     },
     {
       id: "customer",
@@ -51,7 +59,11 @@ export default function ArchivedOrdersColumns(): any {
     {
       id: "services",
       header: () => <IconHeader columnKey="Services" />,
-      cell: ({ row }) => <OrderServicesCell items={row?.original?.OrderItems} />
+      cell: ({ row }) => (
+        <OrderServicesCell
+          items={row?.original?.OrderItems || row?.original?.ArchivedOrderItems}
+        />
+      )
     },
     {
       accessorKey: "summary.total",

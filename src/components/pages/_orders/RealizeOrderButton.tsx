@@ -27,8 +27,13 @@ export default function RealizeOrderButton({ orderId }: { orderId: number }) {
       }
 
       toast.success(response?.message || t("Order realized successfully"));
-      await revalidatePathAction(pathname);
-      router.refresh();
+      const newOrderId = (response as any)?.data?.id ?? (response as any)?.data?.data?.id;
+      if (pathname.includes("/orders/archived/") && newOrderId) {
+        router.push(`/orders/${newOrderId}`);
+      } else {
+        await revalidatePathAction(pathname);
+        router.refresh();
+      }
     } catch (error: any) {
       toast.error(error?.result?.message || error?.message || t("Failed to realize order"));
     } finally {
