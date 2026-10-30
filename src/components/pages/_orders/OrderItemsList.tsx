@@ -101,22 +101,27 @@ export default function OrderItemsList({ items, storeCommission }: { items: ApiR
                     )}
                 </div>
 
-                {item.OrderItemAddons.length > 0 && (
-                    <div className="mt-2 text-sm">
-                        <span className="font-medium text-muted-foreground">{t("Addons")}: </span>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                            {item.OrderItemAddons.map((addon) => {
-                                const addonName = addon.Addon.name[locale as "en" | "ar"] || addon.Addon.name.en;
-                                const addonPrice = (addon.Addon as any)?.price;
-                                return (
-                                    <Badge key={addon.id} variant="secondary" className="text-xs">
-                                        • {addonName} {addonPrice ? `(+${addonPrice})` : ""}
-                                    </Badge>
-                                );
-                            })}
+                {(() => {
+                    const addons = (item.OrderItemAddons || (item as any)?.ArchivedOrderItemAddons || (item as any)?.OrderAddons || []) as any[];
+                    if (!addons || addons.length === 0) return null;
+                    return (
+                        <div className="mt-2 text-sm">
+                            <span className="font-medium text-muted-foreground">{t("Addons")}: </span>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                                {addons.map((addon: any) => {
+                                    const addonObj = addon.Addon || addon.addon;
+                                    const addonName = addonObj?.name?.[locale as "en" | "ar"] || addonObj?.name?.en || addonObj?.name || "";
+                                    const addonPrice = addonObj?.price;
+                                    return (
+                                        <Badge key={addon.id || addon.addonId || Math.random()} variant="secondary" className="text-xs">
+                                            • {addonName} {addonPrice ? `(+${addonPrice})` : ""}
+                                        </Badge>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    );
+                })()}
             </div>
         </div>
     );

@@ -55,7 +55,20 @@ export default async function ArchivedOrderPage({
     );
   }
 
-  const items = (data?.OrderItems || (data as any)?.ArchivedOrderItems || []) as any[];
+  const rawItems = (data?.OrderItems || (data as any)?.ArchivedOrderItems || []) as any[];
+  const items = Array.isArray(rawItems)
+    ? rawItems.map((item: any) => {
+        const addons = (item?.OrderItemAddons || item?.ArchivedOrderItemAddons || item?.OrderAddons || []) as any[];
+        return {
+          ...item,
+          quantity: item?.quantity ?? 1,
+          price: item?.price ?? 0,
+          OrderItemAddons: addons,
+          ArchivedOrderItemAddons: addons,
+          OrderAddons: addons
+        };
+      })
+    : [];
   const invoice = data?.invoice || {
     store: data?.Branch?.Store || (data as any)?.Store,
     branch: data?.Branch,
