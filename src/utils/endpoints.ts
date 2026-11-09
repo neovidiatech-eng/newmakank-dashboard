@@ -32,6 +32,8 @@ export const endpoints = {
   loyaltyTransactions: "/transactions",
   loyaltyCustomers: "/customers",
   loyaltyAdjust: "/adjust",
+  loyaltyMilestones: "/milestones",
+  loyaltyMilestoneGrants: "/grants",
   fortuneWheelSettings: "/settings",
   toggleStatus: "/toggle-status",
   fund: "/api/fund",

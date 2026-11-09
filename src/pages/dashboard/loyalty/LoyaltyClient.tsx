@@ -27,6 +27,7 @@ import { Link } from "@/lib/navigation";
 import { Pencil, Plus, Power, Save, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import MilestonesTab from "./MilestonesTab";
 import {
   extractList,
   extractTotal,
@@ -220,7 +221,11 @@ const emptyRewardForm: RewardForm = {
   serviceName: ""
 };
 
-function rewardSummary(reward: LoyaltyReward, t: (k: string) => string, locale: string) {
+export function rewardSummary(
+  reward: Pick<LoyaltyReward, "type" | "value" | "discountType" | "maxDiscount" | "Service">,
+  t: (k: string) => string,
+  locale: string
+) {
   switch (reward.type) {
     case "WALLET_CREDIT":
       return `${reward.value ?? 0} ${t("EGP")}`;
@@ -238,7 +243,7 @@ function rewardSummary(reward: LoyaltyReward, t: (k: string) => string, locale: 
 }
 
 /** Free-product rewards: pick one menu item of the chosen store (search by name). */
-function ProductPicker({
+export function ProductPicker({
   storeId,
   serviceId,
   serviceName,
@@ -803,6 +808,7 @@ export default function LoyaltyClient() {
       <TabsList className="w-fit">
         <TabsTrigger value="settings">{t("loyaltyTabSettings")}</TabsTrigger>
         <TabsTrigger value="rewards">{t("loyaltyTabRewards")}</TabsTrigger>
+        <TabsTrigger value="milestones">{t("milestoneTab")}</TabsTrigger>
         <TabsTrigger value="log">{t("loyaltyTabLog")}</TabsTrigger>
       </TabsList>
       <TabsContent value="settings">
@@ -810,6 +816,9 @@ export default function LoyaltyClient() {
       </TabsContent>
       <TabsContent value="rewards">
         <RewardsTab />
+      </TabsContent>
+      <TabsContent value="milestones">
+        <MilestonesTab />
       </TabsContent>
       <TabsContent value="log">
         <Card>
