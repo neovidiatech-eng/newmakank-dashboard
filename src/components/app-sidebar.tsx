@@ -43,6 +43,7 @@ const FALLBACK_SIDEBAR_PERMISSIONS = {
   fund: { get: true },
   transactions: { get: true },
   wallet: { get: true },
+  loyalty: { get: true },
   settings: { get: true }
 } as unknown as Permission;
 
@@ -69,7 +70,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     if (isSuperAdmin) {
       if (permissionsQuery.data && Object.keys(permissionsQuery.data).length > 0) {
-        return links({ permissions: permissionsQuery.data });
+        // The super admin bypasses permission checks on the API, so always show
+        // newer pages even before their permission rows are seeded in the DB.
+        return links({
+          permissions: { ...permissionsQuery.data, loyalty: { get: true } } as unknown as Permission
+        });
       }
       return links({ permissions: FALLBACK_SIDEBAR_PERMISSIONS });
     }

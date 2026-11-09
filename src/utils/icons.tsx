@@ -87,6 +87,7 @@ export const mainIcons = {
   academicContent: GraduationCap,
   systemSettings: Settings,
   settings: Settings,
+  loyaltyPoints: Coins,
   storeTemplates: Layers,
   customerCategories: Users,
   wallet: Wallet,

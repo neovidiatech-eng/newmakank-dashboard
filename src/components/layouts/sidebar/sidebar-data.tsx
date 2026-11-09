@@ -213,6 +213,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
           }
         ].filter(Boolean)
       },
+      (permissions?.loyalty?.get || permissions?.["Loyalty Points"]?.get) && {
+        title: "loyaltyPoints",
+        url: "/loyalty"
+      },
       (permissions?.settings?.get || permissions?.Settings?.get) && {
         title: "settings",
         url: "/settings"

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getTranslations } from '@/lib/i18n';
 import BlockCustomerButton from "@/components/pages/_customers/BlockCustomerButton";
+import CustomerLoyaltyCard from "@/components/pages/_customers/CustomerLoyaltyCard";
 
 interface Customer {
   id: number;
@@ -125,6 +126,8 @@ const page = async ({ params }: { params: Params }) => {
           </div>
         </CardContent>
       </Card>
+
+      <CustomerLoyaltyCard customerId={customer.id} />
     </div>
   );
 };
