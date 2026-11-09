@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { StoresInputs } from "./stores.inputs";
 import { StoresSchema, type StoresType } from "./stores.schema";
 import { useApiQuery } from "@/hooks/useApiQuery";
+import { useQuery } from "@tanstack/react-query";
 
 export default function useStoresLogic({ data }: { data?: StoresType }) {
   const t = useTranslations();
@@ -38,7 +39,20 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       ? (data as any)?.User[0]
       : (data as any)?.User || (data as any)?.user || {};
 
-  const inputs = StoresInputs({ isEdit, isAdmin });
+  // Same super-admin check as the sidebar (Admin role with default = true).
+  const profileQuery = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => fetchHelper({ endPoint: ["profile"] }),
+    staleTime: 60_000,
+    retry: false
+  });
+  const profile = (profileQuery.data as any)?.data?.user;
+  const isSuperAdmin =
+    (profile?.roleKey === "Admin" || profile?.Role?.roleKey === "Admin") &&
+    (profile?.Role?.default === true || profile?.default === true);
+
+  const showServiceFee = isEdit && isSuperAdmin;
+  const inputs = StoresInputs({ isEdit, isAdmin, isSuperAdmin: showServiceFee, t });
   const {
     control,
     formState: { errors },
@@ -59,6 +73,8 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       deliveryTimeMinMinutes: (data as any)?.deliveryTimeMinMinutes ?? 0,
       deliveryTimeMaxMinutes: (data as any)?.deliveryTimeMaxMinutes ?? 0,
       minOrderAmount: (data as any)?.minOrderAmount ?? 0,
+      serviceFee: (data as any)?.serviceFee ?? 0,
+      serviceFeeType: (data as any)?.serviceFeeType ?? "PERCENTAGE",
       announcement: (data as any)?.announcement ?? "",
       map: (data as any)?.lat && (data as any)?.lng
         ? { lat: Number((data as any).lat), lng: Number((data as any).lng) }
@@ -142,6 +158,14 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
         rest.deliveryTimeMaxMinutes !== undefined && rest.deliveryTimeMaxMinutes !== "" ? Number(rest.deliveryTimeMaxMinutes) : 0,
       minOrderAmount:
         rest.minOrderAmount !== undefined && rest.minOrderAmount !== "" ? Number(rest.minOrderAmount) : 0,
+      // Store service fee: sent only when the super admin edits a store (the fields
+      // are shown only then; POST /stores doesn't accept them). Blank = 0 = global fee.
+      serviceFee: showServiceFee
+        ? (rest.serviceFee !== undefined && rest.serviceFee !== "" ? Number(rest.serviceFee) : 0)
+        : undefined,
+      serviceFeeType: showServiceFee
+        ? (rest.serviceFeeType === "FIXED" ? "FIXED" : "PERCENTAGE")
+        : undefined,
       announcement:
         rest.announcement !== undefined
           ? (rest.announcement && String(rest.announcement).trim() ? String(rest.announcement).trim() : null)

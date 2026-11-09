@@ -1,9 +1,13 @@
 
 import type { FormInput } from "@/components/common/Form/CustomFormTypes.types";
 
-export const StoresInputs = ({ isEdit, isAdmin }: {
+export const StoresInputs = ({ isEdit, isAdmin, isSuperAdmin, t }: {
   isEdit: boolean;
   isAdmin?: boolean;
+  // Store service fee is saved for the super admin only (the backend strips it
+  // for everyone else), so the fields are shown to the super admin only.
+  isSuperAdmin?: boolean;
+  t?: (key: string) => string;
 }) => {
   const inputs: FormInput[] = [
     { name: "name", type: "text", multiLang: true, cardId: 'lang', required: true, width: 6 },
@@ -16,6 +20,21 @@ export const StoresInputs = ({ isEdit, isAdmin }: {
     { name: "deliveryTimeMinMinutes", type: "number", cardId: 'operations', width: 3, min: 0 },
     { name: "deliveryTimeMaxMinutes", type: "number", cardId: 'operations', width: 3, min: 0 },
     { name: "minOrderAmount", type: "number", cardId: 'operations', width: 3, min: 0 },
+    ...(isSuperAdmin ? [
+      {
+        name: "serviceFeeType", type: "select" as const, cardId: 'operations', width: 3,
+        options: [
+          { label: t ? t("storeServiceFeePercentage") : "PERCENTAGE", value: "PERCENTAGE" },
+          { label: t ? t("storeServiceFeeFixed") : "FIXED", value: "FIXED" }
+        ],
+        toolTip: t ? t("storeServiceFeeTooltip") : undefined
+      },
+      {
+        name: "serviceFee", type: "number" as const, cardId: 'operations', width: 3, min: 0,
+        placeholder: t ? t("storeServiceFeePlaceholder") : "0",
+        toolTip: t ? t("storeServiceFeeTooltip") : undefined
+      },
+    ] : []),
     { name: "announcement", type: "textarea", cardId: 'operations', width: 12, placeholder: "اكتب هنا رسالة أو تنبيه يظهر للعملاء في تطبيق الموبايل (اختياري)" },
 
     {
