@@ -3098,5 +3098,12 @@
   "loyaltyRemovePoints": "خصم",
   "loyaltyAdjustInvalid": "اكتب عدد نقاط صحيح",
   "loyaltyHistory": "سجل النقاط",
-  "EGP": "ج.م"
+  "EGP": "ج.م",
+  "loyaltyProductRequired": "اختار المطعم والمنتج المجاني",
+  "loyaltyChooseStore": "اختار المطعم",
+  "loyaltyChooseStoreFirst": "اختار المطعم الأول عشان تظهر منتجاته",
+  "loyaltyProduct": "المنتج المجاني",
+  "loyaltySelectedProduct": "المنتج المختار",
+  "loyaltySearchProduct": "ابحث باسم المنتج",
+  "loyaltyNoProducts": "مفيش منتجات"
 }

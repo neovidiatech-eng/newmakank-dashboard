@@ -31,7 +31,9 @@ export type LoyaltyReward = {
   validityDays?: number | null;
   isActive: boolean;
   sortOrder?: number;
+  serviceId?: number | null;
   Store?: { id: number; name: LocalizedText } | null;
+  Service?: { id: number; name: LocalizedText } | null;
 };
 
 export type LoyaltyTransaction = {
@@ -48,7 +50,7 @@ export type LoyaltyTransaction = {
   Reward?: { id: number; name: LocalizedText; type: LoyaltyRewardType } | null;
 };
 
-export const rewardTypes: LoyaltyRewardType[] = ["WALLET_CREDIT", "DISCOUNT", "FREE_DELIVERY"];
+export const rewardTypes: LoyaltyRewardType[] = ["WALLET_CREDIT", "DISCOUNT", "FREE_DELIVERY", "FREE_PRODUCT"];
 
 export const transactionTypes: LoyaltyTransactionType[] = [
   "EARN_ORDER",

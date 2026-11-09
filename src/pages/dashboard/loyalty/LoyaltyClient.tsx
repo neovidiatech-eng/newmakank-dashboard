@@ -197,6 +197,8 @@ type RewardForm = {
   validityDays: string;
   sortOrder: string;
   isActive: boolean;
+  serviceId: string;
+  serviceName: string;
 };
 
 const emptyRewardForm: RewardForm = {
@@ -213,10 +215,12 @@ const emptyRewardForm: RewardForm = {
   storeId: "all",
   validityDays: "30",
   sortOrder: "0",
-  isActive: true
+  isActive: true,
+  serviceId: "",
+  serviceName: ""
 };
 
-function rewardSummary(reward: LoyaltyReward, t: (k: string) => string) {
+function rewardSummary(reward: LoyaltyReward, t: (k: string) => string, locale: string) {
   switch (reward.type) {
     case "WALLET_CREDIT":
       return `${reward.value ?? 0} ${t("EGP")}`;
@@ -226,9 +230,76 @@ function rewardSummary(reward: LoyaltyReward, t: (k: string) => string) {
         : `${reward.value ?? 0} ${t("EGP")}`;
     case "FREE_DELIVERY":
       return t("loyaltyType_FREE_DELIVERY");
+    case "FREE_PRODUCT":
+      return reward.Service ? localized(reward.Service.name, locale) : t("loyaltyType_FREE_PRODUCT");
     default:
       return "—";
   }
+}
+
+/** Free-product rewards: pick one menu item of the chosen store (search by name). */
+function ProductPicker({
+  storeId,
+  serviceId,
+  serviceName,
+  onPick
+}: {
+  storeId: number | null;
+  serviceId: string;
+  serviceName: string;
+  onPick: (id: string, name: string) => void;
+}) {
+  const t = useTranslations();
+  const locale = useLocale();
+  const [search, setSearch] = useState("");
+  const params: Record<string, unknown> = { storeId, limit: 25 };
+  if (search.trim()) params.name = search.trim();
+  const { data, isLoading } = useApiQuery({
+    queryKey: ["loyaltyStoreProducts", storeId, search.trim()],
+    endPoint: ["services"],
+    params,
+    enabled: Boolean(storeId),
+    staleTime: 0
+  });
+  const products = extractList<{ id: number; name: any }>(data);
+
+  return (
+    <div className="grid gap-2 md:col-span-2">
+      <Label>{t("loyaltyProduct")}</Label>
+      {!storeId ? (
+        <p className="text-sm text-muted-foreground">{t("loyaltyChooseStoreFirst")}</p>
+      ) : (
+        <>
+          {serviceId && (
+            <p className="text-sm">
+              {t("loyaltySelectedProduct")}: <span className="font-medium">{serviceName || `#${serviceId}`}</span>
+            </p>
+          )}
+          <Input placeholder={t("loyaltySearchProduct")} value={search} onChange={e => setSearch(e.target.value)} />
+          <div className="max-h-48 overflow-y-auto rounded-md border">
+            {isLoading && <p className="p-2 text-sm text-muted-foreground">…</p>}
+            {!isLoading && products.length === 0 && (
+              <p className="p-2 text-sm text-muted-foreground">{t("loyaltyNoProducts")}</p>
+            )}
+            {products.map(product => {
+              const name = localized(product.name, locale);
+              const selected = String(product.id) === serviceId;
+              return (
+                <button
+                  type="button"
+                  key={product.id}
+                  onClick={() => onPick(String(product.id), name)}
+                  className={`block w-full px-3 py-2 text-start text-sm hover:bg-muted ${selected ? "bg-muted font-medium" : ""}`}
+                >
+                  {name}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 function RewardsTab() {
@@ -269,6 +340,9 @@ function RewardsTab() {
       if (!(value > 0)) return t("loyaltyValueRequired");
       if (form.discountType === "PERCENT" && value > 100) return t("loyaltyPercentMax");
     }
+    if (form.type === "FREE_PRODUCT" && (form.storeId === "all" || !form.serviceId)) {
+      return t("loyaltyProductRequired");
+    }
     return "";
   };
 
@@ -280,7 +354,8 @@ function RewardsTab() {
         : undefined,
     type: form.type,
     pointsCost: Math.floor(Number(form.pointsCost)),
-    value: form.type === "FREE_DELIVERY" ? null : numberOrNull(form.value),
+    value: form.type === "FREE_DELIVERY" || form.type === "FREE_PRODUCT" ? null : numberOrNull(form.value),
+    serviceId: form.type === "FREE_PRODUCT" ? Number(form.serviceId) : null,
     discountType: form.type === "DISCOUNT" ? form.discountType : null,
     maxDiscount:
       form.type === "DISCOUNT" && form.discountType === "PERCENT" ? numberOrNull(form.maxDiscount) : null,
@@ -333,7 +408,9 @@ function RewardsTab() {
       storeId: reward.storeId ? String(reward.storeId) : "all",
       validityDays: reward.validityDays ? String(reward.validityDays) : "",
       sortOrder: String(reward.sortOrder ?? 0),
-      isActive: reward.isActive
+      isActive: reward.isActive,
+      serviceId: reward.serviceId ? String(reward.serviceId) : "",
+      serviceName: reward.Service ? localized(reward.Service.name, locale) : ""
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -362,7 +439,8 @@ function RewardsTab() {
     }
   };
 
-  const showValue = form.type !== "FREE_DELIVERY";
+  const isFreeProduct = form.type === "FREE_PRODUCT";
+  const showValue = form.type !== "FREE_DELIVERY" && !isFreeProduct;
   const showOrderRules = form.type !== "WALLET_CREDIT";
 
   return (
@@ -405,9 +483,6 @@ function RewardsTab() {
                       {t(`loyaltyType_${type}`)}
                     </SelectItem>
                   ))}
-                  <SelectItem value="FREE_PRODUCT" disabled>
-                    {t("loyaltyType_FREE_PRODUCT")} ({t("loyaltyComingSoon")})
-                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -481,12 +556,17 @@ function RewardsTab() {
                 </div>
                 <div className="grid gap-2">
                   <Label>{t("loyaltyStore")}</Label>
-                  <Select value={form.storeId} onValueChange={value => update("storeId", value)}>
+                  <Select
+                    value={form.storeId}
+                    onValueChange={value =>
+                      setForm(prev => ({ ...prev, storeId: value, serviceId: "", serviceName: "" }))
+                    }
+                  >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder={t("loyaltyChooseStore")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">{t("loyaltyAllStores")}</SelectItem>
+                      {!isFreeProduct && <SelectItem value="all">{t("loyaltyAllStores")}</SelectItem>}
                       {stores.map(store => (
                         <SelectItem key={store.id} value={String(store.id)}>
                           {localized(store.name, locale)}
@@ -495,6 +575,14 @@ function RewardsTab() {
                     </SelectContent>
                   </Select>
                 </div>
+                {isFreeProduct && (
+                  <ProductPicker
+                    storeId={form.storeId === "all" ? null : Number(form.storeId)}
+                    serviceId={form.serviceId}
+                    serviceName={form.serviceName}
+                    onPick={(id, name) => setForm(prev => ({ ...prev, serviceId: id, serviceName: name }))}
+                  />
+                )}
               </>
             )}
             <div className="grid gap-2">
@@ -552,7 +640,7 @@ function RewardsTab() {
                 <TableRow key={reward.id}>
                   <TableCell className="font-medium">{localized(reward.name, locale)}</TableCell>
                   <TableCell>{t(`loyaltyType_${reward.type}`)}</TableCell>
-                  <TableCell>{rewardSummary(reward, t)}</TableCell>
+                  <TableCell>{rewardSummary(reward, t, locale)}</TableCell>
                   <TableCell>{reward.pointsCost}</TableCell>
                   <TableCell>{reward.Store ? localized(reward.Store.name, locale) : t("loyaltyAllStores")}</TableCell>
                   <TableCell>

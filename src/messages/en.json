@@ -3095,5 +3095,12 @@
   "loyaltyRemovePoints": "Remove",
   "loyaltyAdjustInvalid": "Enter a valid number of points",
   "loyaltyHistory": "Points history",
-  "EGP": "EGP"
+  "EGP": "EGP",
+  "loyaltyProductRequired": "Choose the store and the free product",
+  "loyaltyChooseStore": "Choose a store",
+  "loyaltyChooseStoreFirst": "Choose a store first to see its products",
+  "loyaltyProduct": "Free product",
+  "loyaltySelectedProduct": "Selected product",
+  "loyaltySearchProduct": "Search by product name",
+  "loyaltyNoProducts": "No products"
 }
