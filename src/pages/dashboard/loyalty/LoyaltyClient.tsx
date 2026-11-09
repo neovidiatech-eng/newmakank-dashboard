@@ -308,7 +308,7 @@ function RewardsTab() {
   const { data, refetch } = useApiQuery({
     queryKey: ["loyaltyRewardsAdmin"],
     endPoint: ["loyalty", "loyaltyAdmin", "loyaltyRewards"],
-    params: { limit: 100 },
+    params: { limit: -1 },
     staleTime: 0
   });
   const { data: storesRes } = useApiQuery({
