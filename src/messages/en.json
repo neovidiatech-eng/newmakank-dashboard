@@ -2763,6 +2763,8 @@
   "PURCHASE": "Purchase Delivery",
   "RESTAURANT": "Restaurant Delivery",
   "ONLINE": "Online Delivery",
+  "pharmacyDeliveryEnabled": "Enable pharmacy courier",
+  "pharmacyDeliveryEnabledDescription": "Turn the pharmacy courier service in the app on or off (the customer picks the pharmacy and writes the medicines or attaches the prescription). Priced from the pricing page → Pharmacy Courier Pricing; with no price set, the regular special-courier pricing applies.",
   "payoutMethod": "Payout Method",
   "payoutDetails": "Payout Details",
   "commissionDeducted": "Commission Deducted",

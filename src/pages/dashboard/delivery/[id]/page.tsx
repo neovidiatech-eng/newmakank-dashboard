@@ -35,7 +35,7 @@ type DashboardOrder = {
   notes?: string | null;
   status?: string | null;
   createdAt?: string | null;
-  customDeliveryKind?: "PURCHASE" | "RESTAURANT" | "ONLINE" | null;
+  customDeliveryKind?: "PURCHASE" | "RESTAURANT" | "ONLINE" | "PHARMACY" | null;
   zoneId?: number | null;
   zoneName?: LocalizedText;
   stations?: Array<{

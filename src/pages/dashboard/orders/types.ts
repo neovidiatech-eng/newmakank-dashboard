@@ -261,6 +261,6 @@ export interface ApiResponse {
   transferImage?: string | null;
   transferType?: "VODAFONE_CASH" | "INSTAPAY" | "BANK_TRANSFER" | null;
   transferAccountNumber?: string | null;
-  customDeliveryKind?: "PURCHASE" | "RESTAURANT" | "ONLINE" | null;
+  customDeliveryKind?: "PURCHASE" | "RESTAURANT" | "ONLINE" | "PHARMACY" | null;
   customerSelectedZoneId?: number | null;
 }

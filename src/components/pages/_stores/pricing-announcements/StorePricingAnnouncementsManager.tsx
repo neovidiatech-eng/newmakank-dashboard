@@ -35,6 +35,7 @@ import {
   Bike,
   CheckCircle2,
   ExternalLink,
+  Pill,
   Gift,
   Globe,
   Layers,
@@ -108,9 +109,11 @@ export default function StorePricingAnnouncementsManager() {
   } | null>(null);
   const [logoError, setLogoError] = useState(false);
   const tabParam = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState<"zone-pricing" | "promotions" | "custom-delivery">(
+  const [activeTab, setActiveTab] = useState<"zone-pricing" | "promotions" | "custom-delivery" | "pharmacy-delivery">(
     tabParam === "custom-delivery"
       ? "custom-delivery"
+      : tabParam === "pharmacy-delivery"
+      ? "pharmacy-delivery"
       : tabParam === "promotions"
       ? "promotions"
       : "zone-pricing"
@@ -702,6 +705,18 @@ export default function StorePricingAnnouncementsManager() {
         </button>
         <button
           type="button"
+          onClick={() => setActiveTab("pharmacy-delivery")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+            activeTab === "pharmacy-delivery"
+              ? "bg-background shadow-xs text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Pill className="h-4 w-4 text-primary" />
+          {locale === "ar" ? "تسعير مندوب الصيدلية" : "Pharmacy Courier Pricing"}
+        </button>
+        <button
+          type="button"
           onClick={() => setActiveTab("promotions")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
             activeTab === "promotions"
@@ -718,6 +733,8 @@ export default function StorePricingAnnouncementsManager() {
         <DeliveryPromotionsTab />
       ) : activeTab === "custom-delivery" ? (
         <CustomDeliveryZonePricingTab />
+      ) : activeTab === "pharmacy-delivery" ? (
+        <CustomDeliveryZonePricingTab scope="pharmacy" />
       ) : (
         <>
           {/* Step 1: Pricing Scope Selector (All Stores vs Specific Store) */}

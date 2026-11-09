@@ -408,12 +408,14 @@ export default function OrdersColumns(): any {
         const KIND_STYLES: Record<string, string> = {
           ONLINE: "border-sky-400 text-sky-600 dark:text-sky-400",
           PURCHASE: "border-amber-400 text-amber-600 dark:text-amber-400",
-          RESTAURANT: "border-orange-400 text-orange-600 dark:text-orange-400"
+          RESTAURANT: "border-orange-400 text-orange-600 dark:text-orange-400",
+          PHARMACY: "border-emerald-500 text-emerald-600 dark:text-emerald-400"
         };
         const KIND_LABEL: Record<string, string> = {
           ONLINE: "مندوب أونلاين",
           PURCHASE: "مندوب مشتريات",
-          RESTAURANT: "مندوب مطاعم"
+          RESTAURANT: "مندوب مطاعم",
+          PHARMACY: "مندوب صيدلية"
         };
 
         return (

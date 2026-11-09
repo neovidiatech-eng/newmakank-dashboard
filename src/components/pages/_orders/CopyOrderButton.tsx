@@ -22,7 +22,7 @@ interface CopyOrderButtonProps {
         globalCommission?: number;
         paymentMethod?: string;
         type?: string;
-        customDeliveryKind?: "ONLINE" | "PURCHASE" | "RESTAURANT" | null;
+        customDeliveryKind?: "ONLINE" | "PURCHASE" | "RESTAURANT" | "PHARMACY" | null;
         Delivery?: { User?: { id?: number; name?: string; phone?: string } } | null;
     };
 }

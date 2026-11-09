@@ -30,7 +30,8 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
     });
   }
 
-  const HIDDEN_SETTINGS = ["storeNearestByKM", "onlineDeliveryBaseFee"];
+  // Pharmacy prices are edited in the pricing page (تسعير مندوب الصيدلية), not as raw settings.
+  const HIDDEN_SETTINGS = ["storeNearestByKM", "onlineDeliveryBaseFee", "pharmacyDeliveryDefaultPrice", "pharmacyDeliveryZonePrices"];
   const settings = allSettings.filter((item) => !HIDDEN_SETTINGS.includes(item.setting));
 
   return (

@@ -61,14 +61,23 @@ interface CustomDeliveryPricesResponse {
   zones: CustomZoneItem[];
 }
 
-export default function CustomDeliveryZonePricingTab() {
+// scope "pharmacy": the same screen for the pharmacy courier's own prices
+// (/zones/pharmacy-delivery-prices). A zone with no pharmacy price — and no
+// pharmacy default — is charged the regular special-courier price.
+export default function CustomDeliveryZonePricingTab({ scope = "custom" }: { scope?: "custom" | "pharmacy" }) {
   const t = useTranslations();
   const locale = useLocale();
+  const isPharmacy = scope === "pharmacy";
+  const pricesEndpoint = isPharmacy ? "pharmacy-delivery-prices" : "custom-delivery-prices";
+  const ar = locale === "ar";
+  const serviceName = isPharmacy
+    ? ar ? "مندوب الصيدلية" : "Pharmacy Courier"
+    : ar ? "المندوب الخاص" : "Custom Delivery";
 
   // API Data
   const { data: response, isLoading, refetch } = useApiQuery({
-    queryKey: ["custom-delivery-zone-prices"],
-    endPoint: ["zones", "custom-delivery-prices"],
+    queryKey: [isPharmacy ? "pharmacy-delivery-zone-prices" : "custom-delivery-zone-prices"],
+    endPoint: ["zones", pricesEndpoint],
   });
 
   const { data: citiesResponse } = useApiQuery({
@@ -225,7 +234,7 @@ export default function CustomDeliveryZonePricingTab() {
           : null;
 
       const res = await fetchHelper({
-        endPoint: ["zones", "custom-delivery-prices"] as any,
+        endPoint: ["zones", pricesEndpoint] as any,
         method: "PATCH",
         body: {
           defaultPrice: defaultPriceVal,
@@ -235,9 +244,9 @@ export default function CustomDeliveryZonePricingTab() {
 
       if (res?.success) {
         toast.success(
-          locale === "ar"
-            ? "تم حفظ وتثبيت أسعار مناطق المندوب الخاص بنجاح"
-            : "Custom delivery zone prices saved successfully"
+          ar
+            ? `تم حفظ وتثبيت أسعار مناطق ${serviceName} بنجاح`
+            : `${serviceName} zone prices saved successfully`
         );
         refetch();
       } else {
@@ -255,7 +264,7 @@ export default function CustomDeliveryZonePricingTab() {
       <div className="flex flex-col items-center justify-center p-12 space-y-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-sm text-muted-foreground">
-          {locale === "ar" ? "جاري تحميل أسعار مناطق المندوب الخاص..." : "Loading custom delivery zone prices..."}
+          {ar ? `جاري تحميل أسعار مناطق ${serviceName}...` : `Loading ${serviceName} zone prices...`}
         </p>
       </div>
     );
@@ -273,13 +282,19 @@ export default function CustomDeliveryZonePricingTab() {
               </span>
               <div>
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  {locale === "ar" ? "تسعير مناطق المندوب الخاص (توصيل المشتريات والطلبات الحرة)" : "Custom Delivery Zone Pricing (Private Courier)"}
+                  {isPharmacy
+                    ? ar ? "تسعير مناطق مندوب الصيدلية" : "Pharmacy Courier Zone Pricing"
+                    : ar ? "تسعير مناطق المندوب الخاص (توصيل المشتريات والطلبات الحرة)" : "Custom Delivery Zone Pricing (Private Courier)"}
                   <Badge variant="outline" className="border-primary/40 text-primary font-semibold text-xs">
                     {locale === "ar" ? "تسعير منفصل" : "Independent"}
                   </Badge>
                 </CardTitle>
                 <CardDescription className="text-xs sm:text-sm mt-1 leading-relaxed text-muted-foreground">
-                  {locale === "ar"
+                  {isPharmacy
+                    ? ar
+                      ? "تسعيرة خاصة بطلبات مندوب الصيدلية. حط سعر لمنطقة معيّنة أو سعر افتراضي لباقي المناطق. أي منطقة مالهاش سعر هنا (ومفيش سعر افتراضي) بتتحاسب بتسعير المندوب الخاص العادي (تسعيرة مناطقه أو السعر الثابت + الكيلو)."
+                      : "Pricing for pharmacy courier orders only. Set a price per zone or a default for the rest. A zone with no price here (and no default) is charged the regular special-courier pricing (its zone prices, or base fee + per km)."
+                    : locale === "ar"
                     ? "هنا يمكنك تحديد تسعيرة مناطق مخصصة لطلبات المندوب الخاص فقط. يمكنك تحديد سعر افتراضي موحد لباقي المناطق، مع تخصيص سعر محدد لأي مناطق معينة (مثل المناطق البعيدة). تظل تسعيرة توصيل المتاجر والمطاعم منفصلة تماماً دون أي تعارض."
                     : "Configure independent zone pricing for custom errand delivery. Set a default price for remaining zones, and assign custom rates for specific zones. Store delivery prices remain completely separate."}
                 </CardDescription>
@@ -293,7 +308,7 @@ export default function CustomDeliveryZonePricingTab() {
               className="font-bold gap-2 shrink-0 self-start sm:self-center shadow-xs"
             >
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {locale === "ar" ? "حفظ تسعيرات المندوب الخاص" : "Save Custom Delivery Prices"}
+              {ar ? `حفظ تسعيرات ${serviceName}` : `Save ${serviceName} Prices`}
             </Button>
           </div>
         </CardHeader>
@@ -309,7 +324,11 @@ export default function CustomDeliveryZonePricingTab() {
               {locale === "ar" ? "السعر الافتراضي لباقي المناطق" : "Default Price for Remaining Zones"}
             </CardTitle>
             <CardDescription className="text-xs">
-              {locale === "ar"
+              {isPharmacy
+                ? ar
+                  ? "أي منطقة مالهاش سعر في الجدول هتتحاسب بالسعر ده. لو سبته فاضي، بتتحاسب بتسعير المندوب الخاص العادي."
+                  : "Zones without a price below use this price. Leave it empty to use the regular special-courier pricing."
+                : locale === "ar"
                 ? "أي منطقة لم يتم إدخال سعر مخصص لها بالجدول أدناه ستُحاسب تلقائياً بهذا السعر الأساسي."
                 : "Any zone without a specific custom price below will automatically use this base price."}
             </CardDescription>
@@ -456,7 +475,7 @@ export default function CustomDeliveryZonePricingTab() {
               <TableHead>{locale === "ar" ? "المنطقة" : "Zone"}</TableHead>
               <TableHead>{locale === "ar" ? "المدينة" : "City"}</TableHead>
               <TableHead className="text-center">{locale === "ar" ? "سعر المتاجر (للمقارنة)" : "Store Price (Reference)"}</TableHead>
-              <TableHead className="w-44 text-center">{locale === "ar" ? "سعر المندوب الخاص" : "Custom Delivery Price"}</TableHead>
+              <TableHead className="w-44 text-center">{ar ? `سعر ${serviceName}` : `${serviceName} Price`}</TableHead>
               <TableHead className="w-44 text-center">{locale === "ar" ? "السعر بعد الخصم (اختياري)" : "Price After Discount"}</TableHead>
               <TableHead className="text-center">{locale === "ar" ? "حالة التسعير" : "Status"}</TableHead>
               <TableHead className="w-16 text-center"></TableHead>
@@ -562,7 +581,9 @@ export default function CustomDeliveryZonePricingTab() {
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="text-muted-foreground text-[11px] font-normal px-2 py-0.5">
-                          {locale === "ar" ? "بالسعر الافتراضي" : "Default Rate"}
+                          {isPharmacy && !(Number(defaultPriceInput) > 0)
+                            ? ar ? "بتسعير المندوب الخاص" : "Special courier rate"
+                            : ar ? "بالسعر الافتراضي" : "Default Rate"}
                         </Badge>
                       )}
                     </TableCell>
@@ -607,7 +628,7 @@ export default function CustomDeliveryZonePricingTab() {
           className="font-bold gap-2 px-6 shadow-sm"
         >
           {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {locale === "ar" ? "حفظ تسعيرات المندوب الخاص" : "Save Custom Delivery Prices"}
+          {ar ? `حفظ تسعيرات ${serviceName}` : `Save ${serviceName} Prices`}
         </Button>
       </div>
     </div>

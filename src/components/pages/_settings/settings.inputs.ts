@@ -64,6 +64,8 @@ const SETTING_GROUPS: Record<string, string> = {
   // Independent "custom delivery" (courier-only, no restaurant involved) pricing —
   // covers both the PURCHASE/RESTAURANT kinds.
   customDeliveryEnabled: "custom_delivery",
+  // Pharmacy courier on/off (its prices live in the pricing page → "تسعير مندوب الصيدلية").
+  pharmacyDeliveryEnabled: "custom_delivery",
   customDeliveryKMCharge: "custom_delivery",
   customDeliveryBaseFee: "custom_delivery",
   customDeliveryExtraStopPrice: "custom_delivery",
