@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, Globe, Info, Link, Scale } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import ChoiceGroupsEditor from "./ChoiceGroupsEditor";
 import { ServicesAddonsInputs, ServicesSizesInputs } from "./services.inputs";
 import type { ServicesType } from "./services.schema";
 import useServicesLogic from "./useServicesForm.logic";
@@ -345,6 +346,14 @@ export default function ServicesFormPage({ data, hideStoreInput }: { data?: Serv
             </h3>
           </div>
           {tabs[0]?.content}
+        </div>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+          <div className="mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">
+              {t("choices")}
+            </h3>
+          </div>
+          <ChoiceGroupsEditor control={control as any} watch={watch as any} />
         </div>
         </div>
       </CustomForm>

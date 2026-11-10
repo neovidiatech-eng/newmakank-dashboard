@@ -7,6 +7,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "@/lib/i18n";
 import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import {
+  choiceGroupsToForm,
+  choiceGroupsToPayload,
+  validateChoiceGroupsForm,
+  type ChoiceGroupForm
+} from "./ChoiceGroupsEditor";
 import { ServicesInputs } from "./services.inputs";
 import { ServicesSchema, type ServicesType } from "./services.schema";
 
@@ -52,11 +59,25 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
           priceAfterDiscount: hasDiscount ? item.priceAfterDiscount : item.price
         };
       }),
+      ChoiceGroups: choiceGroupsToForm((data as any)?.ChoiceGroups),
       storeId: (data?.Store as any)?.id
     } as ServicesType
   });
 
   const onSubmit = async (formData: ServicesType) => {
+    const choiceGroups = (formData.ChoiceGroups ?? []) as ChoiceGroupForm[];
+    const choiceError = validateChoiceGroupsForm(choiceGroups, t);
+    if (choiceError) {
+      toast.error(choiceError);
+      return;
+    }
+    // Send choice groups only when this form actually loaded them (an edit whose
+    // product came back without ChoiceGroups must not wipe them), and on create
+    // only when there are some.
+    const isEdit = Boolean((data as any)?.id);
+    const choicePayload = choiceGroupsToPayload(choiceGroups);
+    const sendChoices = isEdit ? Array.isArray((data as any)?.ChoiceGroups) : choicePayload.length > 0;
+
     let finalImage = formData.image;
     if (formData.storeId == null) {
       formData.storeId = data?.storeId as number;
@@ -122,7 +143,8 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
             priceAfterDiscount: finalDiscount
           };
         })
-      )
+      ),
+      ChoiceGroups: sendChoices ? JSON.stringify(choicePayload) : undefined
     };
 
     delete (formattedData as any).priceBeforeDiscount;
@@ -146,7 +168,8 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
           storeId: hideStoreInput ? data?.storeId : undefined,
           categoryId: undefined,
           Sizes: [],
-          Addons: []
+          Addons: [],
+          ChoiceGroups: []
         } as any);
         sizesReplace([]);
         addonsReplace([]);
@@ -208,6 +231,7 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
         available: data.available !== undefined ? String(data.available) : "true",
         Sizes: mappedSizes,
         Addons: mappedAddons,
+        ChoiceGroups: choiceGroupsToForm((data as any).ChoiceGroups),
         storeId: (data as any).Store?.id
       } as any);
 
@@ -280,7 +304,12 @@ export default function useServicesLogic({ data, hideStoreInput }: { data?: Serv
           priceBeforeDiscount: hasDiscount ? (item?.price ?? "") : "",
           priceAfterDiscount: item?.priceAfterDiscount ?? item?.salePrice ?? item?.offerPrice ?? item?.price ?? ""
         };
-      }) ?? []
+      }) ?? [],
+      // Copied groups become new rows on this product (no ids).
+      ChoiceGroups: choiceGroupsToForm(serviceData?.ChoiceGroups).map(({ id: _groupId, Options, ...group }) => ({
+        ...group,
+        Options: Options.map(({ id: _optionId, ...option }) => option)
+      }))
     };
 
     reset(normalizedData as ServicesType);

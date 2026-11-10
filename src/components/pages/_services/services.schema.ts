@@ -37,6 +37,8 @@ export const ServicesSchema = (t: TFunction) => {
       priceBeforeDiscount: noSchema(),
       priceAfterDiscount: PriceSchema(t, 0),
     })).optional(),
+    // Choice groups — checked by validateChoiceGroupsForm on submit (nested rules).
+    ChoiceGroups: z.array(z.any()).optional(),
   });
 };
 

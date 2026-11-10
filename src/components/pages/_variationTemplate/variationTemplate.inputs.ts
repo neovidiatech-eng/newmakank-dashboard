@@ -11,7 +11,9 @@ export const VariationTemplateInputs = () => {
       required: true,
       options: [
         { label: "addons", value: "addons" },
-        { label: "sizes", value: "sizes" }
+        { label: "sizes", value: "sizes" },
+        // Usable as an option inside a product's choice group.
+        { label: "choices", value: "choices" }
       ]
     }
   ];
