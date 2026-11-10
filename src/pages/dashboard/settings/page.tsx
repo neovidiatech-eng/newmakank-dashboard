@@ -31,7 +31,11 @@ async function page({ searchParams }: { searchParams: SearchParams }): Promise<J
   }
 
   // Pharmacy prices are edited in the pricing page (تسعير مندوب الصيدلية), not as raw settings.
-  const HIDDEN_SETTINGS = ["storeNearestByKM", "onlineDeliveryBaseFee", "pharmacyDeliveryDefaultPrice", "pharmacyDeliveryZonePrices"];
+  const HIDDEN_SETTINGS = ["storeNearestByKM", "onlineDeliveryBaseFee", "pharmacyDeliveryDefaultPrice", "pharmacyDeliveryZonePrices",
+    // Driver points are managed on the "تقييم المناديب" page.
+    "driverPointsEnabled", "driverPointsPerOrder", "driverPointsGoodRating", "driverPointsBadRating",
+    "driverFastDeliveryMinutes", "driverPointsFastDelivery", "driverLateDeliveryMinutes",
+    "driverPointsLateDelivery", "driverPointsRejectPenalty", "driverPointsTimeoutPenalty"];
   const settings = allSettings.filter((item) => !HIDDEN_SETTINGS.includes(item.setting));
 
   return (

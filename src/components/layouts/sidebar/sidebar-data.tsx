@@ -123,6 +123,10 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
             title: "delivery",
             url: "/delivery"
           },
+          (permissions?.["driver-points"]?.get || permissions?.["Driver Points & Levels"]?.get) && {
+            title: "driverPoints",
+            url: "/driver-points"
+          },
           permissions?.Users?.get && {
             title: "users",
             url: "/users"
