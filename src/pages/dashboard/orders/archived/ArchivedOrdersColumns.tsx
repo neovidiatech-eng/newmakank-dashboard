@@ -22,14 +22,25 @@ export default function ArchivedOrdersColumns(): any {
     {
       accessorKey: "id",
       header: () => <IconHeader columnKey="ID" />,
-      cell: ({ getValue, row }: any) => (
-        <Link
-          href={`/orders/archived/${row?.original?.id ?? getValue()}`}
-          className="font-mono text-sm font-semibold text-primary hover:underline hover:text-primary/80 transition-colors"
-        >
-          {getValue() as string}
-        </Link>
-      )
+      cell: ({ getValue, row }: any) => {
+        const id = row?.original?.id ?? getValue();
+        const dailyNum = row?.original?.storeDailyOrderNumber ?? row?.original?.invoice?.storeDailyOrderNumber;
+        return (
+          <div className="flex flex-col gap-0.5">
+            <Link
+              href={`/orders/archived/${id}`}
+              className="font-mono text-sm font-semibold text-primary hover:underline hover:text-primary/80 transition-colors"
+            >
+              #{id}
+            </Link>
+            {dailyNum ? (
+              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded w-fit whitespace-nowrap">
+                فاتورة #{dailyNum}
+              </span>
+            ) : null}
+          </div>
+        );
+      }
     },
     {
       id: "customer",

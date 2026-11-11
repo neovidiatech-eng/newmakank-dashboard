@@ -117,9 +117,16 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
-            {t("Order Details")} #{data?.id}
-          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
+              {t("Order Details")} #{data?.id}
+            </h1>
+            {Boolean((data as any)?.storeDailyOrderNumber || (data as any)?.invoice?.storeDailyOrderNumber) && (
+              <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm px-2.5 py-0.5">
+                فاتورة المتجر #{((data as any)?.storeDailyOrderNumber || (data as any)?.invoice?.storeDailyOrderNumber)}
+              </Badge>
+            )}
+          </div>
           <p className="text-muted-foreground text-sm mt-1.5 flex items-center gap-1.5">
             {t("Created on")} <DateCol date={data?.createdAt} />
           </p>
@@ -623,8 +630,15 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
         <div className="text-center space-y-1 mb-4 pb-4 border-b-2 border-dotted border-black">
           <h1 className="text-2xl font-black tracking-wider uppercase mb-1">مـكـانـك</h1>
           <p className="text-[10px] text-gray-500 font-sans tracking-wide">منصة التوصيل الأولى</p>
-          <div className="my-2 border border-black py-1 px-3 inline-block rounded">
-            <h2 className="text-sm font-bold">فاتورة طلب #{data?.id}</h2>
+          <div className="my-2 border-2 border-black py-1.5 px-3 inline-block rounded">
+            {Boolean((data as any)?.storeDailyOrderNumber || (data as any)?.invoice?.storeDailyOrderNumber) ? (
+              <>
+                <h2 className="text-base font-black">فاتورة طلب #{((data as any)?.storeDailyOrderNumber || (data as any)?.invoice?.storeDailyOrderNumber)}</h2>
+                <p className="text-[10px] text-gray-600 font-sans">رقم النظام: #{data?.id}</p>
+              </>
+            ) : (
+              <h2 className="text-sm font-bold">فاتورة طلب #{data?.id}</h2>
+            )}
           </div>
           <p className="text-[10px] font-sans">التاريخ: {new Date(data?.createdAt || "").toLocaleString("ar-EG")}</p>
         </div>

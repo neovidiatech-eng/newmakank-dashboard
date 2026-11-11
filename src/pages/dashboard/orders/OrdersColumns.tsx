@@ -160,7 +160,20 @@ export default function OrdersColumns(): any {
     {
       accessorKey: "id",
       header: () => <IconHeader columnKey="ID" />,
-      cell: ({ getValue }) => <span className="font-mono text-sm">{getValue() as string}</span>
+      cell: ({ row, getValue }) => {
+        const id = getValue() as string;
+        const dailyNum = row.original?.storeDailyOrderNumber ?? row.original?.invoice?.storeDailyOrderNumber;
+        return (
+          <div className="flex flex-col gap-0.5">
+            <span className="font-mono text-sm font-semibold">#{id}</span>
+            {dailyNum ? (
+              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded w-fit whitespace-nowrap">
+                فاتورة #{dailyNum}
+              </span>
+            ) : null}
+          </div>
+        );
+      }
     },
     {
       id: "customer",
