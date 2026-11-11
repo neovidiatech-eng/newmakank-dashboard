@@ -1,6 +1,8 @@
 {
   "": "",
   "tableReservations": "حجوزات الطاولات",
+  "serviceSchedules": "مواعيد عمل الخدمات والصيدلية",
+  "serviceSchedulesDesc": "إدارة مواعيد وشيفتات عمل الخدمات الخاصة والصيدلية ومفاتيح التشغيل الفوري",
   "hasTableReservation": "حجز الطاولات",
   "hasTableReservationEnabled": "مفعل",
   "hasTableReservationDisabled": "معطل",

@@ -1,6 +1,8 @@
 {
   "": "",
   "tableReservations": "Table Reservations",
+  "serviceSchedules": "Service & Pharmacy Schedules",
+  "serviceSchedulesDesc": "Manage operating hours and shifts for custom delivery and pharmacy services",
   "hasTableReservation": "Table Reservation",
   "hasTableReservationEnabled": "Enabled",
   "hasTableReservationDisabled": "Disabled",

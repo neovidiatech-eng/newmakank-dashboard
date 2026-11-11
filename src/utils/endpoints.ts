@@ -162,6 +162,7 @@ export const endpoints = {
   tableReservations: "/api/table-reservations",
   tableReservationsAdmin: "/admin",
   tableReservationsPendingCount: "/admin/pending-count",
+  serviceSchedules: "/api/service-schedules",
 };
 // addresses
 // allPermissions

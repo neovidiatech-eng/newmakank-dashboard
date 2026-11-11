@@ -230,6 +230,10 @@ export const links = ({ permissions, pendingReservationsCount }: { permissions: 
         title: "loyaltyPoints",
         url: "/loyalty"
       },
+      (permissions?.["service-schedules"]?.get || permissions?.["Service Schedules"]?.get || permissions?.settings?.get || permissions?.Settings?.get) && {
+        title: "serviceSchedules",
+        url: "/service-schedules"
+      },
       (permissions?.settings?.get || permissions?.Settings?.get) && {
         title: "settings",
         url: "/settings"
