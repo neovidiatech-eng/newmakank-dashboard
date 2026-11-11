@@ -1,6 +1,10 @@
 {
   "": "",
   "tableReservations": "حجوزات الطاولات",
+  "General Inquiry": "استفسار دعم عام (بدون طلب)",
+  "supportPhoneNumber": "رقم هاتف الدعم الفني",
+  "supportWhatsAppNumber": "رقم واتساب الدعم الفني",
+  "supportWhatsAppMessage": "رسالة الواتساب الافتراضية للدعم",
   "serviceSchedules": "مواعيد عمل الخدمات والصيدلية",
   "serviceSchedulesDesc": "إدارة مواعيد وشيفتات عمل الخدمات الخاصة والصيدلية ومفاتيح التشغيل الفوري",
   "hasTableReservation": "حجز الطاولات",

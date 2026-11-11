@@ -87,7 +87,7 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
           <CardContent className="space-y-4">
             <DetailRow label={t("ID")}>{complaint.id}</DetailRow>
             <DetailRow label={t("userId")}>{complaint.userId}</DetailRow>
-            <DetailRow label={t("Order")}>{complaint.orderId}</DetailRow>
+            <DetailRow label={t("Order")}>{complaint.orderId ? `#${complaint.orderId}` : t("General Inquiry")}</DetailRow>
             <DetailRow label={t("Status")}>{complaint.status}</DetailRow>
             <Separator />
             <DetailRow label={t("createdAt")}>

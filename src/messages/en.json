@@ -1,6 +1,10 @@
 {
   "": "",
   "tableReservations": "Table Reservations",
+  "General Inquiry": "General Support Ticket",
+  "supportPhoneNumber": "Support Phone Number",
+  "supportWhatsAppNumber": "Support WhatsApp Number",
+  "supportWhatsAppMessage": "Default Support WhatsApp Message",
   "serviceSchedules": "Service & Pharmacy Schedules",
   "serviceSchedulesDesc": "Manage operating hours and shifts for custom delivery and pharmacy services",
   "hasTableReservation": "Table Reservation",
