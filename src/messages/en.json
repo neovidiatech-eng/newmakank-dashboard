@@ -1,5 +1,13 @@
 {
   "": "",
+  "tableReservations": "Table Reservations",
+  "hasTableReservation": "Table Reservation",
+  "hasTableReservationEnabled": "Enabled",
+  "hasTableReservationDisabled": "Disabled",
+  "hasTableReservationTooltip": "Enable table booking and food pre-ordering for this restaurant from customer app",
+  "tableReservationFee": "Table Reservation Fee (EGP)",
+  "tableReservationFeePlaceholder": "0",
+  "tableReservationFeeTooltip": "Extra fee for table reservation added to order total (0 if free)",
   "activityAnalytics": "Activity Analytics 📊",
   "Order Filter": "Order Filter",
   "Most Orders": "Most Orders 🔥",

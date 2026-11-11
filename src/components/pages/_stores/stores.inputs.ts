@@ -35,6 +35,28 @@ export const StoresInputs = ({ isEdit, isAdmin, isSuperAdmin, t }: {
         toolTip: t ? t("storeServiceFeeTooltip") : undefined
       },
     ] : []),
+    {
+      name: "hasTableReservation",
+      type: "select" as const,
+      cardId: 'operations',
+      width: 3,
+      options: [
+        { label: t ? t("hasTableReservationDisabled") : "معطل", value: "false" },
+        { label: t ? t("hasTableReservationEnabled") : "مفعل", value: "true" }
+      ],
+      label: t ? t("hasTableReservation") : "حجز الطاولات",
+      toolTip: t ? t("hasTableReservationTooltip") : "إتاحة حجز طاولة وأكل مسبق للمطعم من تطبيق العملاء",
+    },
+    {
+      name: "tableReservationFee",
+      type: "number" as const,
+      cardId: 'operations',
+      width: 3,
+      min: 0,
+      label: t ? t("tableReservationFee") : "رسوم حجز الطاولة (ج.م)",
+      placeholder: t ? t("tableReservationFeePlaceholder") : "0",
+      toolTip: t ? t("tableReservationFeeTooltip") : "رسوم إضافية لحجز الطاولة تضاف لإجمالي الطلب (0 إذا كان مجاني)",
+    },
     { name: "announcement", type: "textarea", cardId: 'operations', width: 12, placeholder: "اكتب هنا رسالة أو تنبيه يظهر للعملاء في تطبيق الموبايل (اختياري)" },
 
     {

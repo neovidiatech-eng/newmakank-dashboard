@@ -1,5 +1,13 @@
 {
   "": "",
+  "tableReservations": "حجوزات الطاولات",
+  "hasTableReservation": "حجز الطاولات",
+  "hasTableReservationEnabled": "مفعل",
+  "hasTableReservationDisabled": "معطل",
+  "hasTableReservationTooltip": "إتاحة حجز طاولة وأكل مسبق للمطعم من تطبيق العملاء",
+  "tableReservationFee": "رسوم حجز الطاولة (ج.م)",
+  "tableReservationFeePlaceholder": "0",
+  "tableReservationFeeTooltip": "رسوم إضافية لحجز الطاولة تضاف لإجمالي الطلب (0 إذا كان مجاني)",
   "activityAnalytics": "تحليلات النشاط الشاملة 📊",
   "Order Filter": "فلترة حسب الطلبات",
   "Most Orders": "الأكثر طلباً 🔥",

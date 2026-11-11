@@ -1,4 +1,4 @@
-export const links = ({ permissions }: { permissions: Permission }): NavItem[] => {
+export const links = ({ permissions, pendingReservationsCount }: { permissions: Permission; pendingReservationsCount?: number }): NavItem[] => {
   return (
     [
 
@@ -170,6 +170,15 @@ export const links = ({ permissions }: { permissions: Permission }): NavItem[] =
           (permissions?.Orders?.get || permissions?.orders?.get) && {
             title: "archivedOrders",
             url: "/orders/archived"
+          },
+          (permissions?.Orders?.get || permissions?.orders?.get || permissions?.Stores?.get) && {
+            title: "tableReservations",
+            url: "/table-reservations",
+            info: (pendingReservationsCount && pendingReservationsCount > 0) ? (
+              <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white bg-red-500 rounded-full animate-pulse">
+                {pendingReservationsCount}
+              </span>
+            ) : undefined
           },
           (permissions?.Complaints?.get || permissions?.complaints?.get) && {
             title: "complaint",

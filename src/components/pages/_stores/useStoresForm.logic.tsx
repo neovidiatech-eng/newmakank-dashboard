@@ -75,6 +75,8 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       minOrderAmount: (data as any)?.minOrderAmount ?? 0,
       serviceFee: (data as any)?.serviceFee ?? 0,
       serviceFeeType: (data as any)?.serviceFeeType ?? "PERCENTAGE",
+      hasTableReservation: (data as any)?.hasTableReservation ? "true" : "false",
+      tableReservationFee: (data as any)?.tableReservationFee ?? 0,
       announcement: (data as any)?.announcement ?? "",
       map: (data as any)?.lat && (data as any)?.lng
         ? { lat: Number((data as any).lat), lng: Number((data as any).lng) }
@@ -166,6 +168,9 @@ export default function useStoresLogic({ data }: { data?: StoresType }) {
       serviceFeeType: showServiceFee
         ? (rest.serviceFeeType === "FIXED" ? "FIXED" : "PERCENTAGE")
         : undefined,
+      hasTableReservation: rest.hasTableReservation === "true" || rest.hasTableReservation === true,
+      tableReservationFee:
+        rest.tableReservationFee !== undefined && rest.tableReservationFee !== "" ? Number(rest.tableReservationFee) : 0,
       announcement:
         rest.announcement !== undefined
           ? (rest.announcement && String(rest.announcement).trim() ? String(rest.announcement).trim() : null)
