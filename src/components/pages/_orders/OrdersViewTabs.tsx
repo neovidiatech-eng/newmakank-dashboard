@@ -17,6 +17,11 @@ type OrdersViewTabsProps = {
 
 const getDefaultFilters = (t: ReturnType<typeof useTranslations>): FormInput[] => [
   {
+    name: "search",
+    type: "text",
+    width: 3,
+  },
+  {
     name: "type",
     type: "select",
     options: [
