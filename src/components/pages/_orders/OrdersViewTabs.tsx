@@ -146,15 +146,17 @@ export default function OrdersViewTabs({
       />
 
       {cities.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 p-2 bg-card rounded-xl border border-border shadow-sm">
-          <div className="text-xs font-semibold text-muted-foreground px-2 flex items-center gap-1.5">
+        // One scrollable row: with many cities the wrapped chips used to push
+        // the orders table below the fold.
+        <div className="flex flex-nowrap items-center gap-2 p-2 bg-card rounded-xl border border-border shadow-sm overflow-x-auto [scrollbar-width:thin]">
+          <div className="shrink-0 text-xs font-semibold text-muted-foreground px-2 flex items-center gap-1.5">
             <span>🏙️</span>
             <span>{t("City") || "المدينة"}:</span>
           </div>
           <button
             type="button"
             onClick={() => handleSelectCity()}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            className={`shrink-0 whitespace-nowrap px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
               !currentCityId
                 ? "bg-primary text-primary-foreground shadow-sm font-semibold"
                 : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/40"
@@ -173,7 +175,7 @@ export default function OrdersViewTabs({
                 key={city.id}
                 type="button"
                 onClick={() => handleSelectCity(city.id)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                className={`shrink-0 whitespace-nowrap px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
                   isSelected
                     ? "bg-primary text-primary-foreground shadow-sm font-semibold"
                     : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/40"
