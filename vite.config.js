@@ -10,6 +10,7 @@ export default defineConfig({
     }
   },
   build: {
-    sourcemap: true
+    // No public source maps: they exposed the full dashboard source code.
+    sourcemap: false
   }
 });
