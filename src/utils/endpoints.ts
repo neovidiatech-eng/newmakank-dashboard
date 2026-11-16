@@ -159,6 +159,10 @@ export const endpoints = {
   bundles: "/api/bundles",
   deliveryPromotions: "/api/delivery-promotions",
   toggle: "/toggle",
+  tableReservations: "/api/table-reservations",
+  tableReservationsAdmin: "/admin",
+  tableReservationsPendingCount: "/admin/pending-count",
+  serviceSchedules: "/api/service-schedules",
 };
 // addresses
 // allPermissions

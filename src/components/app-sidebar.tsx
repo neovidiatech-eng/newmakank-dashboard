@@ -62,6 +62,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     retry: false
   });
 
+  const pendingReservationsQuery = useQuery({
+    queryKey: ["tableReservationsPendingCount"],
+    queryFn: () => fetchHelper({ endPoint: ["tableReservations", "tableReservationsPendingCount"] }),
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+    retry: false
+  });
+  const pendingReservationsCount = (pendingReservationsQuery.data as any)?.data?.pendingCount ?? 0;
+
   const filterLink = useMemo(() => {
     const profile = profileQuery.data?.data?.user;
     const isSuperAdmin =
@@ -73,18 +82,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         // The super admin bypasses permission checks on the API, so always show
         // newer pages even before their permission rows are seeded in the DB.
         return links({
-          permissions: { ...permissionsQuery.data, loyalty: { get: true } } as unknown as Permission
+          permissions: { ...permissionsQuery.data, loyalty: { get: true } } as unknown as Permission,
+          pendingReservationsCount
         });
       }
-      return links({ permissions: FALLBACK_SIDEBAR_PERMISSIONS });
+      return links({ permissions: FALLBACK_SIDEBAR_PERMISSIONS, pendingReservationsCount });
     }
 
     if (permissionsQuery.data) {
-      return links({ permissions: permissionsQuery.data });
+      return links({ permissions: permissionsQuery.data, pendingReservationsCount });
     }
 
     return [];
-  }, [permissionsQuery.data, profileQuery.data]);
+  }, [permissionsQuery.data, profileQuery.data, pendingReservationsCount]);
   const profile = profileQuery.data?.data?.user;
 
   return (

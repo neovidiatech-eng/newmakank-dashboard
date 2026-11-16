@@ -1,5 +1,19 @@
 {
   "": "",
+  "tableReservations": "Table Reservations",
+  "General Inquiry": "General Support Ticket",
+  "supportPhoneNumber": "Support Phone Number",
+  "supportWhatsAppNumber": "Support WhatsApp Number",
+  "supportWhatsAppMessage": "Default Support WhatsApp Message",
+  "serviceSchedules": "Service & Pharmacy Schedules",
+  "serviceSchedulesDesc": "Manage operating hours and shifts for custom delivery and pharmacy services",
+  "hasTableReservation": "Table Reservation",
+  "hasTableReservationEnabled": "Enabled",
+  "hasTableReservationDisabled": "Disabled",
+  "hasTableReservationTooltip": "Enable table booking and food pre-ordering for this restaurant from customer app",
+  "tableReservationFee": "Table Reservation Fee (EGP)",
+  "tableReservationFeePlaceholder": "0",
+  "tableReservationFeeTooltip": "Extra fee for table reservation added to order total (0 if free)",
   "activityAnalytics": "Activity Analytics 📊",
   "Order Filter": "Order Filter",
   "Most Orders": "Most Orders 🔥",
@@ -3359,5 +3373,8 @@
   "pricing-announcements": "Pricing & announcements",
   "special-delivery-banners": "Special delivery banners",
   "store-templates": "Store templates",
-  "withdrawals": "Withdrawals"
+  "withdrawals": "Withdrawals",
+  "tableReservationsIntro": "Track table reservations customers made in the app, and approve or reject them.",
+  "table-reservations": "Table reservations",
+  "service-schedules": "Service schedules"
 }

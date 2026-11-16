@@ -21,6 +21,9 @@ minOrderAmount: z.union([z.number(), z.string()]).optional(),
 // Store service fee (super admin only). 0 = the global service fee applies.
 serviceFee: z.union([z.number(), z.string()]).optional(),
 serviceFeeType: z.string().optional(),
+// The select sends "true"/"false"; the payload converts it to a boolean.
+hasTableReservation: z.union([z.boolean(), z.string()]).optional(),
+tableReservationFee: z.union([z.number(), z.string()]).optional(),
 announcement: z.string().nullable().optional(),
 lat:StringNotReq(),
 lng:StringNotReq(),

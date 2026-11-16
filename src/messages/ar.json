@@ -1,5 +1,19 @@
 {
   "": "",
+  "tableReservations": "حجوزات الطاولات",
+  "General Inquiry": "استفسار دعم عام (بدون طلب)",
+  "supportPhoneNumber": "رقم هاتف الدعم الفني",
+  "supportWhatsAppNumber": "رقم واتساب الدعم الفني",
+  "supportWhatsAppMessage": "رسالة الواتساب الافتراضية للدعم",
+  "serviceSchedules": "مواعيد عمل الخدمات والصيدلية",
+  "serviceSchedulesDesc": "إدارة مواعيد وشيفتات عمل الخدمات الخاصة والصيدلية ومفاتيح التشغيل الفوري",
+  "hasTableReservation": "حجز الطاولات",
+  "hasTableReservationEnabled": "مفعل",
+  "hasTableReservationDisabled": "معطل",
+  "hasTableReservationTooltip": "إتاحة حجز طاولة وأكل مسبق للمطعم من تطبيق العملاء",
+  "tableReservationFee": "رسوم حجز الطاولة (ج.م)",
+  "tableReservationFeePlaceholder": "0",
+  "tableReservationFeeTooltip": "رسوم إضافية لحجز الطاولة تضاف لإجمالي الطلب (0 إذا كان مجاني)",
   "activityAnalytics": "تحليلات النشاط الشاملة 📊",
   "Order Filter": "فلترة حسب الطلبات",
   "Most Orders": "الأكثر طلباً 🔥",
@@ -3362,5 +3376,8 @@
   "pricing-announcements": "تسعير وتنبيهات المتاجر",
   "special-delivery-banners": "بانرات التوصيل الخاص",
   "store-templates": "قوالب المتاجر",
-  "withdrawals": "طلبات السحب"
+  "withdrawals": "طلبات السحب",
+  "tableReservationsIntro": "تابع حجوزات الطاولات اللي العملاء عملوها من التطبيق، ووافق عليها أو ارفضها.",
+  "table-reservations": "حجوزات الطاولات",
+  "service-schedules": "مواعيد عمل الخدمات"
 }

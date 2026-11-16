@@ -56,6 +56,7 @@ export interface ApiResponseComplaintsItem {
 
 export interface ApiResponseInvoice {
   orderId: number;
+  storeDailyOrderNumber?: number | null;
   customer: number;
   branchId?: number;
   store?: ApiResponseInvoiceStore;
@@ -245,6 +246,7 @@ export interface ApiResponse {
   status: string;
   type: string;
   branchId?: number | null;
+  storeDailyOrderNumber?: number | null;
   Branch?: ApiResponseBranch | null;
   Customer: ApiResponseCustomer;
   invoice: ApiResponseInvoice;
