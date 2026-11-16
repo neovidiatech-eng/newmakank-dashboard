@@ -61,12 +61,13 @@ const UserDropdown = ({
           )}
           {showDetails ? (
             <>
-              <div className="text-left space-y-0.5 max-w-[120px]">
-                <p className="text-base font-semibold text-foreground leading-tight truncate">
+              <div className="text-start space-y-0.5 max-w-[150px]">
+                <p dir="auto" className="text-base font-semibold text-foreground leading-tight truncate">
                   {user?.name}
                 </p>
                 <p
-                  className="text-xs font-medium text-muted-foreground truncate opacity-80"
+                  dir="ltr"
+                  className="text-xs font-medium text-muted-foreground truncate opacity-80 text-start"
                   style={{ maxWidth: "120px" }}
                 >
                   {user?.email}

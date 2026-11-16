@@ -118,14 +118,16 @@ function SideBarItems({ links }: { links: NavItem[] }): JSX.Element {
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton
                         className={cn(
-                          "flex justify-between font-medium",
+                          // h-auto: long group names (e.g. "المستخدمين والصلاحيات") wrap
+                          // instead of spilling over the next item.
+                          "flex h-auto min-h-8 justify-between font-medium",
                           isParentActive || isAnyChildActive
                             ? "bg-sidebar-accent text-sidebar-accent-foreground"
                             : "text-foreground/80 hover:text-foreground"
                         )}
                         isActive={isParentActive || isAnyChildActive}
                       >
-                        <div className="flex items-baseline gap-2">
+                        <div className="flex min-w-0 items-baseline gap-2 text-start">
                           {typeof item.title === "string" && item.title in mainIcons && (
                             <span
                               className={cn(
