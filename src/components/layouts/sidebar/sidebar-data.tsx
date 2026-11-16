@@ -26,6 +26,10 @@ export const links = ({ permissions, pendingReservationsCount }: { permissions: 
         title: "Kiosk",
         url: "/kiosk"
       },
+      (permissions?.Stores?.get || permissions?.stores?.get) && {
+        title: "Mart",
+        url: "/mart"
+      },
       permissions?.Stores?.get && {
         title: "storePricingAndAnnouncements",
         url: "/stores/pricing-announcements"
