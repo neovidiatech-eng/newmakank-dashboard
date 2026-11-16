@@ -45,7 +45,7 @@ export default function MartClient() {
   const queryClient = useQueryClient();
   const [selectedCityId, setSelectedCityId] = useState<string>("");
   const [activeTab, setActiveTab] = useState<
-    "store" | "departments" | "products" | "flashDeals" | "sections" | "banners"
+    "store" | "departments" | "products" | "flashDeals" | "sections" | "banners" | "crossSells"
   >("store");
 
   // Department Dialog State
@@ -99,6 +99,15 @@ export default function MartClient() {
   const [bannerNameEn, setBannerNameEn] = useState("");
   const [bannerImage, setBannerImage] = useState("");
   const [bannerCategoryId, setBannerCategoryId] = useState("");
+
+  // Cross-Sell ("نسيت حاجة معاك؟") State
+  const [isCrossSellDialogOpen, setIsCrossSellDialogOpen] = useState(false);
+  const [crossSellServiceId, setCrossSellServiceId] = useState("");
+  const [crossSellDisplayOrder, setCrossSellDisplayOrder] = useState("0");
+  const [enableCrossSellState, setEnableCrossSellState] = useState(true);
+  const [crossSellTitleAr, setCrossSellTitleAr] = useState("نسيت حاجة معاك؟");
+  const [crossSellTitleEn, setCrossSellTitleEn] = useState("Forgot something?");
+  const [crossSellMaxPriceState, setCrossSellMaxPriceState] = useState("");
 
   // Store Settings Form State
   const [martNameAr, setMartNameAr] = useState("مكانك مارت");
@@ -266,6 +275,39 @@ export default function MartClient() {
   });
 
   const banners = Array.isArray(bannersResponse?.data) ? bannersResponse.data : [];
+
+  // 8. Fetch Cross-Sells ("نسيت حاجة معاك؟")
+  const {
+    data: crossSellsResponse,
+    isLoading: isLoadingCrossSells,
+    refetch: refetchCrossSells,
+  } = useQuery({
+    queryKey: ["mart-admin-cross-sells", currentMart?.id],
+    queryFn: () =>
+      fetchHelper({
+        endPoint: `mart/admin/cross-sells/${currentMart.id}` as any,
+        method: "GET",
+      }),
+    enabled: !!currentMart?.id,
+  });
+
+  const crossSellsData = Array.isArray(crossSellsResponse?.data?.items)
+    ? crossSellsResponse.data.items
+    : [];
+  const crossSellSettings = crossSellsResponse?.data?.settings;
+
+  useEffect(() => {
+    if (crossSellSettings) {
+      setEnableCrossSellState(crossSellSettings.enableCrossSell ?? true);
+      setCrossSellTitleAr(crossSellSettings.crossSellTitle?.ar || "نسيت حاجة معاك؟");
+      setCrossSellTitleEn(crossSellSettings.crossSellTitle?.en || "Forgot something?");
+      setCrossSellMaxPriceState(
+        crossSellSettings.crossSellMaxPrice !== null && crossSellSettings.crossSellMaxPrice !== undefined
+          ? String(crossSellSettings.crossSellMaxPrice)
+          : ""
+      );
+    }
+  }, [crossSellSettings]);
 
   // ─── Mutations ─────────────────────────────────────────────────────────────
 
@@ -513,6 +555,50 @@ export default function MartClient() {
     },
   });
 
+  // Cross-Sell Mutations
+  const addCrossSellMutation = useMutation({
+    mutationFn: (body: any) =>
+      fetchHelper({
+        endPoint: `mart/admin/cross-sells/${currentMart.id}` as any,
+        method: "POST",
+        body,
+      }),
+    onSuccess: () => {
+      toast.success("تمت إضافة المنتج بنجاح إلى سيكشن نسيت حاجة معاك؟");
+      queryClient.invalidateQueries({ queryKey: ["mart-admin-cross-sells", currentMart?.id] });
+      setIsCrossSellDialogOpen(false);
+      setCrossSellServiceId("");
+    },
+    onError: () => toast.error("فشل إضافة المنتج"),
+  });
+
+  const removeCrossSellMutation = useMutation({
+    mutationFn: (id: number) =>
+      fetchHelper({
+        endPoint: `mart/admin/cross-sells/${id}` as any,
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      toast.success("تم حذف المنتج من السيكشن");
+      queryClient.invalidateQueries({ queryKey: ["mart-admin-cross-sells", currentMart?.id] });
+    },
+    onError: () => toast.error("فشل حذف المنتج"),
+  });
+
+  const updateCrossSellSettingsMutation = useMutation({
+    mutationFn: (body: any) =>
+      fetchHelper({
+        endPoint: `mart/admin/cross-sells/${currentMart.id}/settings` as any,
+        method: "PATCH",
+        body,
+      }),
+    onSuccess: () => {
+      toast.success("تم تحديث إعدادات سيكشن نسيت حاجة معاك؟ بنجاح");
+      queryClient.invalidateQueries({ queryKey: ["mart-admin-cross-sells", currentMart?.id] });
+    },
+    onError: () => toast.error("فشل تحديث الإعدادات"),
+  });
+
   // ─── Helpers & Form Resets ──────────────────────────────────────────────────
 
   const resetDeptForm = () => {
@@ -709,6 +795,7 @@ export default function MartClient() {
               refetchFlash();
               refetchSections();
               refetchBanners();
+              refetchCrossSells();
               toast.success("تم تحديث البيانات");
             }}
           >
@@ -726,6 +813,7 @@ export default function MartClient() {
           { key: "flashDeals", label: "عروض الفلاش سيل", icon: Zap },
           { key: "sections", label: "الرفوف التفاعلية", icon: Sparkles },
           { key: "banners", label: "بنرات المارت", icon: ImageIcon },
+          { key: "crossSells", label: "نسيت حاجة معاك؟", icon: ShoppingCart },
         ].map((tab) => {
           const Icon = tab.icon;
           const isSel = activeTab === tab.key;
@@ -1488,6 +1576,170 @@ export default function MartClient() {
         </Card>
       )}
 
+      {/* TAB 7: CROSS-SELLS ("نسيت حاجة معاك؟") */}
+      {activeTab === "crossSells" && (
+        <div className="space-y-6">
+          {/* Card 1: Cross-Sell Settings */}
+          <Card className="border-gray-100 dark:border-zinc-800 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4 text-emerald-600" />
+                <span>إعدادات سيكشن نسيت حاجة معاك؟ (Checkout Add-ons)</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-900 rounded-xl">
+                <div>
+                  <p className="font-bold text-sm text-gray-900 dark:text-gray-100">
+                    تفعيل السيكشن في السلة والشيك آوت
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    إظهار شريط المنتجات المقترحة السريعة للعميل قبل تأكيد الطلب
+                  </p>
+                </div>
+                <Switch
+                  checked={enableCrossSellState}
+                  onCheckedChange={(val) => setEnableCrossSellState(val)}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+                    عنوان السيكشن (عربي)
+                  </label>
+                  <Input
+                    value={crossSellTitleAr}
+                    onChange={(e) => setCrossSellTitleAr(e.target.value)}
+                    placeholder="نسيت حاجة معاك؟"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+                    عنوان السيكشن (إنجليزي)
+                  </label>
+                  <Input
+                    value={crossSellTitleEn}
+                    onChange={(e) => setCrossSellTitleEn(e.target.value)}
+                    placeholder="Forgot something?"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+                  الحد الأقصى لسعر المنتجات التلقائية (جنيه) - اختياري
+                </label>
+                <Input
+                  type="number"
+                  value={crossSellMaxPriceState}
+                  onChange={(e) => setCrossSellMaxPriceState(e.target.value)}
+                  placeholder="مثال: 25 (لعرض المنتجات الأقل من 25 ج تلقائياً إذا لم توجد منتجات يدوية كافية)"
+                  className="mt-1"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">
+                  إذا تركتها فارغة، سيتم عرض المنتجات اليدوية المحددة بالجدول أدناه فقط.
+                </p>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  onClick={() => {
+                    updateCrossSellSettingsMutation.mutate({
+                      enableCrossSell: enableCrossSellState,
+                      crossSellTitle: {
+                        ar: crossSellTitleAr || "نسيت حاجة معاك؟",
+                        en: crossSellTitleEn || "Forgot something?",
+                      },
+                      crossSellMaxPrice: crossSellMaxPriceState
+                        ? Number(crossSellMaxPriceState)
+                        : null,
+                    });
+                  }}
+                  disabled={updateCrossSellSettingsMutation.isPending}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                >
+                  حفظ إعدادات السيكشن
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 2: Manual Cross-Sell Items */}
+          <Card className="border-gray-100 dark:border-zinc-800 shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Package className="h-4 w-4 text-emerald-600" />
+                <span>المنتجات المحددة يدوياً في السيكشن ({crossSellsData.length})</span>
+              </CardTitle>
+              <Button
+                size="sm"
+                onClick={() => setIsCrossSellDialogOpen(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs"
+              >
+                <Plus className="h-3.5 w-3.5 ml-1" />
+                إضافة منتج للسيكشن
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {isLoadingCrossSells ? (
+                <div className="py-8 text-center text-sm text-gray-500">جاري التحميل...</div>
+              ) : crossSellsData.length === 0 ? (
+                <div className="py-8 text-center text-sm text-gray-500">
+                  لا توجد منتجات محددة يدوياً حالياً. يمكنك إضافة شوكولاتات صغيرة، لبان، مناديل، أو استخدام سقف السعر التلقائي.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {crossSellsData.map((item: any) => {
+                    const svc = item.Service;
+                    if (!svc) return null;
+                    const price = svc.priceAfterDiscount || svc.price;
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-white dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-zinc-700">
+                            {svc.image ? (
+                              <img
+                                src={svc.image.startsWith("http") ? svc.image : `/uploads/${svc.image}`}
+                                alt=""
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <Package className="h-5 w-5 text-gray-400" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-bold text-xs text-gray-900 dark:text-gray-100 line-clamp-1">
+                              {typeof svc.name === "object" ? svc.name?.ar : svc.name}
+                            </p>
+                            <p className="text-xs font-semibold text-emerald-600">
+                              {price} ج
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => removeCrossSellMutation.mutate(item.id)}
+                          className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* ─── MODALS ────────────────────────────────────────────────────────── */}
 
       {/* Category / Subcategory Dialog */}
@@ -1915,6 +2167,71 @@ export default function MartClient() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG: ADD CROSS-SELL ITEM */}
+      <Dialog open={isCrossSellDialogOpen} onOpenChange={setIsCrossSellDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>إضافة منتج لسيكشن نسيت حاجة معاك؟</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+                اختر المنتج من منتجات المارت
+              </label>
+              <Select value={crossSellServiceId} onValueChange={setCrossSellServiceId}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="اختر منتجاً..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-64">
+                  {products.map((p: any) => {
+                    const name = typeof p.name === "object" ? p.name?.ar : p.name;
+                    const price = p.priceAfterDiscount || p.price;
+                    return (
+                      <SelectItem key={p.id} value={String(p.id)}>
+                        {name} ({price} ج)
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+                ترتيب العرض
+              </label>
+              <Input
+                type="number"
+                value={crossSellDisplayOrder}
+                onChange={(e) => setCrossSellDisplayOrder(e.target.value)}
+                placeholder="0"
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCrossSellDialogOpen(false)}>
+              إلغاء
+            </Button>
+            <Button
+              onClick={() => {
+                if (!crossSellServiceId) {
+                  toast.error("يرجى اختيار منتج");
+                  return;
+                }
+                addCrossSellMutation.mutate({
+                  serviceId: Number(crossSellServiceId),
+                  displayOrder: Number(crossSellDisplayOrder || 0),
+                });
+              }}
+              disabled={addCrossSellMutation.isPending}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+            >
+              إضافة
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
