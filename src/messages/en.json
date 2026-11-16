@@ -3346,5 +3346,18 @@
   "promoZoneRequired": "Select a zone",
   "replyAdded": "Reply added",
   "replyDialogDescription": "Your reply will be shown to the customer in the mobile app.",
-  "replyUpdated": "Reply updated"
+  "replyUpdated": "Reply updated",
+  "analytics": "Analytics",
+  "archived": "Archived",
+  "cash-settlements": "Cash settlements",
+  "customer-categories": "Customer categories",
+  "driver-points": "Driver points",
+  "financial-overview": "Financial overview",
+  "loyalty": "Loyalty points",
+  "offers": "Offers",
+  "partner-settlements": "Partner settlements",
+  "pricing-announcements": "Pricing & announcements",
+  "special-delivery-banners": "Special delivery banners",
+  "store-templates": "Store templates",
+  "withdrawals": "Withdrawals"
 }

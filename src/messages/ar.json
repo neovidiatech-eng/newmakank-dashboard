@@ -3349,5 +3349,18 @@
   "promoZoneRequired": "اختر المنطقة",
   "replyAdded": "تم إضافة الرد بنجاح",
   "replyDialogDescription": "الرد الخاص بك سيظهر للعميل في تطبيق الموبايل.",
-  "replyUpdated": "تم تحديث الرد بنجاح"
+  "replyUpdated": "تم تحديث الرد بنجاح",
+  "analytics": "تحليلات النشاط",
+  "archived": "الأرشيف",
+  "cash-settlements": "تسويات الكاش",
+  "customer-categories": "فئات العملاء",
+  "driver-points": "تقييم المناديب",
+  "financial-overview": "الملخص المالي",
+  "loyalty": "نظام النقاط",
+  "offers": "العروض",
+  "partner-settlements": "تسويات المطاعم الشريكة",
+  "pricing-announcements": "تسعير وتنبيهات المتاجر",
+  "special-delivery-banners": "بانرات التوصيل الخاص",
+  "store-templates": "قوالب المتاجر",
+  "withdrawals": "طلبات السحب"
 }
