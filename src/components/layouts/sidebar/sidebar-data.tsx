@@ -22,6 +22,14 @@ export const links = ({ permissions, pendingReservationsCount }: { permissions: 
         title: "stores",
         url: "/stores"
       },
+      (permissions?.Stores?.get || permissions?.stores?.get) && {
+        title: "Kiosk",
+        url: "/kiosk"
+      },
+      (permissions?.Stores?.get || permissions?.stores?.get) && {
+        title: "Mart",
+        url: "/mart"
+      },
       permissions?.Stores?.get && {
         title: "storePricingAndAnnouncements",
         url: "/stores/pricing-announcements"
@@ -67,6 +75,10 @@ export const links = ({ permissions, pendingReservationsCount }: { permissions: 
         permissions?.["fortune-wheel"]?.get) && {
         title: "content",
         items: [
+          (permissions?.Banners?.get || permissions?.banners?.get) && {
+            title: "homeBuilder",
+            url: "/home-builder"
+          },
           (permissions?.Banners?.get || permissions?.banners?.get) && {
             title: "banners",
             url: "/banners"
@@ -179,6 +191,10 @@ export const links = ({ permissions, pendingReservationsCount }: { permissions: 
                 {pendingReservationsCount}
               </span>
             ) : undefined
+          },
+          (permissions?.Orders?.get || permissions?.orders?.get) && {
+            title: "governorateShipping",
+            url: "/governorate-shipping"
           },
           (permissions?.Complaints?.get || permissions?.complaints?.get) && {
             title: "complaint",

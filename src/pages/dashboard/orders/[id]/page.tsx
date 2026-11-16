@@ -72,6 +72,9 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
 
   // Use explicit tax/commission if present, or mathematical diff fallback
   const serviceFee = rawTax || rawGlobalCommission || rawServiceFee || calculatedDiff;
+  const orderTip = Number((data as any)?.tip ?? (data as any)?.financialBreakdown?.tip ?? (data as any)?.invoice?.summary?.tip ?? (data as any)?.invoice?.tip ?? 0);
+  const totalShipping = Number(data?.shipping ?? 0);
+  const baseShipping = Math.max(0, totalShipping - orderTip);
   const priceAfterDiscount = (data as any)?.priceAfterDiscount;
   const priceAfterTax = (data as any)?.priceAfterTax;
   const rewardId = (data as any)?.rewardId ?? (data as any)?.fortuneRewardId;
@@ -264,39 +267,67 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   </span>
                 </div>
               )}
-              <div className="flex justify-between">
-                <div>
-                  <span className="text-muted-foreground">- {t("Shipping")}</span>
-                  {hasFreeDeliveryReward && (
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                      {t("freeDeliveryRewardKeepsTip")}
-                    </p>
-                  )}
-                </div>
-                <div className="text-end">
-                  {hasFreeDeliveryReward && (
-                    <Badge variant="success" className="mb-1">{t("Free delivery reward")}</Badge>
-                  )}
-                  <div className="font-medium">
-                    <PriceAmount value={data?.shipping} />
+              {/* Shipping & Tip Breakdown */}
+              {orderTip > 0 ? (
+                <div className="space-y-2 rounded-lg bg-amber-50/40 dark:bg-amber-950/20 p-3 border border-amber-200/60 dark:border-amber-900/40">
+                  <div className="flex justify-between">
+                    <div>
+                      <span className="text-muted-foreground">- {t("baseShippingFee") || "رسوم التوصيل الأساسية (المشوار)"}</span>
+                      {hasFreeDeliveryReward && (
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                          {t("freeDeliveryRewardKeepsTip")}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-end">
+                      {hasFreeDeliveryReward && (
+                        <Badge variant="success" className="mb-1">{t("Free delivery reward")}</Badge>
+                      )}
+                      <div className="font-medium">
+                        <PriceAmount value={baseShipping} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-amber-700 dark:text-amber-400 font-medium">
+                    <span className="flex items-center gap-1.5">
+                      <span>🎁</span> {t("Tip") || "إكرامية المندوب (Tip)"}
+                    </span>
+                    <span className="font-semibold">
+                      + <PriceAmount value={orderTip} />
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-slate-800 dark:text-slate-200 pt-1.5 border-t border-amber-200/60 dark:border-amber-800/40">
+                    <span className="text-xs text-muted-foreground">- {t("totalDeliveryFee") || "إجمالي مستحق التوصيل للمندوب"}</span>
+                    <span className="font-bold">
+                      <PriceAmount value={totalShipping} />
+                    </span>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex justify-between">
+                  <div>
+                    <span className="text-muted-foreground">- {t("Shipping")}</span>
+                    {hasFreeDeliveryReward && (
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                        {t("freeDeliveryRewardKeepsTip")}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-end">
+                    {hasFreeDeliveryReward && (
+                      <Badge variant="success" className="mb-1">{t("Free delivery reward")}</Badge>
+                    )}
+                    <div className="font-medium">
+                      <PriceAmount value={totalShipping} />
+                    </div>
+                  </div>
+                </div>
+              )}
               {serviceFee > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">- {t("Service Fee") || "رسوم الخدمة"}</span>
                   <span className="font-medium">
                     <PriceAmount value={serviceFee} />
-                  </span>
-                </div>
-              )}
-              {Number(data?.tip || (data as any)?.invoice?.tip || 0) > 0 && (
-                <div className="flex justify-between text-amber-600 dark:text-amber-500 font-medium">
-                  <span className="text-muted-foreground flex items-center gap-1.5">
-                    - {t("Tip") || "إكرامية (تبس)"}
-                  </span>
-                  <span className="font-semibold text-amber-600 dark:text-amber-500">
-                    + <PriceAmount value={Number(data?.tip || (data as any)?.invoice?.tip)} />
                   </span>
                 </div>
               )}

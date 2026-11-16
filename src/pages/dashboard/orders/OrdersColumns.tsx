@@ -368,13 +368,26 @@ export default function OrdersColumns(): any {
     {
       accessorKey: "shipping",
       header: () => <IconHeader columnKey="Shipping" />,
-      cell: ({ getValue }) => <PriceAmount value={getValue() as number} />
+      cell: ({ row, getValue }) => {
+        const total = (getValue() as number) ?? 0;
+        const tip = Number(row.original?.tip ?? row.original?.invoice?.summary?.tip ?? row.original?.invoice?.tip ?? 0);
+        if (tip > 0) {
+          const base = Math.max(0, total - tip);
+          return (
+            <div>
+              <div className="font-medium"><PriceAmount value={total} /></div>
+              <div className="text-[11px] text-amber-600 dark:text-amber-400 font-normal">({base} + {tip} إكرامية)</div>
+            </div>
+          );
+        }
+        return <PriceAmount value={total} />;
+      }
     },
     {
       accessorKey: "tip",
       header: () => <IconHeader columnKey="Tip" />,
       cell: ({ row, getValue }) => {
-        const tip = Number(getValue() ?? row.original?.invoice?.tip ?? 0);
+        const tip = Number(getValue() ?? row.original?.tip ?? row.original?.invoice?.summary?.tip ?? row.original?.invoice?.tip ?? 0);
         return tip > 0 ? (
           <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold">
             <span>+</span>
