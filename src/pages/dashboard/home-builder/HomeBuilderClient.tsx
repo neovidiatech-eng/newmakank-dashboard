@@ -44,9 +44,25 @@ export default function HomeBuilderClient() {
   const [editingSection, setEditingSection] = useState<AdminHomeSection | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
 
+  const [floatingBadge, setFloatingBadge] = useState<{
+    enabled: boolean;
+    storeId: number | null;
+    storeName?: string;
+    text: string;
+    image: string;
+  }>({
+    enabled: true,
+    storeId: null,
+    storeName: "",
+    text: "",
+    image: "",
+  });
+  const [savingBadge, setSavingBadge] = useState(false);
+  const [allStores, setAllStores] = useState<any[]>([]);
+
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const [secRes, cityRes, tplRes, bannerRes] = await Promise.all([
+    const [secRes, cityRes, tplRes, bannerRes, badgeRes, storesRes] = await Promise.all([
       fetchHelper({
         endPoint: ["homeAdminSections"],
         method: "GET",
@@ -70,6 +86,17 @@ export default function HomeBuilderClient() {
         params: { limit: 100 },
         redirectOnUnauthorized: false,
       }),
+      fetchHelper({
+        endPoint: ["settings", "floating-badge"],
+        method: "GET",
+        redirectOnUnauthorized: false,
+      }),
+      fetchHelper({
+        endPoint: ["stores"],
+        method: "GET",
+        params: { limit: 200 },
+        redirectOnUnauthorized: false,
+      }),
     ]);
 
     if (Array.isArray(secRes?.data)) setSections(secRes.data);
@@ -88,8 +115,47 @@ export default function HomeBuilderClient() {
       );
       setMainBanners(sorted);
     }
+
+    if (badgeRes?.data) {
+      setFloatingBadge({
+        enabled: Boolean(badgeRes.data.enabled),
+        storeId: badgeRes.data.storeId ?? null,
+        storeName: badgeRes.data.storeName || "",
+        text: badgeRes.data.text || "",
+        image: badgeRes.data.image || "",
+      });
+    }
+
+    if (Array.isArray(storesRes?.data)) {
+      setAllStores(storesRes.data);
+    }
     setLoading(false);
   }, []);
+
+  const handleSaveFloatingBadge = async () => {
+    try {
+      setSavingBadge(true);
+      const res = await fetchHelper({
+        endPoint: ["settings", "floating-badge"],
+        method: "PATCH",
+        data: {
+          enabled: floatingBadge.enabled,
+          storeId: floatingBadge.storeId,
+          text: floatingBadge.text,
+          image: floatingBadge.image,
+        },
+      });
+      if (res?.data) {
+        toast.success(isAr ? "تم حفظ إعدادات الودجت الدوار بنجاح!" : "Floating badge saved successfully!");
+      } else {
+        toast.error(isAr ? "حدث خطأ أثناء الحفظ" : "Failed to save floating badge");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || (isAr ? "حدث خطأ أثناء الحفظ" : "Failed to save"));
+    } finally {
+      setSavingBadge(false);
+    }
+  };
 
   useEffect(() => {
     loadAll();
@@ -285,6 +351,7 @@ export default function HomeBuilderClient() {
             <TabsTrigger value="sections">{t("homeTabSections")}</TabsTrigger>
             <TabsTrigger value="categories">{t("homeTabCategories")}</TabsTrigger>
             <TabsTrigger value="banners">{t("homeTabBanners")}</TabsTrigger>
+            <TabsTrigger value="floatingBadge">{isAr ? "الودجت الدوار" : "Floating Badge"}</TabsTrigger>
           </TabsList>
 
           <div className="flex items-center gap-2">
@@ -575,6 +642,153 @@ export default function HomeBuilderClient() {
                   />
                 </div>
               ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TAB 4: FLOATING BADGE (الودجت الدوار) */}
+        <TabsContent value="floatingBadge" className="mt-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>
+                    {isAr ? "الودجت الدوار في الرئيسية (Floating Badge)" : "Home Floating Partner Badge"}
+                  </CardTitle>
+                  <CardDescription>
+                    {isAr
+                      ? "ودجت دائري دوار يظهر على الجانب الأيسر من الشاشة لتسليط الضوء على مطعم وتوجيه العملاء إليه بنقرة واحدة"
+                      : "Spinning circular badge on the left screen edge to highlight a featured store"}
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">
+                    {floatingBadge.enabled ? (isAr ? "مفعل" : "Active") : (isAr ? "معطل" : "Disabled")}
+                  </span>
+                  <Switch
+                    checked={floatingBadge.enabled}
+                    onCheckedChange={(val) => setFloatingBadge((prev) => ({ ...prev, enabled: val }))}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                {/* Form Controls */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">
+                      {isAr ? "المطعم المرتبط بالودجت" : "Target Store"}
+                    </label>
+                    <select
+                      className="w-full h-10 px-3 py-2 rounded-md border bg-background text-sm"
+                      value={floatingBadge.storeId ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : null;
+                        const s = allStores.find((st) => st.id === val);
+                        setFloatingBadge((prev) => ({
+                          ...prev,
+                          storeId: val,
+                          storeName: s ? getLocalizedText(s.name, locale) : prev.storeName,
+                        }));
+                      }}
+                    >
+                      <option value="">{isAr ? "-- اختر المطعم --" : "-- Select Store --"}</option>
+                      {allStores.map((st) => (
+                        <option key={st.id} value={st.id}>
+                          #{st.id} - {getLocalizedText(st.name, locale)}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {isAr
+                        ? "عند الضغط على الودجت في الموبايل سيتم فتح صفحة هذا المطعم مباشرة"
+                        : "When tapped in the mobile app, users will navigate to this store"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">
+                      {isAr ? "النص المعروض داخل الودجت (اختياري)" : "Badge Text (Optional)"}
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full h-10 px-3 py-2 rounded-md border bg-background text-sm"
+                      placeholder={isAr ? "مثال: كونترا، السلطان..." : "e.g. Contra, Sultan..."}
+                      value={floatingBadge.text}
+                      onChange={(e) => setFloatingBadge((prev) => ({ ...prev, text: e.target.value }))}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {isAr
+                        ? "إذا تُرك فارغاً فسيتم عرض اسم المطعم المختار تلقائياً"
+                        : "If left empty, the chosen store name will be displayed"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">
+                      {isAr ? "رابط لوجو / صورة الودجت (اختياري)" : "Badge Image / Logo URL (Optional)"}
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full h-10 px-3 py-2 rounded-md border bg-background text-sm"
+                      placeholder="https://..."
+                      value={floatingBadge.image}
+                      onChange={(e) => setFloatingBadge((prev) => ({ ...prev, image: e.target.value }))}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {isAr
+                        ? "إذا أضفت رابط صورة سيتم عرض اللوجو داخل الدائرة الدوارة"
+                        : "If provided, image will be displayed inside the spinning badge"}
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={handleSaveFloatingBadge}
+                    disabled={savingBadge}
+                    className="w-full sm:w-auto"
+                  >
+                    {savingBadge && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    {isAr ? "حفظ إعدادات الودجت الدوار" : "Save Floating Badge"}
+                  </Button>
+                </div>
+
+                {/* Live Preview */}
+                <div className="flex flex-col items-center justify-center p-8 rounded-xl border bg-slate-950 text-white min-h-[260px] text-center relative overflow-hidden">
+                  <div className="absolute top-3 right-3 text-xs text-slate-400 bg-slate-800/80 px-2 py-1 rounded">
+                    {isAr ? "معاينة حية للموبايل" : "Mobile Live Preview"}
+                  </div>
+
+                  {floatingBadge.enabled ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="relative flex items-center justify-center w-24 h-24 rounded-full bg-slate-900 border-2 border-slate-700 shadow-2xl animate-[spin_10s_linear_infinite]">
+                        {floatingBadge.image ? (
+                          <img
+                            src={floatingBadge.image}
+                            alt="preview"
+                            className="w-16 h-16 rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xs font-bold text-white px-2 text-center tracking-wider">
+                            {floatingBadge.text || floatingBadge.storeName || (isAr ? "مكانك" : "Makanak")}
+                          </span>
+                        )}
+                        <div className="absolute inset-1 rounded-full border border-dashed border-slate-600 pointer-events-none" />
+                      </div>
+                      <div className="text-sm font-semibold text-slate-200">
+                        {floatingBadge.text || floatingBadge.storeName || (isAr ? "لم يتم تحديد مطعم" : "No store selected")}
+                      </div>
+                      <div className="text-xs text-emerald-400">
+                        {isAr ? "الودجت يظهر ويدور على يسار الشاشة" : "Badge spins on left edge of home"}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-slate-400 text-sm">
+                      {isAr ? "الودجت الدوار معطل حالياً في الصفحة الرئيسية" : "Floating badge is currently disabled on home"}
+                    </div>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
