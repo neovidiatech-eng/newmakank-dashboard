@@ -22,9 +22,11 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Check,
   Clock,
   Edit2,
   FolderPlus,
+  Gift,
   Image as ImageIcon,
   Layers,
   Package,
@@ -45,8 +47,25 @@ export default function MartClient() {
   const queryClient = useQueryClient();
   const [selectedCityId, setSelectedCityId] = useState<string>("");
   const [activeTab, setActiveTab] = useState<
-    "store" | "departments" | "products" | "flashDeals" | "sections" | "banners" | "crossSells"
+    "store" | "departments" | "products" | "flashDeals" | "sections" | "banners" | "crossSells" | "bundles"
   >("store");
+
+  // Bundle Dialog State (Smart Combos)
+  const [isBundleDialogOpen, setIsBundleDialogOpen] = useState(false);
+  const [editingBundle, setEditingBundle] = useState<any>(null);
+  const [bundleTitleAr, setBundleTitleAr] = useState("");
+  const [bundleTitleEn, setBundleTitleEn] = useState("");
+  const [bundleDescAr, setBundleDescAr] = useState("");
+  const [bundleDescEn, setBundleDescEn] = useState("");
+  const [bundlePricingMode, setBundlePricingMode] = useState<"FIXED" | "DYNAMIC">("FIXED");
+  const [bundlePriceBefore, setBundlePriceBefore] = useState("");
+  const [bundlePriceAfter, setBundlePriceAfter] = useState("");
+  const [bundleIsActive, setBundleIsActive] = useState(true);
+  const [bundleSelectedProductIds, setBundleSelectedProductIds] = useState<number[]>([]);
+  const [bundleFreeProductIds, setBundleFreeProductIds] = useState<number[]>([]);
+  const [bundleImageFile, setBundleImageFile] = useState<File | null>(null);
+  const [bundleImagePreview, setBundleImagePreview] = useState("");
+  const [bundleProductSearch, setBundleProductSearch] = useState("");
 
   // Department Dialog State
   const [isDeptDialogOpen, setIsDeptDialogOpen] = useState(false);
@@ -310,6 +329,23 @@ export default function MartClient() {
       );
     }
   }, [crossSellSettings]);
+
+  // 9. Fetch Bundles / Combos
+  const {
+    data: bundlesResponse,
+    isLoading: isLoadingBundles,
+    refetch: refetchBundles,
+  } = useQuery({
+    queryKey: ["mart-admin-bundles", currentMart?.id],
+    queryFn: () =>
+      fetchHelper({
+        endPoint: `bundles?storeId=${currentMart.id}` as any,
+        method: "GET",
+      }),
+    enabled: !!currentMart?.id,
+  });
+
+  const bundles = Array.isArray(bundlesResponse?.data) ? bundlesResponse.data : [];
 
   // ─── Mutations ─────────────────────────────────────────────────────────────
 
@@ -601,6 +637,193 @@ export default function MartClient() {
     onError: () => toast.error("فشل تحديث الإعدادات"),
   });
 
+  // ─── Bundle Mutations ───────────────────────────────────────────────────────
+  const createBundleMutation = useMutation({
+    mutationFn: (body: FormData) =>
+      fetchHelper({
+        endPoint: "bundles" as any,
+        method: "POST",
+        body,
+      }),
+    onSuccess: (res: any) => {
+      if (res?.success === false) {
+        toast.error(res.message || "حدث خطأ أثناء إنشاء الباقة");
+        return;
+      }
+      toast.success("تم إنشاء الباقة الترويجية بنجاح 🎁");
+      queryClient.invalidateQueries({ queryKey: ["mart-admin-bundles", currentMart?.id] });
+      setIsBundleDialogOpen(false);
+    },
+    onError: (err: any) => toast.error(err?.message || "فشل الاتصال بالخادم"),
+  });
+
+  const updateBundleMutation = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: FormData }) =>
+      fetchHelper({
+        endPoint: `bundles/${id}` as any,
+        method: "PATCH",
+        body,
+      }),
+    onSuccess: (res: any) => {
+      if (res?.success === false) {
+        toast.error(res.message || "حدث خطأ أثناء تعديل الباقة");
+        return;
+      }
+      toast.success("تم تعديل الباقة بنجاح 🎁");
+      queryClient.invalidateQueries({ queryKey: ["mart-admin-bundles", currentMart?.id] });
+      setIsBundleDialogOpen(false);
+    },
+    onError: (err: any) => toast.error(err?.message || "فشل الاتصال بالخادم"),
+  });
+
+  const deleteBundleMutation = useMutation({
+    mutationFn: (id: number) =>
+      fetchHelper({
+        endPoint: `bundles/${id}` as any,
+        method: "DELETE",
+      }),
+    onSuccess: (res: any) => {
+      if (res?.success === false) {
+        toast.error(res.message || "حدث خطأ أثناء حذف الباقة");
+        return;
+      }
+      toast.success("تم حذف الباقة بنجاح");
+      queryClient.invalidateQueries({ queryKey: ["mart-admin-bundles", currentMart?.id] });
+    },
+    onError: () => toast.error("فشل حذف الباقة"),
+  });
+
+  const toggleBundleActiveMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) => {
+      const fd = new FormData();
+      fd.append("isActive", String(isActive));
+      return fetchHelper({
+        endPoint: `bundles/${id}` as any,
+        method: "PATCH",
+        body: fd,
+      });
+    },
+    onSuccess: () => {
+      toast.success("تم تحديث حالة الباقة");
+      queryClient.invalidateQueries({ queryKey: ["mart-admin-bundles", currentMart?.id] });
+    },
+  });
+
+  const handleOpenBundleDialog = (bundle?: any) => {
+    if (bundle) {
+      setEditingBundle(bundle);
+      const tAr = typeof bundle.title === "object" ? bundle.title.ar : bundle.title;
+      const tEn = typeof bundle.title === "object" ? bundle.title.en : "";
+      const dAr = typeof bundle.description === "object" ? bundle.description.ar : bundle.description;
+      const dEn = typeof bundle.description === "object" ? bundle.description.en : "";
+      setBundleTitleAr(tAr || "");
+      setBundleTitleEn(tEn || "");
+      setBundleDescAr(dAr || "");
+      setBundleDescEn(dEn || "");
+      setBundlePricingMode(bundle.pricingMode || "FIXED");
+      setBundlePriceBefore(bundle.priceBeforeDiscount ? String(bundle.priceBeforeDiscount) : "");
+      setBundlePriceAfter(bundle.priceAfterDiscount ? String(bundle.priceAfterDiscount) : "");
+      setBundleIsActive(bundle.isActive ?? true);
+      setBundleImagePreview(bundle.image || "");
+      setBundleImageFile(null);
+      setBundleProductSearch("");
+
+      const paidIds: number[] = [];
+      const freeIds: number[] = [];
+      if (Array.isArray(bundle.ScopeServices)) {
+        bundle.ScopeServices.forEach((ss: any) => {
+          if (ss.role === "FREE") freeIds.push(ss.serviceId);
+          else paidIds.push(ss.serviceId);
+        });
+      }
+      setBundleSelectedProductIds(paidIds);
+      setBundleFreeProductIds(freeIds);
+    } else {
+      setEditingBundle(null);
+      setBundleTitleAr("");
+      setBundleTitleEn("");
+      setBundleDescAr("");
+      setBundleDescEn("");
+      setBundlePricingMode("FIXED");
+      setBundlePriceBefore("");
+      setBundlePriceAfter("");
+      setBundleIsActive(true);
+      setBundleImagePreview("");
+      setBundleImageFile(null);
+      setBundleSelectedProductIds([]);
+      setBundleFreeProductIds([]);
+      setBundleProductSearch("");
+    }
+    setIsBundleDialogOpen(true);
+  };
+
+  const handleSaveBundle = async () => {
+    if (!currentMart?.id) return toast.error("لا يوجد متجر مارت محدد");
+    if (!bundleTitleAr.trim()) {
+      return toast.error("يرجى إدخال اسم الباقة بالعربية");
+    }
+    if (bundleSelectedProductIds.length === 0) {
+      return toast.error("يرجى اختيار منتج واحد على الأقل مشمول في الباقة");
+    }
+    if (bundlePricingMode === "FIXED" && (!bundlePriceAfter || Number(bundlePriceAfter) <= 0)) {
+      return toast.error("يرجى إدخال سعر الباقة بعد الخصم");
+    }
+
+    const body = new FormData();
+    body.append("title", JSON.stringify({ ar: bundleTitleAr.trim(), en: (bundleTitleEn || bundleTitleAr).trim() }));
+    body.append("description", JSON.stringify({ ar: bundleDescAr.trim(), en: (bundleDescEn || bundleDescAr).trim() }));
+    body.append("storeId", String(currentMart.id));
+    body.append("isActive", String(bundleIsActive));
+    body.append("type", "BUY_X_GET_Y_FREE");
+    body.append("pricingMode", bundlePricingMode);
+    body.append("requiredPaidQuantity", "1");
+    body.append("freeQuantity", "1");
+    body.append("paidSizeRule", "ANY");
+    body.append("freeSizeRule", "ANY");
+    body.append("freeValueRule", "CAP_TO_CHEAPEST_PAID");
+    body.append("paidCategoryIds", ",");
+    body.append("freeCategoryIds", ",");
+
+    if (bundlePricingMode === "FIXED") {
+      if (bundlePriceBefore && Number(bundlePriceBefore) > 0) {
+        body.append("priceBeforeDiscount", String(bundlePriceBefore));
+      }
+      if (bundlePriceAfter && Number(bundlePriceAfter) > 0) {
+        body.append("priceAfterDiscount", String(bundlePriceAfter));
+      }
+    }
+
+    if (bundleSelectedProductIds.length > 0) {
+      bundleSelectedProductIds.forEach((id) => body.append("paidServiceIds", String(id)));
+    } else {
+      body.append("paidServiceIds", ",");
+    }
+
+    if (bundleFreeProductIds.length > 0) {
+      bundleFreeProductIds.forEach((id) => body.append("freeServiceIds", String(id)));
+    } else {
+      body.append("freeServiceIds", ",");
+    }
+
+    if (bundleImageFile) {
+      body.append("image", bundleImageFile);
+    } else if (!editingBundle) {
+      try {
+        const resp = await fetch("/logo.png");
+        if (resp.ok) {
+          const blob = await resp.blob();
+          body.append("image", new File([blob], "bundle.png", { type: "image/png" }));
+        }
+      } catch {}
+    }
+
+    if (editingBundle) {
+      updateBundleMutation.mutate({ id: editingBundle.id, body });
+    } else {
+      createBundleMutation.mutate(body);
+    }
+  };
+
   // ─── Helpers & Form Resets ──────────────────────────────────────────────────
 
   const resetDeptForm = () => {
@@ -798,6 +1021,7 @@ export default function MartClient() {
               refetchSections();
               refetchBanners();
               refetchCrossSells();
+              refetchBundles();
               toast.success("تم تحديث البيانات");
             }}
           >
@@ -816,6 +1040,7 @@ export default function MartClient() {
           { key: "sections", label: "الرفوف التفاعلية", icon: Sparkles },
           { key: "banners", label: "بنرات المارت", icon: ImageIcon },
           { key: "crossSells", label: "نسيت حاجة معاك؟", icon: ShoppingCart },
+          { key: "bundles", label: "التجميعات والعروض (Combos)", icon: Gift },
         ].map((tab) => {
           const Icon = tab.icon;
           const isSel = activeTab === tab.key;
@@ -1760,6 +1985,187 @@ export default function MartClient() {
         </div>
       )}
 
+      {/* TAB 8: SMART BUNDLES & COMBOS */}
+      {activeTab === "bundles" && (
+        <Card className="border-gray-100 dark:border-zinc-800 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Gift className="h-4 w-4 text-emerald-600" />
+                <span>عروض وتجميعات التوفير الذكية (Smart Combos & Bundles)</span>
+              </CardTitle>
+              <p className="text-xs text-gray-500 mt-1">
+                باقات مجمعة مجهزة للعميل في واجهة المارت بخصم خاص وإضافة سريعة للسلة بنقرة واحدة
+              </p>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => handleOpenBundleDialog()}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1"
+            >
+              <Plus className="h-4 w-4" />
+              إنشاء باقة / عرض جديد
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {isLoadingBundles ? (
+              <div className="text-center py-12 text-gray-500">جاري تحميل الباقات والعروض...</div>
+            ) : bundles.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <Gift className="h-12 w-12 mx-auto text-gray-300 mb-2" />
+                <p>لا توجد باقات أو تجميعات ذكية مضافة بعد</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  أنشئ باقات تجميعية مثل: "باقة الفطور العائلي"، "عرض التوفير الأسبوعي"
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {bundles.map((bundle: any) => {
+                  const title =
+                    typeof bundle.title === "object"
+                      ? bundle.title.ar || bundle.title.en
+                      : bundle.title;
+                  const desc =
+                    typeof bundle.description === "object"
+                      ? bundle.description.ar || bundle.description.en
+                      : bundle.description;
+                  const paidItems =
+                    bundle.ScopeServices?.filter((ss: any) => ss.role === "PAID") || [];
+                  const freeItems =
+                    bundle.ScopeServices?.filter((ss: any) => ss.role === "FREE") || [];
+                  const savings =
+                    bundle.priceBeforeDiscount && bundle.priceAfterDiscount
+                      ? bundle.priceBeforeDiscount - bundle.priceAfterDiscount
+                      : 0;
+
+                  return (
+                    <div
+                      key={bundle.id}
+                      className={`border rounded-xl p-4 transition-all flex flex-col justify-between ${
+                        bundle.isActive
+                          ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/20 dark:bg-emerald-950/10"
+                          : "border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/40 opacity-75"
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="h-14 w-14 rounded-lg bg-white overflow-hidden p-1 border flex items-center justify-center shrink-0">
+                              {bundle.image ? (
+                                <img
+                                  src={
+                                    bundle.image.startsWith("http")
+                                      ? bundle.image
+                                      : `/uploads/${bundle.image}`
+                                  }
+                                  alt={title}
+                                  className="h-full w-full object-contain"
+                                />
+                              ) : (
+                                <Gift className="h-6 w-6 text-emerald-600" />
+                              )}
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-gray-900 dark:text-gray-100 text-sm">
+                                {title}
+                              </h4>
+                              {desc && (
+                                <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">{desc}</p>
+                              )}
+                              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                {bundle.pricingMode === "FIXED" ? (
+                                  <Badge className="bg-emerald-600 text-white text-[10px] px-1.5 py-0">
+                                    سعر باقة: {bundle.priceAfterDiscount ?? bundle.priceBeforeDiscount} ج
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                    سعر ديناميكي
+                                  </Badge>
+                                )}
+                                {savings > 0 && (
+                                  <Badge className="bg-rose-500 text-white text-[10px] px-1.5 py-0">
+                                    وفر {savings} ج
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-gray-500 hover:text-emerald-600"
+                              onClick={() => handleOpenBundleDialog(bundle)}
+                            >
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-gray-500 hover:text-rose-600"
+                              onClick={() => {
+                                if (confirm(`هل أنت متأكد من حذف باقة "${title}"؟`)) {
+                                  deleteBundleMutation.mutate(bundle.id);
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Included Items Preview */}
+                        <div className="mt-3 pt-2.5 border-t border-gray-100 dark:border-zinc-800 text-xs">
+                          <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center justify-between">
+                            <span>المنتجات المشمولة ({paidItems.length}):</span>
+                            <span className="text-[11px] text-gray-400">
+                              {freeItems.length > 0 && `+ ${freeItems.length} مجاناً`}
+                            </span>
+                          </p>
+                          <div className="space-y-1 max-h-24 overflow-y-auto">
+                            {paidItems.map((ss: any, idx: number) => {
+                              const pName =
+                                typeof ss.Service?.name === "object"
+                                  ? ss.Service?.name?.ar || ss.Service?.name?.en
+                                  : ss.Service?.name || `منتج #${ss.serviceId}`;
+                              return (
+                                <div
+                                  key={idx}
+                                  className="flex items-center justify-between text-[11px] bg-white/70 dark:bg-zinc-800/50 px-2 py-1 rounded"
+                                >
+                                  <span className="truncate">{pName}</span>
+                                  <span className="font-mono text-gray-500 font-bold shrink-0">
+                                    {ss.Service?.price ? `${ss.Service.price} ج` : ""}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Active Toggle Footer */}
+                      <div className="mt-3 pt-2 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between">
+                        <span className="text-xs text-gray-500 font-medium">
+                          {bundle.isActive ? "نشطة ومعروضة للعملاء" : "معطلة مؤقتاً"}
+                        </span>
+                        <Switch
+                          checked={bundle.isActive}
+                          onCheckedChange={(checked) =>
+                            toggleBundleActiveMutation.mutate({ id: bundle.id, isActive: checked })
+                          }
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* ─── MODALS ────────────────────────────────────────────────────────── */}
 
       {/* Category / Subcategory Dialog */}
@@ -2250,6 +2656,331 @@ export default function MartClient() {
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
             >
               إضافة
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bundle Dialog (Smart Combos) */}
+      <Dialog open={isBundleDialogOpen} onOpenChange={setIsBundleDialogOpen}>
+        <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gift className="h-5 w-5 text-emerald-600" />
+              <span>
+                {editingBundle ? "تعديل الباقة التجميعية" : "إنشاء باقة تجميعية ذكية للمارت"}
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* Title AR / EN */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold">اسم الباقة (عربي) *</label>
+                <Input
+                  value={bundleTitleAr}
+                  onChange={(e) => setBundleTitleAr(e.target.value)}
+                  placeholder="مثال: باقة الفطور العائلي"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold">اسم الباقة (إنجليزي)</label>
+                <Input
+                  value={bundleTitleEn}
+                  onChange={(e) => setBundleTitleEn(e.target.value)}
+                  placeholder="e.g. Family Breakfast Combo"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            {/* Description AR / EN */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold">وصف الباقة (عربي)</label>
+                <Input
+                  value={bundleDescAr}
+                  onChange={(e) => setBundleDescAr(e.target.value)}
+                  placeholder="مثال: جبن + حليب + بيض + خبز طازج"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold">وصف الباقة (إنجليزي)</label>
+                <Input
+                  value={bundleDescEn}
+                  onChange={(e) => setBundleDescEn(e.target.value)}
+                  placeholder="e.g. Cheese + Milk + Eggs + Bread"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            {/* Pricing Mode Selection */}
+            <div className="p-3 bg-gray-50 dark:bg-zinc-900 rounded-xl space-y-3 border border-gray-100 dark:border-zinc-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-gray-900 dark:text-gray-100">
+                    طريقة تسعير الباقة
+                  </p>
+                  <p className="text-[11px] text-gray-500">
+                    حدد ما إذا كانت الباقة بسعر ثابت مخفض أو مجموع ديناميكي
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 bg-white dark:bg-zinc-800 p-1 rounded-lg border">
+                  <button
+                    type="button"
+                    onClick={() => setBundlePricingMode("FIXED")}
+                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                      bundlePricingMode === "FIXED"
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "text-gray-600 dark:text-gray-400"
+                    }`}
+                  >
+                    سعر ثابت مخفض
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBundlePricingMode("DYNAMIC")}
+                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                      bundlePricingMode === "DYNAMIC"
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "text-gray-600 dark:text-gray-400"
+                    }`}
+                  >
+                    سعر ديناميكي
+                  </button>
+                </div>
+              </div>
+
+              {bundlePricingMode === "FIXED" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                      السعر الفعلي للعميل بعد الخصم (ج) *
+                    </label>
+                    <Input
+                      type="number"
+                      value={bundlePriceAfter}
+                      onChange={(e) => setBundlePriceAfter(e.target.value)}
+                      placeholder="مثال: 150"
+                      className="mt-1 font-bold border-emerald-300 focus-visible:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+                        السعر قبل الخصم (المرجعي)
+                      </label>
+                      {bundleSelectedProductIds.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const sum = bundleSelectedProductIds.reduce((acc, id) => {
+                              const p = products.find((x: any) => x.id === id);
+                              return acc + (p?.price || 0);
+                            }, 0);
+                            setBundlePriceBefore(String(sum));
+                          }}
+                          className="text-[10px] text-emerald-600 hover:underline font-semibold"
+                        >
+                          استخدم المجموع (
+                          {bundleSelectedProductIds.reduce((acc, id) => {
+                            const p = products.find((x: any) => x.id === id);
+                            return acc + (p?.price || 0);
+                          }, 0)}{" "}
+                          ج)
+                        </button>
+                      )}
+                    </div>
+                    <Input
+                      type="number"
+                      value={bundlePriceBefore}
+                      onChange={(e) => setBundlePriceBefore(e.target.value)}
+                      placeholder="مثال: 200"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Product Selector for Bundle */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+                    المنتجات المشمولة في الباقة * ({bundleSelectedProductIds.length} محددة)
+                  </label>
+                  <p className="text-[11px] text-gray-500">
+                    اختر المنتجات التي يحصل عليها العميل داخل هذه الباقة
+                  </p>
+                </div>
+                {bundleSelectedProductIds.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-rose-500 h-7"
+                    onClick={() => setBundleSelectedProductIds([])}
+                  >
+                    إلغاء تحديد الكل
+                  </Button>
+                )}
+              </div>
+
+              {/* Search input for products */}
+              <div className="relative">
+                <Search className="absolute right-2.5 top-2.5 h-3.5 w-3.5 text-gray-400" />
+                <Input
+                  value={bundleProductSearch}
+                  onChange={(e) => setBundleProductSearch(e.target.value)}
+                  placeholder="ابحث عن منتج لإضافته للباقة..."
+                  className="pr-8 text-xs h-9"
+                />
+              </div>
+
+              {/* Products list with checkboxes */}
+              <div className="border border-gray-200 dark:border-zinc-800 rounded-lg p-2 max-h-48 overflow-y-auto space-y-1 bg-white dark:bg-zinc-950">
+                {products
+                  .filter((p: any) => {
+                    const pName =
+                      typeof p.name === "object" ? p.name.ar || p.name.en : p.name;
+                    return pName
+                      ?.toLowerCase()
+                      .includes(bundleProductSearch.toLowerCase().trim());
+                  })
+                  .map((p: any) => {
+                    const pName =
+                      typeof p.name === "object" ? p.name.ar || p.name.en : p.name;
+                    const isSelected = bundleSelectedProductIds.includes(p.id);
+
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => {
+                          if (isSelected) {
+                            setBundleSelectedProductIds(
+                              bundleSelectedProductIds.filter((id) => id !== p.id)
+                            );
+                          } else {
+                            setBundleSelectedProductIds([
+                              ...bundleSelectedProductIds,
+                              p.id,
+                            ]);
+                          }
+                        }}
+                        className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${
+                          isSelected
+                            ? "bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800"
+                            : "hover:bg-gray-50 dark:hover:bg-zinc-900 border border-transparent"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className={`h-4 w-4 rounded border flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? "bg-emerald-600 border-emerald-600 text-white"
+                                : "border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                            }`}
+                          >
+                            {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                          </div>
+                          <div className="h-7 w-7 rounded bg-white overflow-hidden p-0.5 border flex items-center justify-center shrink-0">
+                            {p.image ? (
+                              <img
+                                src={
+                                  p.image.startsWith("http")
+                                    ? p.image
+                                    : `/uploads/${p.image}`
+                                }
+                                alt=""
+                                className="h-full w-full object-contain"
+                              />
+                            ) : (
+                              <Package className="h-3 w-3 text-gray-400" />
+                            )}
+                          </div>
+                          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                            {pName}
+                          </span>
+                        </div>
+                        <span className="text-xs font-mono font-bold text-gray-600 dark:text-gray-400">
+                          {p.price} ج
+                        </span>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="text-xs font-semibold">صورة الباقة الترويجية</label>
+              <div className="flex items-center gap-3 mt-1.5">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setBundleImageFile(file);
+                      setBundleImagePreview(URL.createObjectURL(file));
+                    }
+                  }}
+                  className="text-xs"
+                />
+                {bundleImagePreview && (
+                  <div className="h-10 w-10 rounded border overflow-hidden shrink-0">
+                    <img
+                      src={
+                        bundleImagePreview.startsWith("blob:") ||
+                        bundleImagePreview.startsWith("http")
+                          ? bundleImagePreview
+                          : `/uploads/${bundleImagePreview}`
+                      }
+                      alt="preview"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Active Switch */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800">
+              <div>
+                <p className="text-xs font-bold text-gray-900 dark:text-gray-100">
+                  تفعيل وعرض الباقة في التطبيق فوراً
+                </p>
+                <p className="text-[11px] text-gray-500">
+                  عند التفعيل ستظهر في واجهة المارت للعملاء للشراء بنقرة واحدة
+                </p>
+              </div>
+              <Switch checked={bundleIsActive} onCheckedChange={setBundleIsActive} />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsBundleDialogOpen(false)}
+              disabled={createBundleMutation.isPending || updateBundleMutation.isPending}
+            >
+              إلغاء
+            </Button>
+            <Button
+              onClick={handleSaveBundle}
+              disabled={createBundleMutation.isPending || updateBundleMutation.isPending}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+            >
+              {createBundleMutation.isPending || updateBundleMutation.isPending
+                ? "جاري الحفظ..."
+                : editingBundle
+                ? "تعديل الباقة"
+                : "إنشاء الباقة الترويجية"}
             </Button>
           </DialogFooter>
         </DialogContent>
