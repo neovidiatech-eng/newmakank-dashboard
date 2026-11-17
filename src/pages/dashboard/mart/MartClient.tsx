@@ -105,6 +105,7 @@ export default function MartClient() {
   const [crossSellServiceId, setCrossSellServiceId] = useState("");
   const [crossSellDisplayOrder, setCrossSellDisplayOrder] = useState("0");
   const [enableCrossSellState, setEnableCrossSellState] = useState(true);
+  const [enableSubstitutionPolicyState, setEnableSubstitutionPolicyState] = useState(true);
   const [crossSellTitleAr, setCrossSellTitleAr] = useState("نسيت حاجة معاك؟");
   const [crossSellTitleEn, setCrossSellTitleEn] = useState("Forgot something?");
   const [crossSellMaxPriceState, setCrossSellMaxPriceState] = useState("");
@@ -299,6 +300,7 @@ export default function MartClient() {
   useEffect(() => {
     if (crossSellSettings) {
       setEnableCrossSellState(crossSellSettings.enableCrossSell ?? true);
+      setEnableSubstitutionPolicyState(crossSellSettings.enableSubstitutionPolicy ?? true);
       setCrossSellTitleAr(crossSellSettings.crossSellTitle?.ar || "نسيت حاجة معاك؟");
       setCrossSellTitleEn(crossSellSettings.crossSellTitle?.en || "Forgot something?");
       setCrossSellMaxPriceState(
@@ -1603,6 +1605,23 @@ export default function MartClient() {
                 />
               </div>
 
+              {/* Substitution Policy Switch */}
+              <div className="flex items-center justify-between p-4 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-xl">
+                <div>
+                  <p className="font-bold text-sm text-blue-950 dark:text-blue-100 flex items-center gap-2">
+                    <span>🔄</span>
+                    <span>سياسة استبدال المنتجات لو صنف خلص (Smart Substitution Policy)</span>
+                  </p>
+                  <p className="text-xs text-blue-700/80 dark:text-blue-300/80 mt-0.5">
+                    إتاحة خيارات (اتصل بيا / استبدله / احذفه) للعملاء في الشيك آوت عند نفاد أي صنف من المخزن
+                  </p>
+                </div>
+                <Switch
+                  checked={enableSubstitutionPolicyState}
+                  onCheckedChange={(val) => setEnableSubstitutionPolicyState(val)}
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">
@@ -1649,6 +1668,7 @@ export default function MartClient() {
                   onClick={() => {
                     updateCrossSellSettingsMutation.mutate({
                       enableCrossSell: enableCrossSellState,
+                      enableSubstitutionPolicy: enableSubstitutionPolicyState,
                       crossSellTitle: {
                         ar: crossSellTitleAr || "نسيت حاجة معاك؟",
                         en: crossSellTitleEn || "Forgot something?",

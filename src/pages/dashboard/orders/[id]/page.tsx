@@ -151,6 +151,24 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                 {t((data as any)?.customDeliveryKind) || (data as any)?.customDeliveryKind}
               </Badge>
             )}
+            {Boolean((data as any)?.substitutionPreference) && (
+              <Badge
+                variant="outline"
+                className={`gap-1 font-semibold ${
+                  (data as any).substitutionPreference === "SIMILAR"
+                    ? "border-blue-400 text-blue-600 dark:text-blue-400 bg-blue-50/50"
+                    : (data as any).substitutionPreference === "REMOVE"
+                    ? "border-rose-400 text-rose-600 dark:text-rose-400 bg-rose-50/50"
+                    : "border-amber-400 text-amber-700 dark:text-amber-400 bg-amber-50/50"
+                }`}
+              >
+                {(data as any).substitutionPreference === "SIMILAR"
+                  ? "🔄 بديل مماثل"
+                  : (data as any).substitutionPreference === "REMOVE"
+                  ? "❌ حذف دون اتصال"
+                  : "📞 اتصال بالعميل"}
+              </Badge>
+            )}
             {(() => {
               const cityName = getLocalizedName(
                 (data as any)?.Zone?.City?.name ||
@@ -184,6 +202,45 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
         {/* Main Column */}
         <div className="lg:col-span-8 print:col-span-12 space-y-8">
+          {/* Smart Substitution Policy Operational Banner */}
+          {Boolean((data as any)?.substitutionPreference) && (
+            <div
+              className={`p-4 rounded-xl border flex items-center justify-between gap-3 shadow-sm ${
+                (data as any).substitutionPreference === "SIMILAR"
+                  ? "bg-blue-50/80 border-blue-200 text-blue-950 dark:bg-blue-950/20 dark:border-blue-900 dark:text-blue-200"
+                  : (data as any).substitutionPreference === "REMOVE"
+                  ? "bg-rose-50/80 border-rose-200 text-rose-950 dark:bg-rose-950/20 dark:border-rose-900 dark:text-rose-200"
+                  : "bg-amber-50/80 border-amber-200 text-amber-950 dark:bg-amber-950/20 dark:border-amber-900 dark:text-amber-200"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl p-2 rounded-lg bg-white/70 dark:bg-zinc-900/60 shadow-xs">
+                  {(data as any).substitutionPreference === "SIMILAR"
+                    ? "🔄"
+                    : (data as any).substitutionPreference === "REMOVE"
+                    ? "❌"
+                    : "📞"}
+                </span>
+                <div>
+                  <div className="font-bold text-sm">
+                    {(data as any).substitutionPreference === "SIMILAR"
+                      ? "رغبة العميل: استبدال الصنف الناقص بأقرب صنف مماثل"
+                      : (data as any).substitutionPreference === "REMOVE"
+                      ? "رغبة العميل: حذف الصنف الناقص تلقائياً دون اتصال"
+                      : "رغبة العميل: الاتصال هاتفياً بالعميل لاختيار البديل"}
+                  </div>
+                  <div className="text-xs opacity-85 mt-0.5">
+                    {(data as any).substitutionPreference === "SIMILAR"
+                      ? "في حال عدم توفر أي منتج بالمخزن، يتم اختيار البديل الأقرب بنفس الفئة والسعر."
+                      : (data as any).substitutionPreference === "REMOVE"
+                      ? "في حال نفاد صنف، يتم حذفه من الفاتورة مباشرة دون إزعاج العميل."
+                      : "يرجى التواصل هاتفياً مع العميل فوراً لتأكيد البديل المناسب قبل إنهاء الطلب."}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Order Items */}
           <div className="space-y-4">
             <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
@@ -661,6 +718,29 @@ async function page({ params }: { params: Params }): Promise<JSX.Element> {
                   {data?.rated ? t("Yes") : t("No")}
                 </Badge>
               </div>
+              {Boolean((data as any)?.substitutionPreference) && (
+                <div>
+                  <span className="text-muted-foreground block text-xs mb-0.5">
+                    {t("substitutionPreference") || "سياسة الصنف الناقص"}
+                  </span>
+                  {(data as any).substitutionPreference === "SIMILAR" ? (
+                    <Badge className="bg-blue-500 hover:bg-blue-600 text-white font-medium gap-1 mt-0.5">
+                      <span>🔄</span>
+                      <span>استبدال بمماثل</span>
+                    </Badge>
+                  ) : (data as any).substitutionPreference === "REMOVE" ? (
+                    <Badge className="bg-rose-500 hover:bg-rose-600 text-white font-medium gap-1 mt-0.5">
+                      <span>❌</span>
+                      <span>حذف دون اتصال</span>
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-medium gap-1 mt-0.5">
+                      <span>📞</span>
+                      <span>اتصال بالعميل</span>
+                    </Badge>
+                  )}
+                </div>
+              )}
             </div>
 
             {data?.note && (

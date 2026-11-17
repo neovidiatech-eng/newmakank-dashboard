@@ -92,6 +92,33 @@ export default function ArchivedOrdersColumns(): any {
       cell: ({ getValue }) => <span>{(getValue() as string) || "-"}</span>
     },
     {
+      accessorKey: "substitutionPreference",
+      header: () => <IconHeader columnKey="Substitution Policy" />,
+      cell: ({ getValue }) => {
+        const pref = getValue() as string;
+        if (!pref) return <span className="text-muted-foreground">—</span>;
+        if (pref === "SIMILAR") {
+          return (
+            <Badge className="bg-blue-500 hover:bg-blue-600 text-white font-medium text-xs whitespace-nowrap">
+              🔄 بديل مماثل
+            </Badge>
+          );
+        }
+        if (pref === "REMOVE") {
+          return (
+            <Badge className="bg-rose-500 hover:bg-rose-600 text-white font-medium text-xs whitespace-nowrap">
+              ❌ حذف الصنف
+            </Badge>
+          );
+        }
+        return (
+          <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs whitespace-nowrap">
+            📞 اتصال بالعميل
+          </Badge>
+        );
+      }
+    },
+    {
       accessorKey: "date",
       header: () => <IconHeader columnKey="Date" />,
       cell: ({ getValue }) => {
