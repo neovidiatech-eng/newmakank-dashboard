@@ -217,7 +217,23 @@ export default function OrdersColumns(): any {
             ? `${storeName} (${branchName})`
             : storeName || branchName || "-";
 
-        return <span>{value}</span>;
+        const isMart = branch?.isMart || store?.isMart;
+        const isKiosk = branch?.isKiosk || store?.isKiosk;
+
+        return (
+          <div className="flex flex-col gap-1">
+            <span>{value}</span>
+            {isMart ? (
+              <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] w-fit px-1.5 py-0">
+                مكانك مارت 🛒
+              </Badge>
+            ) : isKiosk ? (
+              <Badge className="bg-amber-600 hover:bg-amber-700 text-white text-[10px] w-fit px-1.5 py-0">
+                كشك 🏪
+              </Badge>
+            ) : null}
+          </div>
+        );
       }
     },
     {

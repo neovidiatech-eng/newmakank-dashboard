@@ -180,6 +180,10 @@ export const links = ({ permissions, pendingReservationsCount }: { permissions: 
             url: "/orders"
           },
           (permissions?.Orders?.get || permissions?.orders?.get) && {
+            title: "martOrders",
+            url: "/mart-orders"
+          },
+          (permissions?.Orders?.get || permissions?.orders?.get) && {
             title: "archivedOrders",
             url: "/orders/archived"
           },

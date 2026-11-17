@@ -13,6 +13,7 @@ type OrdersViewTabsProps = {
   tableTitle: string;
   filters?: FormInput[];
   endPoint?: (string | number)[];
+  defaultParams?: Record<string, unknown>;
 };
 
 const getDefaultFilters = (t: ReturnType<typeof useTranslations>): FormInput[] => [
@@ -77,7 +78,8 @@ const getDefaultFilters = (t: ReturnType<typeof useTranslations>): FormInput[] =
 export default function OrdersViewTabs({
   tableTitle,
   filters,
-  endPoint = ["orders"]
+  endPoint = ["orders"],
+  defaultParams,
 }: OrdersViewTabsProps) {
   const t = useTranslations();
   const searchParams = useSearchParams();
@@ -90,9 +92,13 @@ export default function OrdersViewTabs({
   // Build params from URL search params.
   const params: Record<string, unknown> = {
     page: 1,
-    limit: 15
+    limit: 15,
+    ...defaultParams,
   };
   searchParams.forEach((value, key) => { params[key] = value; });
+  if (defaultParams) {
+    Object.assign(params, defaultParams);
+  }
 
   // Guard against heavy limits (> 20) to ensure high performance and prevent server timeouts
   if (params.limit && Number(params.limit) > 20) {

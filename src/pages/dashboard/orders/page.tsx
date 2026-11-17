@@ -10,7 +10,11 @@ export default async function page(): Promise<JSX.Element> {
     <>
       <CustomHeader />
       <CategoryFilter className="flex-1 flex-wrap" />
-      <OrdersViewTabs tableTitle={t("Orders")} endPoint={["orders"]} />
+      <OrdersViewTabs
+        tableTitle={t("Orders") || "طلبات المطاعم والطلبات الخاصة"}
+        endPoint={["orders"]}
+        defaultParams={{ excludeMartKiosk: true }}
+      />
     </>
   );
 }
