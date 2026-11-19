@@ -174,12 +174,55 @@ export default function MartClient() {
       }),
   });
 
-  const currentMart =
-    Array.isArray(martsResponse?.data) && martsResponse.data.length > 0
-      ? martsResponse.data.find(
-          (m: any) => String(m.cityId) === String(selectedCityId)
-        ) || martsResponse.data[0]
-      : null;
+  const allMarts = Array.isArray(martsResponse?.data) ? martsResponse.data : [];
+
+  const currentMart = allMarts.find(
+    (m: any) => String(m.cityId) === String(selectedCityId)
+  ) || null;
+
+  // Clone Catalog State & Mutation
+  const [isCloneDialogOpen, setIsCloneDialogOpen] = useState(false);
+  const [cloneSourceStoreId, setCloneSourceStoreId] = useState<string>("");
+  const [cloneTargetCityId, setCloneTargetCityId] = useState<string>("");
+  const [clonePriceMultiplier, setClonePriceMultiplier] = useState<string>("1.0");
+
+  const cloneMartCatalogMutation = useMutation({
+    mutationFn: (body: { sourceStoreId: number; targetCityId: number; priceMultiplier?: number }) =>
+      fetchHelper({
+        endPoint: "mart/admin/clone-catalog" as any,
+        method: "POST",
+        body,
+      }),
+    onSuccess: (res: any) => {
+      if (res.success || res.data) {
+        toast.success("تم استنساخ كتالوج مكانك مارت بنجاح إلى المدينة المحددة!");
+        setIsCloneDialogOpen(false);
+        refetchMarts();
+        if (cloneTargetCityId) {
+          setSelectedCityId(String(cloneTargetCityId));
+        }
+      } else {
+        toast.error(res.message || "فشل استنساخ الكتالوج");
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "حدث خطأ أثناء استنساخ الكتالوج");
+    },
+  });
+
+  const handleOpenCloneDialog = (sourceId?: number, targetId?: string) => {
+    const defaultSource = sourceId
+      ? String(sourceId)
+      : currentMart?.id
+      ? String(currentMart.id)
+      : allMarts[0]?.id
+      ? String(allMarts[0].id)
+      : "";
+    setCloneSourceStoreId(defaultSource);
+    setCloneTargetCityId(targetId || selectedCityId || "");
+    setClonePriceMultiplier("1.0");
+    setIsCloneDialogOpen(true);
+  };
 
   useEffect(() => {
     if (currentMart) {
@@ -195,6 +238,18 @@ export default function MartClient() {
       setMartMinOrder(currentMart.minOrderAmount ?? 50);
       setMartFreeDeliveryThreshold(currentMart.freeDeliveryThreshold ?? 200);
       setMartIsActive(!currentMart.isBlocked);
+    } else {
+      setMartNameAr("مكانك مارت");
+      setMartNameEn("Makanak Mart");
+      setMartLogo("");
+      setMartCover("");
+      setMartPhone("01000000000");
+      setMartPrepTime(10);
+      setMartDeliveryMin(15);
+      setMartDeliveryMax(25);
+      setMartMinOrder(50);
+      setMartFreeDeliveryThreshold(200);
+      setMartIsActive(true);
     }
   }, [currentMart]);
 
@@ -650,7 +705,7 @@ export default function MartClient() {
         toast.error(res.message || "حدث خطأ أثناء إنشاء الباقة");
         return;
       }
-      toast.success("تم إنشاء الباقة الترويجية بنجاح 🎁");
+      toast.success("تم إنشاء الباقة الترويجية بنجاح");
       queryClient.invalidateQueries({ queryKey: ["mart-admin-bundles", currentMart?.id] });
       setIsBundleDialogOpen(false);
     },
@@ -669,7 +724,7 @@ export default function MartClient() {
         toast.error(res.message || "حدث خطأ أثناء تعديل الباقة");
         return;
       }
-      toast.success("تم تعديل الباقة بنجاح 🎁");
+      toast.success("تم تعديل الباقة بنجاح");
       queryClient.invalidateQueries({ queryKey: ["mart-admin-bundles", currentMart?.id] });
       setIsBundleDialogOpen(false);
     },
@@ -1013,6 +1068,18 @@ export default function MartClient() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => handleOpenCloneDialog()}
+            className="border-emerald-600/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 font-semibold flex items-center gap-1.5"
+            disabled={allMarts.length === 0}
+            title="استنساخ الكتالوج من أو إلى مدينة أخرى"
+          >
+            <Sparkles className="h-4 w-4" />
+            <span className="hidden sm:inline">استنساخ الكتالوج</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => {
               refetchMarts();
               refetchDepts();
@@ -1071,6 +1138,26 @@ export default function MartClient() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {!currentMart && (
+              <div className="mb-6 p-4 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
+                  <Store className="h-5 w-5 flex-shrink-0" />
+                  <p className="text-xs">
+                    لا يوجد فرع مكانك مارت مسجل لهذه المدينة حالياً. يمكنك ملء النموذج أدناه لإنشاء الفرع، أو استنساخ الكتالوج بالكامل من فرع مدينة أخرى.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => handleOpenCloneDialog(allMarts[0]?.id, selectedCityId)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 whitespace-nowrap text-xs"
+                  disabled={allMarts.length === 0}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>استنساخ الكتالوج لهذه المدينة</span>
+                </Button>
+              </div>
+            )}
             <form onSubmit={handleSaveMartSettings} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -1224,7 +1311,34 @@ export default function MartClient() {
         </Card>
       )}
 
-      {/* TAB 2: DEPARTMENTS & SUBCATEGORIES */}
+      {/* TAB 2-8: Guard against unconfigured Mart store for selected city */}
+      {!currentMart && activeTab !== "store" ? (
+        <Card className="p-8 text-center border-dashed border-gray-200 dark:border-zinc-800">
+          <Store className="h-10 w-10 mx-auto text-gray-400 mb-2" />
+          <h3 className="font-semibold text-gray-700 dark:text-gray-300">
+            لم يتم إعداد مكانك مارت لهذه المدينة بعد
+          </h3>
+          <p className="text-xs text-gray-500 mb-4 max-w-md mx-auto">
+            يمكنك استنساخ كافة الأقسام والمنتجات والسكاشن تلقائياً من مدينة أخرى (مثل المحلة) أو ضبط بيانات المتجر يدوياً لتفعيل المارت في هذه المدينة.
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              size="sm"
+              onClick={() => handleOpenCloneDialog(allMarts[0]?.id, selectedCityId)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5"
+              disabled={allMarts.length === 0}
+            >
+              <Sparkles className="h-4 w-4" />
+              <span>استنساخ الكتالوج لهذه المدينة</span>
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setActiveTab("store")}>
+              إعداد وتفعيل المتجر يدوياً
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <>
+          {/* TAB 2: DEPARTMENTS & SUBCATEGORIES */}
       {activeTab === "departments" && (
         <Card className="border-gray-100 dark:border-zinc-800 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
@@ -1275,7 +1389,7 @@ export default function MartClient() {
                                 className="h-8 w-8 object-contain"
                               />
                             ) : (
-                              "📁"
+                              <FolderPlus className="h-6 w-6 text-gray-400" />
                             )}
                           </div>
                           <div>
@@ -1458,7 +1572,7 @@ export default function MartClient() {
                                   className="h-full w-full object-contain"
                                 />
                               ) : (
-                                "📦"
+                                <Package className="h-6 w-6 text-gray-400" />
                               )}
                             </div>
                             <div>
@@ -1834,7 +1948,7 @@ export default function MartClient() {
               <div className="flex items-center justify-between p-4 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-xl">
                 <div>
                   <p className="font-bold text-sm text-blue-950 dark:text-blue-100 flex items-center gap-2">
-                    <span>🔄</span>
+                    <RefreshCw className="h-4 w-4 text-blue-600" />
                     <span>سياسة استبدال المنتجات لو صنف خلص (Smart Substitution Policy)</span>
                   </p>
                   <p className="text-xs text-blue-700/80 dark:text-blue-300/80 mt-0.5">
@@ -2164,6 +2278,8 @@ export default function MartClient() {
             )}
           </CardContent>
         </Card>
+      )}
+        </>
       )}
 
       {/* ─── MODALS ────────────────────────────────────────────────────────── */}
@@ -2981,6 +3097,108 @@ export default function MartClient() {
                 : editingBundle
                 ? "تعديل الباقة"
                 : "إنشاء الباقة الترويجية"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── CLONE MART CATALOG DIALOG ── */}
+      <Dialog open={isCloneDialogOpen} onOpenChange={setIsCloneDialogOpen}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-emerald-600" />
+              <span>استنساخ كتالوج مكانك مارت لمدينة أخرى</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-xs text-gray-500">
+              يقوم هذا الإجراء بنسخ كافة الأقسام الرئيسية والفرعية، والمنتجات، وصورها، ورفوف العرض التفاعلية من المتجر المصدري إلى المدينة المستهدفة لتوفير عناء الإدخال اليدوي مع الحفاظ التام على استقلالية الأسعار والمخزون لكل مدينة.
+            </p>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                المتجر المصدر (Source Mart)
+              </label>
+              <Select value={cloneSourceStoreId} onValueChange={setCloneSourceStoreId}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="اختر فرع المارت المصدر" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allMarts.map((m: any) => {
+                    const cName = m.city?.name
+                      ? (typeof m.city.name === "object" ? m.city.name.ar || m.city.name.en : m.city.name)
+                      : `مدينة #${m.cityId}`;
+                    const mName = typeof m.name === "object" ? m.name.ar || m.name.en : m.name;
+                    return (
+                      <SelectItem key={m.id} value={String(m.id)}>
+                        {mName} ({cName})
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                المدينة المستهدفة (Target City)
+              </label>
+              <Select value={cloneTargetCityId} onValueChange={setCloneTargetCityId}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="اختر المدينة المستهدفة" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cities.map((city: any) => (
+                    <SelectItem key={city.id} value={String(city.id)}>
+                      {typeof city.name === "object" ? city.name.ar || city.name.en : city.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                معامل تعديل الأسعار (اختياري)
+              </label>
+              <Input
+                type="number"
+                step="0.05"
+                min="0.1"
+                value={clonePriceMultiplier}
+                onChange={(e) => setClonePriceMultiplier(e.target.value)}
+                placeholder="1.0"
+                className="mt-1"
+              />
+              <p className="text-[11px] text-gray-400 mt-1">
+                القيمة 1.0 تعني نفس الأسعار تماماً. القيمة 1.1 تعني زيادة 10% لأسعار المدينة المستهدفة.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCloneDialogOpen(false)}
+            >
+              إلغاء
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={cloneMartCatalogMutation.isPending || !cloneSourceStoreId || !cloneTargetCityId}
+              onClick={() => {
+                cloneMartCatalogMutation.mutate({
+                  sourceStoreId: Number(cloneSourceStoreId),
+                  targetCityId: Number(cloneTargetCityId),
+                  priceMultiplier: Number(clonePriceMultiplier) || 1.0,
+                });
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+            >
+              {cloneMartCatalogMutation.isPending ? "جاري الاستنساخ..." : "بدء استنساخ المارت"}
             </Button>
           </DialogFooter>
         </DialogContent>

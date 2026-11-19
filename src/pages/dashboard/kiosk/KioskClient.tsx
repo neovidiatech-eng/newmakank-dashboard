@@ -31,6 +31,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Sparkles,
   Store,
   Tag,
   Trash2,
@@ -124,6 +125,61 @@ export default function KioskClient() {
   const currentKiosk = Array.isArray(kiosksResponse?.data) && kiosksResponse.data.length > 0
     ? kiosksResponse.data[0]
     : null;
+
+  // 2b. Fetch All Kiosks (for clone source dropdown)
+  const { data: allKiosksResponse, refetch: refetchAllKiosks } = useQuery({
+    queryKey: ["kiosk-admin-all-stores"],
+    queryFn: () =>
+      fetchHelper({
+        endPoint: "kiosk/admin/list" as any,
+      }),
+  });
+  const allKiosks: any[] = Array.isArray(allKiosksResponse?.data) ? allKiosksResponse.data : [];
+
+  // Clone Dialog State
+  const [isCloneDialogOpen, setIsCloneDialogOpen] = useState(false);
+  const [cloneSourceStoreId, setCloneSourceStoreId] = useState<string>("");
+  const [cloneTargetCityId, setCloneTargetCityId] = useState<string>("");
+  const [clonePriceMultiplier, setClonePriceMultiplier] = useState<string>("1.0");
+
+  const cloneKioskMutation = useMutation({
+    mutationFn: (body: { sourceStoreId: number; targetCityId: number; priceMultiplier?: number }) =>
+      fetchHelper({
+        endPoint: "kiosk/admin/clone-catalog" as any,
+        method: "POST",
+        body,
+      }),
+    onSuccess: (res: any) => {
+      if (res.success || res.data) {
+        toast.success("تم استنساخ كتالوج الكشك بنجاح إلى المدينة المحددة!");
+        setIsCloneDialogOpen(false);
+        refetchKiosks();
+        refetchAllKiosks();
+        if (cloneTargetCityId) {
+          setSelectedCityId(String(cloneTargetCityId));
+        }
+      } else {
+        toast.error(res.message || "فشل استنساخ الكتالوج");
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "حدث خطأ أثناء استنساخ الكتالوج");
+    },
+  });
+
+  const handleOpenCloneDialog = (sourceId?: number, targetId?: string) => {
+    const defaultSource = sourceId
+      ? String(sourceId)
+      : currentKiosk?.id
+      ? String(currentKiosk.id)
+      : allKiosks[0]?.id
+      ? String(allKiosks[0].id)
+      : "";
+    setCloneSourceStoreId(defaultSource);
+    setCloneTargetCityId(targetId || selectedCityId || "");
+    setClonePriceMultiplier("1.0");
+    setIsCloneDialogOpen(true);
+  };
 
   // Sync Form when currentKiosk loads
   useEffect(() => {
@@ -529,8 +585,8 @@ export default function KioskClient() {
       {/* ── HEADER ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold">
-            🏪
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+            <Store className="h-6 w-6" />
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -545,8 +601,8 @@ export default function KioskClient() {
           </div>
         </div>
 
-        {/* City Selector */}
-        <div className="flex items-center gap-2">
+        {/* City Selector & Controls */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <label className="text-xs font-semibold whitespace-nowrap text-gray-700 dark:text-gray-300">
             المدينة:
           </label>
@@ -562,6 +618,33 @@ export default function KioskClient() {
               ))}
             </SelectContent>
           </Select>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleOpenCloneDialog()}
+            className="border-primary/30 text-primary hover:bg-primary/10 font-semibold flex items-center gap-1.5"
+            disabled={allKiosks.length === 0}
+            title="استنساخ الكتالوج من أو إلى مدينة أخرى"
+          >
+            <Sparkles className="h-4 w-4" />
+            <span className="hidden sm:inline">استنساخ الكتالوج</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              refetchKiosks();
+              refetchAllKiosks();
+              refetchCategories();
+              refetchProducts();
+              refetchBanners();
+              toast.success("تم تحديث البيانات");
+            }}
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
@@ -748,12 +831,23 @@ export default function KioskClient() {
               <h3 className="font-semibold text-gray-700 dark:text-gray-300">
                 لم يتم إعداد الكشك لهذه المدينة بعد
               </h3>
-              <p className="text-xs text-gray-500 mb-4">
-                يرجى الانتقال لتبويب "إعدادات وتوقيتات الكشك" لحفظ الكشك أولاً.
+              <p className="text-xs text-gray-500 mb-4 max-w-md mx-auto">
+                يمكنك استنساخ كافة تصنيفات ومنتجات الكشك من مدينة أخرى كالمحلة بضغطة زر واحدة، أو ضبط إعدادات الكشك يدوياً.
               </p>
-              <Button size="sm" onClick={() => setActiveTab("store")}>
-                ضبط إعدادات الكشك الآن
-              </Button>
+              <div className="flex items-center justify-center gap-3">
+                <Button
+                  size="sm"
+                  onClick={() => handleOpenCloneDialog(allKiosks[0]?.id, selectedCityId)}
+                  className="bg-primary hover:bg-primary/90 text-white font-bold flex items-center gap-1.5"
+                  disabled={allKiosks.length === 0}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>استنساخ كتالوج الكشك لهذه المدينة</span>
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setActiveTab("store")}>
+                  ضبط إعدادات الكشك يدوياً
+                </Button>
+              </div>
             </Card>
           ) : isCategoriesLoading ? (
             <div className="py-12 text-center text-gray-500">جاري تحميل الفئات...</div>
@@ -952,7 +1046,31 @@ export default function KioskClient() {
           </div>
 
           {/* Products Table */}
-          {isProductsLoading ? (
+          {!currentKiosk?.id ? (
+            <Card className="p-8 text-center border-dashed">
+              <Store className="h-10 w-10 mx-auto text-gray-400 mb-2" />
+              <h3 className="font-semibold text-gray-700 dark:text-gray-300">
+                لم يتم إعداد الكشك لهذه المدينة بعد
+              </h3>
+              <p className="text-xs text-gray-500 mb-4 max-w-md mx-auto">
+                يمكنك استنساخ كافة تصنيفات ومنتجات الكشك من مدينة أخرى كالمحلة بضغطة زر واحدة، أو ضبط إعدادات الكشك يدوياً.
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <Button
+                  size="sm"
+                  onClick={() => handleOpenCloneDialog(allKiosks[0]?.id, selectedCityId)}
+                  className="bg-primary hover:bg-primary/90 text-white font-bold flex items-center gap-1.5"
+                  disabled={allKiosks.length === 0}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>استنساخ كتالوج الكشك لهذه المدينة</span>
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setActiveTab("store")}>
+                  ضبط إعدادات الكشك يدوياً
+                </Button>
+              </div>
+            </Card>
+          ) : isProductsLoading ? (
             <div className="py-12 text-center text-gray-500">جاري تحميل المنتجات...</div>
           ) : filteredProducts.length === 0 ? (
             <Card className="p-8 text-center border-dashed">
@@ -983,7 +1101,7 @@ export default function KioskClient() {
                             {p.image ? (
                               <img src={p.image.startsWith("http") ? p.image : `https://api.makanak-app.com/${p.image}`} alt={nameAr} className="w-full h-full object-cover" />
                             ) : (
-                              "📦"
+                              <Package className="h-6 w-6 text-gray-400" />
                             )}
                           </div>
                           <div>
@@ -1029,7 +1147,7 @@ export default function KioskClient() {
                     {/* Actions Footer */}
                     <div className="bg-gray-50 dark:bg-gray-800/50 px-4 py-2 flex items-center justify-between border-t">
                       <span className="text-[11px] text-gray-400">
-                        {p.available ? "✅ متوفر للطلب" : "❌ غير متوفر"}
+                        {p.available ? "متوفر للطلب" : "غير متوفر"}
                       </span>
                       <div className="flex items-center gap-1">
                         <Button
@@ -1093,7 +1211,31 @@ export default function KioskClient() {
             </Button>
           </div>
 
-          {isBannersLoading ? (
+          {!currentKiosk?.id ? (
+            <Card className="p-8 text-center border-dashed">
+              <Store className="h-10 w-10 mx-auto text-gray-400 mb-2" />
+              <h3 className="font-semibold text-gray-700 dark:text-gray-300">
+                لم يتم إعداد الكشك لهذه المدينة بعد
+              </h3>
+              <p className="text-xs text-gray-500 mb-4 max-w-md mx-auto">
+                يمكنك استنساخ كافة تصنيفات ومنتجات الكشك من مدينة أخرى كالمحلة بضغطة زر واحدة، أو ضبط إعدادات الكشك يدوياً.
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <Button
+                  size="sm"
+                  onClick={() => handleOpenCloneDialog(allKiosks[0]?.id, selectedCityId)}
+                  className="bg-primary hover:bg-primary/90 text-white font-bold flex items-center gap-1.5"
+                  disabled={allKiosks.length === 0}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>استنساخ كتالوج الكشك لهذه المدينة</span>
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setActiveTab("store")}>
+                  ضبط إعدادات الكشك يدوياً
+                </Button>
+              </div>
+            </Card>
+          ) : isBannersLoading ? (
             <div className="py-12 text-center text-gray-500">جاري تحميل البانرز...</div>
           ) : banners.length === 0 ? (
             <Card className="p-8 text-center border-dashed">
@@ -1383,6 +1525,108 @@ export default function KioskClient() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── CLONE KIOSK CATALOG DIALOG ── */}
+      <Dialog open={isCloneDialogOpen} onOpenChange={setIsCloneDialogOpen}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <span>استنساخ كتالوج كشك مكانك لمدينة أخرى</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-xs text-gray-500">
+              يقوم هذا الإجراء بنسخ كافة الفئات الرئيسية والفرعية، والمنتجات، وصورها من فرع كشك مصدري إلى المدينة المستهدفة لتوفير وقت الإدخال اليدوي مع الحفاظ التام على عزل الأسعار والمخزون.
+            </p>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                الكشك المصدر (Source Kiosk)
+              </label>
+              <Select value={cloneSourceStoreId} onValueChange={setCloneSourceStoreId}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="اختر فرع الكشك المصدر" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allKiosks.map((k: any) => {
+                    const cName = k.city?.name
+                      ? (typeof k.city.name === "object" ? k.city.name.ar || k.city.name.en : k.city.name)
+                      : `مدينة #${k.cityId}`;
+                    const kName = typeof k.name === "object" ? k.name.ar || k.name.en : k.name;
+                    return (
+                      <SelectItem key={k.id} value={String(k.id)}>
+                        {kName} ({cName})
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                المدينة المستهدفة (Target City)
+              </label>
+              <Select value={cloneTargetCityId} onValueChange={setCloneTargetCityId}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="اختر المدينة المستهدفة" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cities.map((city) => (
+                    <SelectItem key={city.id} value={String(city.id)}>
+                      {typeof city.name === "object" ? city.name.ar || city.name.en : city.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                معامل تعديل الأسعار (اختياري)
+              </label>
+              <Input
+                type="number"
+                step="0.05"
+                min="0.1"
+                value={clonePriceMultiplier}
+                onChange={(e) => setClonePriceMultiplier(e.target.value)}
+                placeholder="1.0"
+                className="mt-1"
+              />
+              <p className="text-[11px] text-gray-400 mt-1">
+                القيمة 1.0 تعني نفس الأسعار تماماً. القيمة 1.1 تعني زيادة 10% لأسعار المدينة المستهدفة.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCloneDialogOpen(false)}
+            >
+              إلغاء
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={cloneKioskMutation.isPending || !cloneSourceStoreId || !cloneTargetCityId}
+              onClick={() => {
+                cloneKioskMutation.mutate({
+                  sourceStoreId: Number(cloneSourceStoreId),
+                  targetCityId: Number(cloneTargetCityId),
+                  priceMultiplier: Number(clonePriceMultiplier) || 1.0,
+                });
+              }}
+              className="bg-primary hover:bg-primary/90 text-white font-bold"
+            >
+              {cloneKioskMutation.isPending ? "جاري الاستنساخ..." : "بدء استنساخ الكشك"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

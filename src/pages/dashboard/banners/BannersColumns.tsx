@@ -69,7 +69,7 @@ export default function BannersColumns(): ColumnDef<Record<string, unknown>>[] {
           : null;
         return cityName ? (
           <span className="inline-flex items-center gap-1 rounded-full border border-sky-400/40 bg-sky-50 dark:bg-sky-950/20 px-2.5 py-0.5 text-xs font-medium text-sky-600 dark:text-sky-400">
-            📍 {cityName}
+            {cityName}
           </span>
         ) : (
           <span className="text-muted-foreground text-xs">{t("All Cities") || "جميع المدن"}</span>
