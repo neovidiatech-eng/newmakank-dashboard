@@ -18,6 +18,10 @@ import {
   Plus,
   RefreshCw,
   Trash2,
+  Upload,
+  Check,
+  RotateCcw,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -60,9 +64,23 @@ export default function HomeBuilderClient() {
   const [savingBadge, setSavingBadge] = useState(false);
   const [allStores, setAllStores] = useState<any[]>([]);
 
+  const [quickServices, setQuickServices] = useState<{
+    martImage: string;
+    kioskImage: string;
+    shippingImage: string;
+    tableImage: string;
+  }>({
+    martImage: "",
+    kioskImage: "",
+    shippingImage: "",
+    tableImage: "",
+  });
+  const [savingQuickServices, setSavingQuickServices] = useState(false);
+  const [uploadingQuickCard, setUploadingQuickCard] = useState<string | null>(null);
+
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const [secRes, cityRes, tplRes, bannerRes, badgeRes, storesRes] = await Promise.all([
+    const [secRes, cityRes, tplRes, bannerRes, badgeRes, storesRes, qsRes] = await Promise.all([
       fetchHelper({
         endPoint: ["homeAdminSections"],
         method: "GET",
@@ -97,6 +115,11 @@ export default function HomeBuilderClient() {
         params: { limit: 200 },
         redirectOnUnauthorized: false,
       }),
+      fetchHelper({
+        endPoint: ["settings", "quick-services"],
+        method: "GET",
+        redirectOnUnauthorized: false,
+      }),
     ]);
 
     if (Array.isArray(secRes?.data)) setSections(secRes.data);
@@ -129,6 +152,15 @@ export default function HomeBuilderClient() {
     if (Array.isArray(storesRes?.data)) {
       setAllStores(storesRes.data);
     }
+
+    if (qsRes?.data) {
+      setQuickServices({
+        martImage: qsRes.data.martImage || "",
+        kioskImage: qsRes.data.kioskImage || "",
+        shippingImage: qsRes.data.shippingImage || "",
+        tableImage: qsRes.data.tableImage || "",
+      });
+    }
     setLoading(false);
   }, []);
 
@@ -154,6 +186,59 @@ export default function HomeBuilderClient() {
       toast.error(e?.message || (isAr ? "حدث خطأ أثناء الحفظ" : "Failed to save"));
     } finally {
       setSavingBadge(false);
+    }
+  };
+
+  const handleQuickCardUpload = async (
+    key: "martImage" | "kioskImage" | "shippingImage" | "tableImage",
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadingQuickCard(key);
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await fetchHelper({
+        endPoint: ["homeAdminUpload"],
+        method: "POST",
+        body: formData,
+        redirectOnUnauthorized: false,
+      });
+      if (res?.success && res?.data?.image) {
+        setQuickServices((prev) => ({ ...prev, [key]: res.data.image }));
+        toast.success(isAr ? "تم رفع الصورة بنجاح!" : "Image uploaded successfully!");
+      } else {
+        toast.error(res?.message || (isAr ? "فشل رفع الصورة" : "Upload failed"));
+      }
+    } catch {
+      toast.error(isAr ? "حدث خطأ أثناء الرفع" : "Upload error");
+    } finally {
+      setUploadingQuickCard(null);
+    }
+  };
+
+  const handleSaveQuickServices = async () => {
+    try {
+      setSavingQuickServices(true);
+      const res = await fetchHelper({
+        endPoint: ["settings", "quick-services"],
+        method: "PATCH",
+        data: quickServices,
+      });
+      if (res?.data) {
+        toast.success(
+          isAr
+            ? "تم حفظ صور كروت الخدمات السريعة بنجاح!"
+            : "Quick services cards saved successfully!",
+        );
+      } else {
+        toast.error(res?.message || "Failed to save");
+      }
+    } catch {
+      toast.error(isAr ? "حدث خطأ أثناء الحفظ" : "Error saving");
+    } finally {
+      setSavingQuickServices(false);
     }
   };
 
@@ -351,6 +436,7 @@ export default function HomeBuilderClient() {
             <TabsTrigger value="sections">{t("homeTabSections")}</TabsTrigger>
             <TabsTrigger value="categories">{t("homeTabCategories")}</TabsTrigger>
             <TabsTrigger value="banners">{t("homeTabBanners")}</TabsTrigger>
+            <TabsTrigger value="quickServices">{isAr ? "كروت الخدمات السريعة" : "Quick Services"}</TabsTrigger>
             <TabsTrigger value="floatingBadge">{isAr ? "الودجت الدوار" : "Floating Badge"}</TabsTrigger>
           </TabsList>
 
@@ -646,7 +732,187 @@ export default function HomeBuilderClient() {
           </Card>
         </TabsContent>
 
-        {/* TAB 4: FLOATING BADGE (الودجت الدوار) */}
+        {/* TAB 4: QUICK SERVICES CARDS */}
+        <TabsContent value="quickServices" className="mt-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
+              <div>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-amber-500" />
+                  {isAr ? "كروت الخدمات السريعة (أعلى الرئيسية)" : "Quick Services Cards"}
+                </CardTitle>
+                <CardDescription>
+                  {isAr
+                    ? "تحكم بصور الكروت الأربعة (مكانك مارت، كشك مكانك، شحن المحافظات، وحجز الطاولة). يمكنك رفع صورة لكل كارت أو كتابة الرابط مباشرة."
+                    : "Customize the images for the 4 quick service cards on top of home. Upload an image or enter a direct URL."}
+                </CardDescription>
+              </div>
+              <Button
+                onClick={handleSaveQuickServices}
+                disabled={savingQuickServices}
+                className="shrink-0 bg-primary"
+              >
+                {savingQuickServices ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                ) : (
+                  <Check className="h-4 w-4 mr-1" />
+                )}
+                {isAr ? "حفظ التغييرات" : "Save Changes"}
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {[
+                  {
+                    key: "martImage" as const,
+                    title: isAr ? "مكانك مارت" : "Makanak Mart",
+                    subtitle: isAr ? "سوبرماركت فوري" : "Fast Grocery",
+                    pillText: isAr ? "15 - 20 دقيقة" : "15-20 min",
+                    pillBg: "bg-amber-100 text-amber-900 border-amber-200",
+                    defaultImg:
+                      "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80",
+                  },
+                  {
+                    key: "kioskImage" as const,
+                    title: isAr ? "كشك مكانك" : "Makanak Kiosk",
+                    subtitle: isAr ? "سناكس ومشروبات" : "Snacks & Drinks",
+                    pillText: isAr ? "مفتوح 24 ساعة" : "Open 24/7",
+                    pillBg: "bg-teal-100 text-teal-900 border-teal-200",
+                    defaultImg:
+                      "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=300&q=80",
+                  },
+                  {
+                    key: "shippingImage" as const,
+                    title: isAr ? "شحن المحافظات" : "Intercity Cargo",
+                    subtitle: isAr ? "طرود سريعة وآمنة" : "Fast & Safe Parcels",
+                    pillText: isAr ? "بين المحافظات" : "City to City",
+                    pillBg: "bg-blue-100 text-blue-900 border-blue-200",
+                    defaultImg:
+                      "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=300&q=80",
+                  },
+                  {
+                    key: "tableImage" as const,
+                    title: isAr ? "حجز طاولة" : "Table Booking",
+                    subtitle: isAr ? "أكل مسبق بالمطعم" : "Pre-order Dine-in",
+                    pillText: isAr ? "بدون انتظار" : "Zero Wait",
+                    pillBg: "bg-pink-100 text-pink-900 border-pink-200",
+                    defaultImg:
+                      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=300&q=80",
+                  },
+                ].map((card) => {
+                  const currentVal = quickServices[card.key] || "";
+                  const previewUrl = currentVal
+                    ? resolveDashboardImageUrl(currentVal)
+                    : card.defaultImg;
+                  const isUploading = uploadingQuickCard === card.key;
+
+                  return (
+                    <div
+                      key={card.key}
+                      className="p-5 rounded-xl border bg-card flex flex-col gap-4 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-base text-foreground">
+                          {card.title}
+                        </span>
+                        {currentVal ? (
+                          <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
+                            {isAr ? "صورة مخصصة نشطة" : "Custom image active"}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs text-muted-foreground">
+                            {isAr ? "الصورة الافتراضية" : "Default image"}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Live App Card Preview */}
+                      <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 flex items-center justify-between gap-3 shadow-xs">
+                        <div className="flex flex-col gap-1 min-w-0 flex-1">
+                          <span className="font-extrabold text-sm text-slate-900 dark:text-white truncate">
+                            {card.title}
+                          </span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {card.subtitle}
+                          </span>
+                          <span className={`inline-block w-fit text-[10px] font-bold px-2 py-0.5 rounded-full border ${card.pillBg}`}>
+                            {card.pillText}
+                          </span>
+                        </div>
+                        <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800">
+                          <img
+                            src={previewUrl}
+                            alt={card.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Controls: Upload & Direct URL */}
+                      <div className="space-y-3 pt-1">
+                        <div className="flex items-center gap-2">
+                          <label className="cursor-pointer inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold hover:bg-muted transition-colors">
+                            {isUploading ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Upload className="h-3.5 w-3.5" />
+                            )}
+                            <span>{isAr ? "رفع صورة جديدة" : "Upload Image"}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              disabled={isUploading}
+                              onChange={(e) => handleQuickCardUpload(card.key, e)}
+                            />
+                          </label>
+
+                          {currentVal && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 text-xs text-destructive hover:bg-destructive/10"
+                              onClick={() => {
+                                setQuickServices((prev) => ({
+                                  ...prev,
+                                  [card.key]: "",
+                                }));
+                              }}
+                            >
+                              <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                              {isAr ? "استعادة الافتراضية" : "Reset default"}
+                            </Button>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">
+                            {isAr ? "أو أدخل مسار / رابط الصورة:" : "Or direct image URL / path:"}
+                          </label>
+                          <input
+                            type="text"
+                            value={currentVal}
+                            placeholder={card.defaultImg}
+                            className="w-full text-xs px-3 py-2 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                            onChange={(e) =>
+                              setQuickServices((prev) => ({
+                                ...prev,
+                                [card.key]: e.target.value.trim(),
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TAB 5: FLOATING BADGE (الودجت الدوار) */}
         <TabsContent value="floatingBadge" className="mt-4">
           <Card>
             <CardHeader>
