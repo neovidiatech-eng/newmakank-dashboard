@@ -64,6 +64,9 @@ export function LoginForm() {
                           id="email"
                           name="email"
                           type="email"
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          spellCheck={false}
                           placeholder="name@company.com"
                           required={loginType === "email"}
                           className="h-11 rounded-full border border-border/70 dark:border-gray-600 bg-white dark:bg-gray-800 pl-10 pr-4 shadow-sm focus-visible:ring-1 focus-visible:ring-black/20 dark:focus-visible:ring-white/20"

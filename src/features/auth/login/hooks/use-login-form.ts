@@ -48,7 +48,7 @@ export function useLoginForm() {
     };
 
     if (loginType === "email") {
-      const email = (formData.get("email") as string | null)?.trim();
+      const email = (formData.get("email") as string | null)?.trim()?.toLowerCase();
       if (email) requestBody.email = email;
     } else {
       requestBody.phone = phoneNumber;
