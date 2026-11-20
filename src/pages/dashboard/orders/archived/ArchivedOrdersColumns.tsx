@@ -1,4 +1,5 @@
 import { PriceAmount } from "@/components/PriceAmount";
+import { Badge } from "@/components/ui/badge";
 import ActiveCol from "@/components/common/table/columns/Ative.column";
 import DateCol from "@/components/common/table/columns/date.column";
 import IconHeader from "@/components/common/table/columns/icon-header";

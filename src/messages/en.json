@@ -3409,5 +3409,7 @@
   "baseShippingFee": "Base delivery fee",
   "totalDeliveryFee": "Total delivery fee",
   "home-builder": "Home builder",
-  "governorate-shipping": "Governorate shipping"
+  "governorate-shipping": "Governorate shipping",
+  "substitutionPreference": "Substitution preference",
+  "mart-orders": "Mart & Kiosk orders"
 }

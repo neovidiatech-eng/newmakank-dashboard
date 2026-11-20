@@ -3412,5 +3412,7 @@
   "baseShippingFee": "رسوم التوصيل الأساسية",
   "totalDeliveryFee": "إجمالي رسوم التوصيل",
   "home-builder": "بناء الصفحة الرئيسية",
-  "governorate-shipping": "الشحن بين المحافظات"
+  "governorate-shipping": "الشحن بين المحافظات",
+  "substitutionPreference": "تفضيل الاستبدال",
+  "mart-orders": "طلبات المارت والكشك"
 }
