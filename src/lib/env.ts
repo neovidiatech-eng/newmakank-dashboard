@@ -9,7 +9,18 @@ const DEFAULT_ENV_MAP: Partial<Record<AppEnvKey, string>> = {
 };
 
 export function getEnv(name: AppEnvKey, fallback = ""): string {
-  return import.meta.env[name] || DEFAULT_ENV_MAP[name] || fallback;
+  let val = import.meta.env[name] || DEFAULT_ENV_MAP[name] || fallback;
+  if (name === "VITE_API_URL") {
+    if (!val || typeof val !== "string" || !val.startsWith("http")) {
+      return DEFAULT_ENV_MAP.VITE_API_URL || "https://api.makanak-app.com";
+    }
+  }
+  if (name === "VITE_API_IMG_URL") {
+    if (!val || typeof val !== "string" || !val.startsWith("http")) {
+      return DEFAULT_ENV_MAP.VITE_API_IMG_URL || "https://api.makanak-app.com/api/media?media=";
+    }
+  }
+  return val;
 }
 
 export function requireEnv(name: AppEnvKey): string {
